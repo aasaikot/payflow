@@ -1,0 +1,6 @@
+{
+  "name": "PayFlow - Secure Salary Management",
+  "description": "Secure salary management Android application with authentication, income and deduction tracking, salary history, and reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
