@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ArrowLeft,
   Building2,
@@ -10,6 +10,10 @@ import {
   Camera,
   Check,
   X,
+  Upload,
+  Image as ImageIcon,
+  Sparkles,
+  Trash2,
 } from 'lucide-react';
 import { UserProfileData, ScreenType } from '../types';
 
@@ -27,7 +31,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onNavigate,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isPhotoPickerOpen, setIsPhotoPickerOpen] = useState(false);
   const [editForm, setEditForm] = useState<UserProfileData>({ ...userProfile });
+  const [photoUrlInput, setPhotoUrlInput] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Suggested preset avatars for quick pick
+  const avatarPresets = [
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&auto=format&fit=crop&q=80',
+  ];
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,8 +52,57 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     setIsEditing(false);
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        const updated = { ...userProfile, photoURL: base64String };
+        setEditForm({ ...editForm, photoURL: base64String });
+        onUpdateProfile(updated);
+        setIsPhotoPickerOpen(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSelectPreset = (url: string) => {
+    const updated = { ...userProfile, photoURL: url };
+    setEditForm({ ...editForm, photoURL: url });
+    onUpdateProfile(updated);
+    setIsPhotoPickerOpen(false);
+  };
+
+  const handleSaveUrlPhoto = () => {
+    if (photoUrlInput.trim()) {
+      const updated = { ...userProfile, photoURL: photoUrlInput.trim() };
+      setEditForm({ ...editForm, photoURL: photoUrlInput.trim() });
+      onUpdateProfile(updated);
+      setPhotoUrlInput('');
+      setIsPhotoPickerOpen(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    const fallback = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+    const updated = { ...userProfile, photoURL: fallback };
+    setEditForm({ ...editForm, photoURL: fallback });
+    onUpdateProfile(updated);
+    setIsPhotoPickerOpen(false);
+  };
+
   return (
     <div id="profile-view-screen" className="w-full flex flex-col pb-6">
+      {/* Hidden File Input for Device Photo Upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handlePhotoUpload}
+        className="hidden"
+      />
+
       {/* Top Header */}
       <div className="w-full flex items-center justify-between px-4 py-3.5 bg-white border-b border-[#E4ECE8] sticky top-0 z-20">
         <div className="flex items-center gap-3">
@@ -58,9 +124,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       <div className="px-4 pt-5 flex flex-col gap-4">
         {/* User Identity Section */}
         <div className="flex flex-col items-center text-center">
-          {/* Avatar with Camera Overlay */}
-          <div className="relative mb-3">
-            <div className="w-24 h-24 rounded-full ring-4 ring-[#008F5B]/20 overflow-hidden shadow-md">
+          {/* Avatar with Camera Overlay (Opens Photo Change Sheet) */}
+          <div className="relative mb-3 group">
+            <div className="w-24 h-24 rounded-full ring-4 ring-[#008F5B]/25 overflow-hidden shadow-md bg-[#F5FAF7]">
               <img
                 src={
                   userProfile.photoURL ||
@@ -72,12 +138,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               />
             </div>
             <button
+              id="open-change-photo-btn"
               type="button"
-              onClick={() => setIsEditing(true)}
-              className="w-7 h-7 rounded-full bg-[#008F5B] text-white border-2 border-white absolute bottom-0 right-0 flex items-center justify-center shadow-sm cursor-pointer hover:bg-[#007A4D] transition-colors"
+              onClick={() => setIsPhotoPickerOpen(true)}
+              className="w-8 h-8 rounded-full bg-[#008F5B] hover:bg-[#007A4D] text-white border-2 border-white absolute bottom-0 right-0 flex items-center justify-center shadow-md cursor-pointer transition-all active:scale-95"
               aria-label="Change photo"
+              title="Change Profile Photo"
             >
-              <Camera size={14} />
+              <Camera size={15} />
             </button>
           </div>
 
@@ -198,6 +266,32 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
 
             <form onSubmit={handleSaveProfile} className="flex flex-col gap-3">
+              {/* Profile Avatar Change Preview Inside Edit Modal */}
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[#F5FAF7] border border-[#E4ECE8]">
+                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-[#008F5B] shrink-0 bg-white">
+                  <img
+                    src={editForm.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                    alt={editForm.name}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[10px] text-[#8A9791] font-bold uppercase block">Profile Picture</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setIsPhotoPickerOpen(true);
+                    }}
+                    className="text-xs font-bold text-[#008F5B] hover:underline flex items-center gap-1 mt-0.5"
+                  >
+                    <Camera size={13} />
+                    <span>Change Picture</span>
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-bold text-[#6E7974] uppercase mb-1">
                   Full Name
@@ -287,6 +381,146 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Picker & Camera Options Modal */}
+      {isPhotoPickerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+          <div className="w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl border border-[#D7E0DC] max-h-[90vh] overflow-y-auto">
+            {/* Sheet Header */}
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#E4ECE8]">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#E9F7F1] text-[#008F5B] flex items-center justify-center">
+                  <Camera size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-[#17211D]">
+                    Profile Picture
+                  </h3>
+                  <p className="text-[11px] text-[#6E7974]">
+                    Upload custom photo or choose an avatar
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPhotoPickerOpen(false)}
+                className="w-8 h-8 rounded-full bg-[#F5FAF7] hover:bg-[#EAEFEA] flex items-center justify-center text-[#6E7974] transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Current Active Preview */}
+            <div className="flex items-center gap-3.5 p-3 rounded-xl bg-[#F5FAF7] border border-[#E4ECE8] mb-4">
+              <div className="w-14 h-14 rounded-full ring-2 ring-[#008F5B] overflow-hidden bg-white shrink-0 shadow-xs">
+                <img
+                  src={
+                    userProfile.photoURL ||
+                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+                  }
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] text-[#8A9791] uppercase font-bold tracking-wider block">
+                  Current Picture
+                </span>
+                <span className="text-xs font-bold text-[#17211D] truncate block">
+                  {userProfile.name}
+                </span>
+              </div>
+            </div>
+
+            {/* Upload from Gallery / Device Button */}
+            <button
+              type="button"
+              id="upload-device-photo-btn"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full h-12 bg-[#008F5B] hover:bg-[#007A4D] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer mb-3"
+            >
+              <Upload size={16} />
+              <span>Upload Photo from Device</span>
+            </button>
+
+            {/* Presets Grid */}
+            <div className="mb-4">
+              <div className="flex items-center gap-1 mb-2.5">
+                <Sparkles size={13} className="text-[#008F5B]" />
+                <span className="text-[11px] font-bold text-[#17211D] uppercase tracking-wide">
+                  Choose from Avatars
+                </span>
+              </div>
+              <div className="grid grid-cols-6 gap-2">
+                {avatarPresets.map((presetUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSelectPreset(presetUrl)}
+                    className="relative aspect-square rounded-full overflow-hidden border-2 border-transparent hover:border-[#008F5B] hover:scale-105 transition-all group focus:border-[#008F5B]"
+                  >
+                    <img
+                      src={presetUrl}
+                      alt={`Avatar ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                    {userProfile.photoURL === presetUrl && (
+                      <div className="absolute inset-0 bg-[#008F5B]/40 flex items-center justify-center">
+                        <Check size={14} className="text-white" strokeWidth={3} />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Paste Image URL section */}
+            <div className="pt-3 border-t border-[#E4ECE8]">
+              <label className="block text-[11px] font-bold text-[#6E7974] uppercase mb-1.5">
+                Or Paste Image Web URL
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={photoUrlInput}
+                  onChange={(e) => setPhotoUrlInput(e.target.value)}
+                  placeholder="https://..."
+                  className="flex-1 h-10 px-3 rounded-xl border border-[#D7E0DC] text-xs font-semibold text-[#17211D] outline-none focus:border-[#008F5B] bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveUrlPhoto}
+                  disabled={!photoUrlInput.trim()}
+                  className="px-3.5 h-10 rounded-xl bg-[#17211D] hover:bg-black text-white text-xs font-bold disabled:opacity-40 transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+
+            {/* Reset / Remove Photo */}
+            <div className="mt-4 pt-3 border-t border-[#E4ECE8] flex items-center justify-between">
+              <button
+                type="button"
+                onClick={handleRemovePhoto}
+                className="text-[11.5px] font-bold text-[#D83B3B] hover:underline flex items-center gap-1.5"
+              >
+                <Trash2 size={13} />
+                <span>Reset to Default</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsPhotoPickerOpen(false)}
+                className="px-4 h-9 rounded-xl border border-[#D7E0DC] text-xs font-semibold text-[#6E7974] hover:bg-[#F5FAF7]"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

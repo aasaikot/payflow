@@ -16,6 +16,8 @@ export interface FirebaseUserData {
     mobile: string;
     name: string;
     pin: string;
+    photoURL?: string;
+    joinDate?: string;
   };
   months: Record<string, FirebaseMonthData>;
 }
@@ -319,8 +321,10 @@ export function convertFirebaseProfileToUser(
     pin: rawProfile.pin || '5556',
     email: rawProfile.email || 'saikot@saikot.bd',
     mobile: rawProfile.mobile || '01719364298',
-    joinDate: '01 January 2024',
-    photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    joinDate: rawProfile.joinDate || '01 January 2024',
+    photoURL:
+      rawProfile.photoURL ||
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   };
 }
 

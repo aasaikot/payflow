@@ -12,12 +12,11 @@ import {
   Loader2,
   ShieldCheck,
   ArrowRight,
-  Sparkles,
   IdCard,
 } from 'lucide-react';
 import { PayFlowLogo } from './PayFlowLogo';
-import { auth, createUserWithEmailAndPassword } from '../firebase';
-import { saveUserProfile, seedInitialData } from '../services/firebaseService';
+import { auth, createUserWithEmailAndPassword, updateProfile } from '../firebase';
+import { saveUserProfile, seedInitialData, signInWithGoogle } from '../services/firebaseService';
 
 interface RegisterViewProps {
   onNavigateToLogin: () => void;
@@ -65,25 +64,30 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
-    if (!fullName.trim()) {
+    const cleanName = fullName.trim().toUpperCase();
+    const cleanEmail = email.trim();
+    const cleanPin = employeeId.trim();
+
+    if (!cleanName) {
       setError('Please provide your full legal name.');
       return;
     }
-    if (!email.trim()) {
+    if (!cleanEmail) {
       setError('Please enter a valid work email.');
       return;
     }
-    if (!employeeId.trim()) {
-      setError('Please provide your Employee ID.');
+    if (!cleanPin) {
+      setError('Please provide your Employee PIN / ID.');
       return;
     }
     if (!hasMinLength || !hasUppercase || !hasNumber) {
-      setError('Please ensure your password meets all security criteria.');
+      setError('Please ensure your password meets all security criteria (8+ characters, 1 uppercase, 1 number).');
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError('Passwords do not match. Please verify.');
       return;
     }
     if (!termsAccepted) {
@@ -92,58 +96,75 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
     }
 
     setIsLoading(true);
-    setError(null);
 
     try {
-      // Create user with Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
-      const uid = userCredential.user.uid;
+      // 1. Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+      const user = userCredential.user;
+      const uid = user.uid;
 
-      // Create initial Firestore Profile and seed salary collections
+      // 2. Set Firebase Auth Display Name
+      try {
+        await updateProfile(user, { displayName: cleanName });
+      } catch (profErr) {
+        console.warn('Profile name update note:', profErr);
+      }
+
+      // 3. Create initial Firestore Profile
       await saveUserProfile({
         uid,
-        name: fullName.trim().toUpperCase(),
+        name: cleanName,
         companyName: 'Essential Drugs Company Limited',
         designation: 'Assistant Engineering Officer',
-        pin: employeeId.trim(),
-        email: email.trim(),
-        mobile: '+880 1711-234567',
-        joinDate: '15 Jan 2022',
+        pin: cleanPin,
+        email: cleanEmail,
+        mobile: '+880 1719-364298',
+        joinDate: '01 January 2024',
+        photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
       });
 
+      // 4. Seed user months database
       await seedInitialData(uid);
 
       setIsLoading(false);
-      onRegisterSuccess(email, uid);
+      onRegisterSuccess(cleanEmail, uid);
     } catch (err: any) {
-      console.warn('Firebase registration error/fallback:', err);
       setIsLoading(false);
+      console.warn('Firebase registration error:', err?.code, err?.message);
+
       if (err?.code === 'auth/email-already-in-use') {
-        setError('This email address is already registered. Please sign in instead.');
+        setError('This email is already registered. Please sign in instead.');
+      } else if (err?.code === 'auth/invalid-email') {
+        setError('Please provide a valid email format.');
+      } else if (err?.code === 'auth/weak-password') {
+        setError('Password is too weak. Please use at least 8 characters with letters and numbers.');
+      } else if (err?.code === 'auth/network-request-failed') {
+        setError('Network connection error. Please verify your internet connection.');
       } else {
-        // Fallback smooth transition for local preview
-        onRegisterSuccess(email, 'user-registered-local');
+        setError(err?.message || 'Registration could not be completed. Please try again.');
       }
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     setError(null);
 
-    setTimeout(() => {
+    try {
+      const { user } = await signInWithGoogle();
       setIsGoogleLoading(false);
-      onRegisterSuccess('new.employee@payflow.com', 'google-registered-uid');
-    }, 600);
-  };
-
-  const handleQuickDemoFill = () => {
-    setFullName('ASIF ARMAN SAIKOT');
-    setEmail('asif.saikot@payflow.com');
-    setEmployeeId('5556');
-    setPassword('PayFlow#2026');
-    setConfirmPassword('PayFlow#2026');
-    setError(null);
+      onRegisterSuccess(user.email || 'google.user@payflow.com', user.uid);
+    } catch (err: any) {
+      setIsGoogleLoading(false);
+      console.warn('Google registration error:', err?.code, err?.message);
+      if (err?.code === 'auth/popup-closed-by-user') {
+        return;
+      } else if (err?.code === 'auth/popup-blocked') {
+        setError('Sign-in popup was blocked by browser. Please allow popups for PayFlow.');
+      } else {
+        setError(err?.message || 'Google sign-in could not be completed. Please try again.');
+      }
+    }
   };
 
   return (
@@ -200,19 +221,11 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
         className="w-full max-w-[440px] bg-white rounded-xl p-6 sm:p-7 border border-[#E4ECE8] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
-          {/* Quick Demo Pre-fill */}
-          <div className="flex items-center justify-between pb-1 border-b border-[#F0F4F2]">
+          {/* Section Heading */}
+          <div className="pb-1 border-b border-[#F0F4F2]">
             <span className="text-[11px] font-bold text-[#6E7974] uppercase tracking-wider">
               Employment Details
             </span>
-            <button
-              type="button"
-              onClick={handleQuickDemoFill}
-              className="text-[11px] font-extrabold text-[#008F5B] hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <Sparkles size={12} />
-              <span>Autofill Saikot (5556)</span>
-            </button>
           </div>
 
           {/* Full Name */}

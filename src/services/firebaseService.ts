@@ -11,6 +11,9 @@ import {
   signOut,
   sendPasswordResetEmail,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  updateProfile,
   User,
   OperationType,
   handleFirestoreError,
@@ -34,6 +37,92 @@ export async function autoSignInIfGuest(): Promise<User | null> {
   } catch (error) {
     console.warn('Anonymous sign-in not available or skipped:', error);
     return null;
+  }
+}
+
+// Google Sign-In with automated Profile & Photo sync
+export async function signInWithGoogle(): Promise<{ user: User; profile: UserProfileData }> {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  
+  const result = await signInWithPopup(auth, provider);
+  const user = result.user;
+  const uid = user.uid;
+  const path = `users/${uid}`;
+
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    const snap = await getDoc(userDocRef);
+
+    let updatedProfile: UserProfileData;
+
+    if (!snap.exists()) {
+      // First time Google Sign-in: initialize user profile and empty months
+      const newProfileData: FirebaseUserData['profile'] = {
+        name: user.displayName || user.email?.split('@')[0]?.toUpperCase() || 'EMPLOYEE',
+        companyName: '',
+        designation: '',
+        pin: '',
+        email: user.email || '',
+        mobile: user.phoneNumber || '',
+        photoURL: user.photoURL || undefined,
+        joinDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
+      };
+
+      await setDoc(
+        userDocRef,
+        {
+          profile: newProfileData,
+          months: {},
+        },
+        { merge: true }
+      );
+
+      updatedProfile = convertFirebaseProfileToUser(newProfileData, uid);
+    } else {
+      // Existing user: preserve custom company details but update Google avatar & email if available
+      const existingData = snap.data() as Partial<FirebaseUserData>;
+      const existingProfile = existingData.profile || {
+        name: user.displayName || 'EMPLOYEE',
+        companyName: '',
+        designation: '',
+        pin: '',
+        email: user.email || '',
+        mobile: '',
+        photoURL: user.photoURL || undefined,
+        joinDate: '',
+      };
+
+      const mergedProfilePayload: FirebaseUserData['profile'] = {
+        name: existingProfile.name || user.displayName || 'EMPLOYEE',
+        companyName: existingProfile.companyName || '',
+        designation: existingProfile.designation || '',
+        pin: existingProfile.pin || '',
+        email: user.email || existingProfile.email || '',
+        mobile: existingProfile.mobile || '',
+        photoURL: user.photoURL || existingProfile.photoURL,
+        joinDate: existingProfile.joinDate || '',
+      };
+
+      await setDoc(userDocRef, { profile: mergedProfilePayload }, { merge: true });
+      updatedProfile = convertFirebaseProfileToUser(mergedProfilePayload, uid);
+    }
+
+    return { user, profile: updatedProfile };
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+    const fallbackProfile: UserProfileData = {
+      uid,
+      name: user.displayName || 'Employee',
+      email: user.email || '',
+      companyName: '',
+      designation: '',
+      pin: '',
+      mobile: '',
+      photoURL: user.photoURL || undefined,
+      joinDate: '',
+    };
+    return { user, profile: fallbackProfile };
   }
 }
 
@@ -90,6 +179,8 @@ export async function saveUserProfile(profile: UserProfileData): Promise<void> {
       pin: profile.pin,
       email: profile.email,
       mobile: profile.mobile,
+      photoURL: profile.photoURL,
+      joinDate: profile.joinDate,
     };
     await setDoc(userDocRef, { profile: profilePayload }, { merge: true });
   } catch (error) {
@@ -221,5 +312,7 @@ export {
   signOut,
   sendPasswordResetEmail,
   onAuthStateChanged,
+  updateProfile,
 };
 export type { User };
+

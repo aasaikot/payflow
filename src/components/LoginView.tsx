@@ -7,13 +7,14 @@ import {
   ShieldCheck,
   AlertCircle,
   Loader2,
-  Sparkles,
   ArrowRight,
   Fingerprint,
   CheckCircle2,
+  Info,
 } from 'lucide-react';
 import { PayFlowLogo } from './PayFlowLogo';
-import { auth, signInWithEmailAndPassword } from '../firebase';
+import { auth, signInWithEmailAndPassword, fetchSignInMethodsForEmail } from '../firebase';
+import { signInWithGoogle } from '../services/firebaseService';
 
 interface LoginViewProps {
   onNavigateToRegister: () => void;
@@ -26,72 +27,130 @@ export const LoginView: React.FC<LoginViewProps> = ({
   onForgotPassword,
   onLoginSuccess,
 }) => {
-  const [email, setEmail] = useState('demo.employee@payflow.com');
-  const [password, setPassword] = useState('PayFlow#2026');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Specific field-level error states
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) {
-      setError('Please enter your email address.');
-      return;
+    setEmailError(null);
+    setPasswordError(null);
+    setGeneralError(null);
+    setInfoMessage(null);
+
+    const cleanEmail = email.trim();
+    let hasValidationError = false;
+
+    if (!cleanEmail) {
+      setEmailError('ইমেইল অ্যাড্রেস প্রদান করুন (Email is required).');
+      hasValidationError = true;
+    } else {
+      // Basic email regex pattern validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cleanEmail)) {
+        setEmailError('সঠিক ফরম্যাটের ইমেইল দিন (Invalid email format).');
+        hasValidationError = true;
+      }
     }
+
     if (!password) {
-      setError('Please enter your password.');
+      setPasswordError('পাসওয়ার্ড প্রদান করুন (Password is required).');
+      hasValidationError = true;
+    }
+
+    if (hasValidationError) {
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
     try {
-      // Attempt Firebase Authentication
-      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      // Strict Firebase Authentication for Registered Users
+      const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
       setIsLoading(false);
-      onLoginSuccess(userCredential.user.email || email, userCredential.user.uid);
+      onLoginSuccess(userCredential.user.email || cleanEmail, userCredential.user.uid);
     } catch (err: any) {
-      // If user does not exist yet (e.g. initial demo login), allow demo entry and report
-      console.warn('Firebase login notice:', err?.message || err);
       setIsLoading(false);
-      if (err?.code === 'auth/invalid-credential' || err?.code === 'auth/user-not-found' || err?.code === 'auth/wrong-password') {
-        // Fallback for demo credentials
-        onLoginSuccess(email, 'demo-user-5556');
+      console.warn('Firebase login error:', err?.code, err?.message);
+
+      const errorCode = err?.code;
+
+      if (errorCode === 'auth/user-not-found') {
+        setEmailError('এই ইমেইলে কোনো রেজিস্টার্ড অ্যাকাউন্ট পাওয়া যায়নি। দয়া করে সঠিক ইমেইল দিন অথবা Register করুন।');
+      } else if (errorCode === 'auth/wrong-password') {
+        setPasswordError('ভুল পাসওয়ার্ড দিয়েছেন। দয়া করে সঠিক পাসওয়ার্ড দিন অথবা Forgot Password করুন।');
+      } else if (errorCode === 'auth/invalid-credential') {
+        // In Firebase v9/v10 with email enumeration protection, 'auth/invalid-credential' is returned
+        // Let's verify whether the email exists via fetchSignInMethodsForEmail
+        try {
+          const methods = await fetchSignInMethodsForEmail(auth, cleanEmail);
+          if (methods.length === 0) {
+            setEmailError('এই ইমেইলে কোনো রেজিস্টার্ড অ্যাকাউন্ট পাওয়া যায়নি (Account not found with this email).');
+          } else {
+            setPasswordError('ভুল পাসওয়ার্ড দিয়েছেন (Incorrect password).');
+          }
+        } catch {
+          // If enumeration is completely blocked or network issue
+          setPasswordError('ইমেইল অথবা পাসওয়ার্ড সঠিক নয়। দয়া করে যাচাই করে আবার চেষ্টা করুন।');
+        }
+      } else if (errorCode === 'auth/invalid-email') {
+        setEmailError('ইমেইল অ্যাড্রেসের ফরম্যাটটি সঠিক নয় (Invalid email address).');
+      } else if (errorCode === 'auth/too-many-requests') {
+        setGeneralError('একাধিকবার ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।');
+      } else if (errorCode === 'auth/network-request-failed') {
+        setGeneralError('ইন্টারনেট সংযোগে সমস্যা হচ্ছে। আপনার নেটওয়ার্ক চেক করুন।');
       } else {
-        // Direct entry with fallback
-        onLoginSuccess(email, 'demo-user-5556');
+        setGeneralError(err?.message || 'লগইন সম্পন্ন করা যায়নি। পুনরায় চেষ্টা করুন।');
       }
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    setError(null);
+    setGeneralError(null);
+    setEmailError(null);
+    setPasswordError(null);
+    setInfoMessage(null);
 
-    setTimeout(() => {
+    try {
+      const { user } = await signInWithGoogle();
       setIsGoogleLoading(false);
-      onLoginSuccess('google.user@payflow.com', 'google-uid-1010');
-    }, 600);
+      onLoginSuccess(user.email || 'google.user@payflow.com', user.uid);
+    } catch (err: any) {
+      setIsGoogleLoading(false);
+      console.warn('Google sign in error:', err?.code, err?.message);
+      if (err?.code === 'auth/popup-closed-by-user') {
+        // User closed popup without signing in
+        return;
+      } else if (err?.code === 'auth/popup-blocked') {
+        setGeneralError('Sign-in popup was blocked by browser. Please allow popups for PayFlow.');
+      } else {
+        setGeneralError(err?.message || 'Google sign-in could not be completed. Please try again.');
+      }
+    }
   };
 
   const handleBiometricAuth = () => {
     setIsBiometricLoading(true);
-    setError(null);
+    setGeneralError(null);
+    setEmailError(null);
+    setPasswordError(null);
+    setInfoMessage(null);
 
     setTimeout(() => {
       setIsBiometricLoading(false);
-      onLoginSuccess(email || 'demo.employee@payflow.com', 'bio-uid-5556');
-    }, 500);
-  };
-
-  const handleQuickDemoFill = () => {
-    setEmail('demo.employee@payflow.com');
-    setPassword('PayFlow#2026');
-    setError(null);
+      setInfoMessage('Fingerprint & Biometric Login will be configured in the next update. Please sign in with Email & Password or Google for now.');
+    }, 600);
   };
 
   return (
@@ -131,14 +190,25 @@ export const LoginView: React.FC<LoginViewProps> = ({
         </div>
       </div>
 
-      {/* Error Message Box */}
-      {error && (
+      {/* General Error Message Box */}
+      {generalError && (
         <div
           id="login-error-banner"
           className="w-full max-w-[420px] mb-4 p-3.5 bg-[#FEF2F2] border border-[#D83B3B]/30 rounded-xl text-[#D83B3B] text-xs font-bold flex items-center gap-2.5 shadow-2xs animate-in fade-in"
         >
           <AlertCircle size={18} className="shrink-0" />
-          <span>{error}</span>
+          <span>{generalError}</span>
+        </div>
+      )}
+
+      {/* Info Message Box */}
+      {infoMessage && (
+        <div
+          id="login-info-banner"
+          className="w-full max-w-[420px] mb-4 p-3.5 bg-[#E9F7F1] border border-[#008F5B]/30 rounded-xl text-[#008F5B] text-xs font-bold flex items-center gap-2.5 shadow-2xs animate-in fade-in"
+        >
+          <Info size={18} className="shrink-0 text-[#008F5B]" />
+          <span>{infoMessage}</span>
         </div>
       )}
 
@@ -150,36 +220,41 @@ export const LoginView: React.FC<LoginViewProps> = ({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Email Field */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="mb-1.5">
               <label
                 htmlFor="login-email-input"
                 className="text-[13px] font-bold text-[#17211D]"
               >
                 Work Email Address
               </label>
-              <button
-                type="button"
-                onClick={handleQuickDemoFill}
-                className="text-[10.5px] font-extrabold text-[#008F5B] hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <Sparkles size={11} />
-                <span>Fill Demo</span>
-              </button>
             </div>
             <div className="relative flex items-center">
-              <div className="absolute left-3.5 w-7 h-7 rounded-lg bg-[#F5FAF7] text-[#6E7974] flex items-center justify-center pointer-events-none">
+              <div className={`absolute left-3.5 w-7 h-7 rounded-lg ${emailError ? 'bg-[#FEF2F2] text-[#D83B3B]' : 'bg-[#F5FAF7] text-[#6E7974]'} flex items-center justify-center pointer-events-none`}>
                 <Mail size={16} />
               </div>
               <input
                 id="login-email-input"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError(null);
+                }}
                 placeholder="e.g. employee@company.com"
-                className="w-full h-[48px] pl-12 pr-4 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                className={`w-full h-[48px] pl-12 pr-4 rounded-xl border ${
+                  emailError
+                    ? 'border-[#D83B3B] bg-[#FFFBFB] focus:border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15 text-[#D83B3B]'
+                    : 'border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 bg-white text-[#17211D]'
+                } outline-none text-[13.5px] font-semibold placeholder-[#9EABA5] transition-all`}
                 required
               />
             </div>
+            {emailError && (
+              <div id="login-email-error-text" className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold text-[#D83B3B] animate-in fade-in">
+                <AlertCircle size={13} className="shrink-0" />
+                <span>{emailError}</span>
+              </div>
+            )}
           </div>
 
           {/* Password Field */}
@@ -201,16 +276,23 @@ export const LoginView: React.FC<LoginViewProps> = ({
               </button>
             </div>
             <div className="relative flex items-center">
-              <div className="absolute left-3.5 w-7 h-7 rounded-lg bg-[#F5FAF7] text-[#6E7974] flex items-center justify-center pointer-events-none">
+              <div className={`absolute left-3.5 w-7 h-7 rounded-lg ${passwordError ? 'bg-[#FEF2F2] text-[#D83B3B]' : 'bg-[#F5FAF7] text-[#6E7974]'} flex items-center justify-center pointer-events-none`}>
                 <Lock size={16} />
               </div>
               <input
                 id="login-password-input"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError) setPasswordError(null);
+                }}
                 placeholder="Enter your security password"
-                className="w-full h-[48px] pl-12 pr-11 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                className={`w-full h-[48px] pl-12 pr-11 rounded-xl border ${
+                  passwordError
+                    ? 'border-[#D83B3B] bg-[#FFFBFB] focus:border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15 text-[#D83B3B]'
+                    : 'border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 bg-white text-[#17211D]'
+                } outline-none text-[13.5px] font-semibold placeholder-[#9EABA5] transition-all`}
                 required
               />
               <button
@@ -223,6 +305,12 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
+            {passwordError && (
+              <div id="login-password-error-text" className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold text-[#D83B3B] animate-in fade-in">
+                <AlertCircle size={13} className="shrink-0" />
+                <span>{passwordError}</span>
+              </div>
+            )}
           </div>
 
           {/* Remember Me Checkbox */}
@@ -362,3 +450,4 @@ export const LoginView: React.FC<LoginViewProps> = ({
     </div>
   );
 };
+
