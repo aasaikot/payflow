@@ -74,32 +74,20 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
 
   const [incomes, setIncomes] = useState<Record<string, number>>(() => {
     if (existing) return { ...existing.incomes };
-    return {
-      'Basic Pay': 23590,
-      'House Rent': 18872,
-      'Medical': 2660,
-      'Conveyance': 1610,
-      'Special': 2359,
-      'Refreshment': 5270,
-      'Utility': 1330,
-      'Dearness': 0,
-    };
+    const initial: Record<string, number> = {};
+    DEFAULT_INCOME_FIELDS.forEach((f) => {
+      initial[f] = 0;
+    });
+    return initial;
   });
 
   const [deductions, setDeductions] = useState<Record<string, number>>(() => {
     if (existing) return { ...existing.deductions };
-    return {
-      'PF': 2359,
-      'PF Loan': 0,
-      'Interest PF': 0,
-      'Canteen': 374,
-      'Picnic': 0,
-      'Advanced': 0,
-      'Welfare': 100,
-      'Welfare Subs': 10,
-      'Stamps': 10,
-      'Tax': 417,
-    };
+    const initial: Record<string, number> = {};
+    DEFAULT_DEDUCTION_FIELDS.forEach((f) => {
+      initial[f] = 0;
+    });
+    return initial;
   });
 
   const [newFieldName, setNewFieldName] = useState('');
@@ -113,28 +101,17 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
       setIncomes({ ...rec.incomes });
       setDeductions({ ...rec.deductions });
     } else {
-      // Provide clean smart defaults
-      setIncomes({
-        'Basic Pay': 50000,
-        'House Rent': 20000,
-        'Medical': 5000,
-        'Conveyance': 3000,
-        'Special': 10000,
-        'Dearness': 15000,
-        'Refreshment': 5000,
-        'Utility': 2500,
+      // In New Entry Mode, start with 0 / blank fields
+      const blankIncomes: Record<string, number> = {};
+      DEFAULT_INCOME_FIELDS.forEach((f) => {
+        blankIncomes[f] = 0;
       });
-      setDeductions({
-        'PF': 6000,
-        'PF Loan': 5000,
-        'Interest PF': 800,
-        'Canteen': 1500,
-        'Picnic': 800,
-        'Advanced': 10000,
-        'Welfare': 500,
-        'Stamps': 244,
-        'Tax': 16400,
+      const blankDeductions: Record<string, number> = {};
+      DEFAULT_DEDUCTION_FIELDS.forEach((f) => {
+        blankDeductions[f] = 0;
       });
+      setIncomes(blankIncomes);
+      setDeductions(blankDeductions);
     }
   };
 
@@ -407,28 +384,8 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
             ))}
           </div>
 
-          {/* Redesigned Add Extra Income Section */}
-          <div className="mt-3.5 pt-3 border-t border-[#F0F4F2] flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-[#6E7974]">Quick Presets:</span>
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                {['Overtime', 'Bonus', 'Arrears'].map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => {
-                      if (!(preset in incomes)) {
-                        setIncomes((prev) => ({ ...prev, [preset]: 0 }));
-                      }
-                    }}
-                    className="px-2.5 py-1 rounded-lg bg-[#E9F7F1] hover:bg-[#D4F2E4] border border-[#008F5B]/20 text-[11px] font-bold text-[#008F5B] transition-all cursor-pointer whitespace-nowrap active:scale-95"
-                  >
-                    +{preset}
-                  </button>
-                ))}
-              </div>
-            </div>
-
+          {/* Add Extra Income Button */}
+          <div className="mt-3.5 pt-3 border-t border-[#F0F4F2]">
             <button
               type="button"
               id="add-extra-income-btn"
@@ -479,28 +436,8 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
             ))}
           </div>
 
-          {/* Redesigned Add Extra Deduction Section */}
-          <div className="mt-3.5 pt-3 border-t border-[#F0F4F2] flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-[#6E7974]">Quick Presets:</span>
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                {['Income Tax', 'Insurance', 'Loan'].map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => {
-                      if (!(preset in deductions)) {
-                        setDeductions((prev) => ({ ...prev, [preset]: 0 }));
-                      }
-                    }}
-                    className="px-2.5 py-1 rounded-lg bg-[#FEF2F2] hover:bg-[#FDE2E2] border border-[#D83B3B]/20 text-[11px] font-bold text-[#D83B3B] transition-all cursor-pointer whitespace-nowrap active:scale-95"
-                  >
-                    +{preset}
-                  </button>
-                ))}
-              </div>
-            </div>
-
+          {/* Add Extra Deduction Button */}
+          <div className="mt-3.5 pt-3 border-t border-[#F0F4F2]">
             <button
               type="button"
               id="add-extra-deduction-btn"

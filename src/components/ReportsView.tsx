@@ -584,14 +584,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] border border-[#E3ECE7] gap-1">
-              <span className="text-[11px] font-black text-[#5C6E66] uppercase tracking-wider">
+            <div className="flex flex-col items-center justify-center text-center py-2 px-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] border border-[#E3ECE7] gap-0.5 shadow-2xs">
+              <span className="text-[10px] font-bold text-[#6E7974] uppercase tracking-wider">
                 ANNUAL AVERAGE NET AMOUNT
               </span>
-              <span className="text-[14px] font-black text-[#008F5B] flex items-baseline gap-1">
-                <span>{formatBDT(avgNet)}</span>
-                <span className="text-[11px] font-bold text-[#6E7974]">Per Month</span>
-              </span>
+              <div className="flex items-center justify-center gap-1">
+                <span className="text-[10px] font-black text-[#008F5B] tracking-tight">
+                  {formatBDT(avgNet)}
+                </span>
+                <span className="text-[10px] font-semibold text-[#6E7974] uppercase tracking-wide">
+                  Per Month
+                </span>
+              </div>
             </div>
           </div>
         )}
@@ -618,14 +622,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] border border-[#E3ECE7] gap-1">
-              <span className="text-[11px] font-black text-[#5C6E66] uppercase tracking-wider">
+            <div className="flex flex-col items-center justify-center text-center py-2 px-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] border border-[#E3ECE7] gap-0.5 shadow-2xs">
+              <span className="text-[10px] font-bold text-[#6E7974] uppercase tracking-wider">
                 HISTORICAL AVERAGE NET AMOUNT
               </span>
-              <span className="text-[14px] font-black text-[#008F5B] flex items-baseline gap-1">
-                <span>{formatBDT(avgNet)}</span>
-                <span className="text-[11px] font-bold text-[#6E7974]">Per Month</span>
-              </span>
+              <div className="flex items-center justify-center gap-1">
+                <span className="text-[10px] font-black text-[#008F5B] tracking-tight">
+                  {formatBDT(avgNet)}
+                </span>
+                <span className="text-[10px] font-semibold text-[#6E7974] uppercase tracking-wide">
+                  Per Month
+                </span>
+              </div>
             </div>
           </div>
         )}
