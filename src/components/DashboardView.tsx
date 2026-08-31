@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  Bell,
   Shield,
   ShieldCheck,
   ShieldAlert,
@@ -24,12 +23,15 @@ import {
   KeyRound,
   BadgeCheck,
   Wallet,
+  Landmark,
+  CircleDollarSign,
   Zap,
   Clock,
   ChevronRight,
 } from 'lucide-react';
 import { MonthSalaryRecord, UserProfileData, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
+import { PayFlowTopBar } from './PayFlowTopBar';
 
 interface DashboardViewProps {
   userProfile: UserProfileData;
@@ -75,11 +77,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setTimeout(() => setDownloadSuccess(false), 3000);
   };
 
-  const maskValue = (formatted: string) => {
-    if (!isAmountMasked) return formatted;
-    return '৳••••••';
-  };
-
   // Recent 3 records for quick preview and trend visualization
   const recentThree = salaryRecords.slice(0, 3);
   const trendItems = [...recentThree].reverse().map((rec) => {
@@ -104,64 +101,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div id="dashboard-view-screen" className="w-full flex flex-col pb-8">
-      {/* Top App Header with Glass Effect */}
-      <div className="w-full flex items-center justify-between px-4 pt-3.5 pb-3 bg-white/95 backdrop-blur-md border-b border-[#E4ECE8]/80 sticky top-0 z-20 shadow-2xs">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8.5 h-8.5 rounded-[12px] bg-gradient-to-tr from-[#006B44] via-[#008F5B] to-[#00B873] text-white flex items-center justify-center font-extrabold text-sm shadow-sm shadow-[#008F5B]/30">
-            P
-          </div>
-          <div className="flex flex-col leading-tight">
-            <div className="flex items-center gap-0.5">
-              <span className="font-extrabold text-[17px] text-[#17211D] tracking-tight">Pay</span>
-              <span className="font-extrabold text-[17px] text-[#008F5B] tracking-tight">Flow</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#008F5B] ml-1 animate-pulse" />
-            </div>
-            <span className="text-[10px] text-[#6E7974] font-medium -mt-0.5">
-              Smart Payroll
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          {/* Amount Privacy Toggle */}
-          <button
-            type="button"
-            id="toggle-mask-amount-btn"
-            onClick={() => setIsAmountMasked(!isAmountMasked)}
-            className="w-9 h-9 rounded-full bg-[#F5FAF7] border border-[#E4ECE8] flex items-center justify-center text-[#6E7974] hover:text-[#008F5B] hover:bg-[#E9F7F1] transition-all cursor-pointer shadow-2xs"
-            title={isAmountMasked ? 'Show amounts' : 'Hide amounts'}
-          >
-            {isAmountMasked ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
-
-          {/* Notification Bell with Ping Dot */}
-          <button
-            type="button"
-            id="notifications-bell-btn"
-            className="w-9 h-9 rounded-full bg-[#F5FAF7] border border-[#E4ECE8] flex items-center justify-center text-[#17211D] relative hover:bg-[#E9F7F1] transition-all cursor-pointer shadow-2xs"
-            aria-label="Notifications"
-          >
-            <Bell size={17} />
-            <span className="w-2 h-2 bg-[#008F5B] rounded-full absolute top-2 right-2 ring-2 ring-white" />
-          </button>
-
-          {/* User Profile Avatar with Emerald Glow Ring */}
-          <button
-            type="button"
-            id="profile-avatar-btn"
-            onClick={() => onNavigate('profile')}
-            className="w-9 h-9 rounded-full ring-2 ring-[#008F5B] ring-offset-1 ring-offset-white overflow-hidden hover:scale-105 transition-all cursor-pointer shadow-xs"
-            aria-label="Go to Profile"
-          >
-            <img
-              src={userProfile.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-              alt={userProfile.name}
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </button>
-        </div>
-      </div>
+      {/* Reusable Mobile PayFlow Top Navigation Bar */}
+      <PayFlowTopBar
+        onMenuPressed={() => {
+          // Placeholder callback for 3-dot menu
+          console.log('Top navigation 3-dot menu tapped');
+        }}
+      />
 
       <div className="px-4 pt-4 flex flex-col gap-4">
         {/* Hero Card matching user reference design exactly */}
@@ -342,7 +288,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex flex-col">
                 <span className="text-[10px] text-[#6E7974] font-medium">Net Amount</span>
                 <strong className="text-[12px] font-bold text-[#008F5B]">
-                  {maskValue(formatBDT(net))} ({incomePercentage}%)
+                  {formatBDT(net)} ({incomePercentage}%)
                 </strong>
               </div>
             </div>
@@ -351,7 +297,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex flex-col items-end">
                 <span className="text-[10px] text-[#6E7974] font-medium">Total Deductions</span>
                 <strong className="text-[12px] font-bold text-[#D83B3B]">
-                  {maskValue(formatBDT(deduction))} ({deductionPercentage}%)
+                  {formatBDT(deduction)} ({deductionPercentage}%)
                 </strong>
               </div>
               <span className="w-2.5 h-2.5 rounded-full bg-[#D83B3B] shrink-0" />
@@ -382,7 +328,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="mt-2 relative z-10">
               <strong className="block text-[12.5px] sm:text-[13.5px] font-black text-[#17211D] tracking-tight truncate">
-                {maskValue(formatBDT(gross))}
+                {formatBDT(gross)}
               </strong>
               <span className="text-[9.5px] text-[#008F5B] font-bold block mt-0.5">
                 Total Earnings
@@ -408,7 +354,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="mt-2 relative z-10">
               <strong className="block text-[12.5px] sm:text-[13.5px] font-black text-[#D83B3B] tracking-tight truncate">
-                {maskValue(formatBDT(deduction))}
+                {formatBDT(deduction)}
               </strong>
               <span className="text-[9.5px] text-[#D83B3B]/80 font-bold block mt-0.5">
                 Tax, PF & Cuts
@@ -434,7 +380,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="mt-2 relative z-10">
               <strong className="block text-[12.5px] sm:text-[13.5px] font-black text-[#008F5B] tracking-tight truncate">
-                {maskValue(formatBDT(net))}
+                {formatBDT(net)}
               </strong>
               <span className="text-[9.5px] text-[#008F5B] font-extrabold block mt-0.5">
                 Net Payable
@@ -475,7 +421,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-[11.5px] font-semibold text-[#17211D] truncate">Income</span>
                 </div>
                 <strong className="text-[12.5px] font-extrabold text-[#17211D] whitespace-nowrap shrink-0">
-                  {maskValue(formatBDT(gross))}
+                  {formatBDT(gross)}
                 </strong>
               </div>
 
@@ -486,7 +432,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-[11.5px] font-semibold text-[#17211D] truncate">Deduction</span>
                 </div>
                 <strong className="text-[12.5px] font-extrabold text-[#D83B3B] whitespace-nowrap shrink-0">
-                  {maskValue(formatBDT(deduction))}
+                  {formatBDT(deduction)}
                 </strong>
               </div>
             </div>
@@ -548,7 +494,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             {trendItems.map((item) => {
-              const monthName = item.monthLabel.split(' ')[0].toUpperCase();
+              const fullMonthName = item.monthLabel.toUpperCase();
               const isSelected = item.month === activeMonth;
 
               return (
@@ -557,7 +503,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   type="button"
                   onClick={() => {
                     onSelectMonth(item.month);
-                    onNavigate('details');
+                    onNavigate('comparison');
                   }}
                   className={`p-2 sm:p-2.5 rounded-lg text-center transition-all duration-200 cursor-pointer flex flex-col justify-between ${
                     isSelected
@@ -566,21 +512,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   }`}
                 >
                   <span
-                    className={`text-[8.5px] sm:text-[9px] font-extrabold uppercase tracking-wider block truncate ${
+                    className={`text-[8px] sm:text-[8.5px] font-extrabold uppercase tracking-wider block truncate ${
                       isSelected ? 'text-[#008F5B]' : 'text-[#6E7974]'
                     }`}
                   >
-                    {monthName}
+                    {fullMonthName}
                   </span>
                   <strong
                     className={`text-[11px] sm:text-[12px] font-black block mt-0.5 whitespace-nowrap tracking-tight ${
                       isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
                     }`}
                   >
-                    {maskValue(formatBDT(item.net))}
+                    {formatBDT(item.net)}
                   </strong>
                   <span
-                    className={`text-[8.5px] sm:text-[9px] font-bold block mt-0.5 truncate ${
+                    className={`text-[8px] sm:text-[8.5px] font-bold block mt-0.5 truncate ${
                       item.isPositive ? 'text-[#008F5B]' : 'text-[#D83B3B]'
                     }`}
                   >
@@ -610,7 +556,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Last 3 Salary History (3-Column Layout Matching Salary Growth & Trend) */}
+        {/* Last 3 Salary History (Redesigned with Watermark & Full Month Year) */}
         <div
           id="last-three-history-card"
           className="w-full bg-white rounded-xl p-4 sm:p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
@@ -635,17 +581,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             {recentThree.map((rec, idx) => {
               const isSelected = rec.month === activeMonth;
-              const originalIdx = salaryRecords.findIndex((r) => r.month === rec.month);
-              const prevRec = originalIdx < salaryRecords.length - 1 ? salaryRecords[originalIdx + 1] : null;
-              let growthText = 'Baseline';
-              let isPositive = true;
-              if (prevRec && prevRec.net > 0) {
-                const diff = rec.net - prevRec.net;
-                const pct = ((diff / prevRec.net) * 100).toFixed(1);
-                const prevMonthShort = prevRec.monthLabel.split(' ')[0].slice(0, 3);
-                isPositive = Number(pct) >= 0;
-                growthText = `${isPositive ? '+' : ''}${pct}% vs ${prevMonthShort}`;
-              }
+              const fullMonthName = rec.monthLabel.toUpperCase();
+
+              // 3 distinct premium fintech themes for the 3 cards
+              const cardThemes = [
+                {
+                  Icon: Landmark,
+                  watermark: 'text-[#008F5B]/25',
+                  badge: 'text-[#008F5B] bg-[#008F5B]/10 border-[#008F5B]/20',
+                },
+                {
+                  Icon: Wallet,
+                  watermark: 'text-[#0284C7]/25',
+                  badge: 'text-[#0284C7] bg-[#0284C7]/10 border-[#0284C7]/20',
+                },
+                {
+                  Icon: ShieldCheck,
+                  watermark: 'text-[#8B5CF6]/25',
+                  badge: 'text-[#8B5CF6] bg-[#8B5CF6]/10 border-[#8B5CF6]/20',
+                },
+              ];
+              const currentTheme = cardThemes[idx % 3];
+              const WatermarkIcon = currentTheme.Icon;
 
               return (
                 <button
@@ -655,54 +612,49 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     onSelectMonth(rec.month);
                     onNavigate('details');
                   }}
-                  className={`p-2 sm:p-2.5 rounded-lg text-center transition-all duration-200 cursor-pointer flex flex-col justify-between ${
+                  className={`relative overflow-hidden p-2 sm:p-2.5 rounded-lg text-center transition-all duration-200 cursor-pointer flex flex-col justify-between group ${
                     isSelected
-                      ? 'bg-gradient-to-b from-[#E9F7F1] to-[#DCF5E9] border border-[#008F5B]/40 shadow-xs shadow-[#008F5B]/10 hover:shadow-md'
+                      ? 'bg-gradient-to-b from-[#E9F7F1] to-[#DCF5E9] border border-[#008F5B]/50 shadow-xs shadow-[#008F5B]/15 hover:shadow-md'
                       : 'bg-[#F5FAF7] border border-[#E4ECE8] hover:border-[#008F5B]/30 hover:bg-[#EBF5F0]'
                   }`}
                 >
+                  {/* Premium Fintech Watermark Icon (Top-Right, inset from corner) */}
+                  <WatermarkIcon
+                    size={28}
+                    strokeWidth={1.75}
+                    className={`absolute top-2 right-2.5 pointer-events-none transition-all duration-300 group-hover:scale-115 group-hover:rotate-6 ${currentTheme.watermark}`}
+                  />
+
+                  {/* Month Label */}
                   <span
-                    className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-wider block truncate ${
+                    className={`text-[8px] sm:text-[8.5px] font-extrabold uppercase tracking-wider block truncate relative z-10 ${
                       isSelected ? 'text-[#008F5B]' : 'text-[#6E7974]'
                     }`}
                   >
-                    {rec.monthLabel.split(' ')[0].toUpperCase()}
+                    {fullMonthName}
                   </span>
 
+                  {/* Net Amount */}
                   <strong
-                    className={`text-[11px] sm:text-[12px] font-black block mt-0.5 whitespace-nowrap tracking-tight ${
+                    className={`text-[11px] sm:text-[12px] font-black block mt-1 whitespace-nowrap tracking-tight relative z-10 ${
                       isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
                     }`}
                   >
-                    {maskValue(formatBDT(rec.net))}
+                    {formatBDT(rec.net)}
                   </strong>
 
-                  <span
-                    className={`text-[8.5px] sm:text-[9px] font-bold block mt-0.5 truncate ${
-                      isPositive ? 'text-[#008F5B]' : 'text-[#D83B3B]'
-                    }`}
-                  >
-                    {growthText}
-                  </span>
-
-                  {/* Micro Visual Chart Effect */}
-                  <div className="h-3.5 flex items-center justify-center mt-1">
-                    <svg
-                      className={`w-full h-3 ${isPositive ? 'text-[#008F5B]' : 'text-[#D83B3B]'}`}
-                      viewBox="0 0 50 15"
+                  {/* Disbursed Status Pill with Check Icon */}
+                  <div className="mt-1.5 flex items-center justify-center relative z-10">
+                    <span
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[7.5px] sm:text-[8px] font-extrabold tracking-wide uppercase transition-colors ${
+                        isSelected
+                          ? 'bg-[#008F5B]/15 text-[#008F5B] border border-[#008F5B]/25'
+                          : 'bg-white/80 text-[#008F5B] border border-[#008F5B]/15 shadow-2xs'
+                      }`}
                     >
-                      <path
-                        d={
-                          isPositive
-                            ? 'M 0,14 L 16,9 L 34,7 L 48,1'
-                            : 'M 0,2 L 16,7 L 34,9 L 48,14'
-                        }
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={isSelected ? '2.5' : '2'}
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                      <CheckCircle2 size={8} className="text-[#008F5B] shrink-0 stroke-[2.5]" />
+                      <span>PAID</span>
+                    </span>
                   </div>
                 </button>
               );

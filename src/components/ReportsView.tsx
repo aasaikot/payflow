@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ChevronDown,
   ChevronLeft,
@@ -17,6 +17,8 @@ import {
   Wallet,
   Receipt,
   CheckCircle2,
+  ArrowUpDown,
+  ArrowRight,
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
@@ -117,6 +119,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   salaryRecords,
   activeMonth,
   onSelectMonth,
+  onNavigate,
 }) => {
   const [filterMode, setFilterMode] = useState<'monthly' | 'yearly' | 'aggregate'>('monthly');
   const [selectedYear, setSelectedYear] = useState<number>(() => {
@@ -134,6 +137,29 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   const parsedActiveMonth = parseInt(activeMonthStr, 10) || 8;
 
   const activeRecord = resolveSalaryRecord(salaryRecords, activeMonth);
+
+  // Find previous month record for direct Month Comparison
+  const sortedAllRecords = useMemo(() => {
+    return [...salaryRecords].sort((a, b) => b.month.localeCompare(a.month));
+  }, [salaryRecords]);
+
+  const previousRecord = useMemo(() => {
+    const currentIdx = sortedAllRecords.findIndex((r) => r.month === activeRecord.month);
+    if (currentIdx !== -1 && currentIdx < sortedAllRecords.length - 1) {
+      return sortedAllRecords[currentIdx + 1];
+    }
+    return sortedAllRecords.find((r) => r.month !== activeRecord.month) || null;
+  }, [sortedAllRecords, activeRecord.month]);
+
+  // Direct comparison metrics
+  const netDiff = previousRecord ? activeRecord.net - previousRecord.net : 0;
+  const netDiffPct =
+    previousRecord && previousRecord.net > 0
+      ? Number(((netDiff / previousRecord.net) * 100).toFixed(1))
+      : 0;
+
+  const grossDiff = previousRecord ? activeRecord.gross - previousRecord.gross : 0;
+  const dedDiff = previousRecord ? activeRecord.deduction - previousRecord.deduction : 0;
 
   // Records for selected fiscal year
   const yearRecords = salaryRecords.filter((r) => r.month.startsWith(`${selectedYear}-`));
@@ -960,6 +986,131 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               })}
             </div>
           </div>
+        </div>
+
+        {/* 3. Month Comparison Section */}
+        <div
+          id="reports-month-comparison-card"
+          className="w-full bg-white rounded-2xl p-4 sm:p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] flex flex-col gap-3.5"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between pb-2 border-b border-[#E4ECE8]">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-[#E9F7F1] text-[#008F5B] flex items-center justify-center">
+                <ArrowUpDown size={16} />
+              </div>
+              <div>
+                <h2 className="text-[13.5px] font-black text-[#17211D] leading-tight">
+                  Month Comparison
+                </h2>
+                <span className="text-[10px] text-[#6E7974] font-medium block">
+                  {previousRecord
+                    ? `${activeRecord.monthLabel.split(' ')[0]} vs ${previousRecord.monthLabel.split(' ')[0]}`
+                    : 'Latest trend analysis'}
+                </span>
+              </div>
+            </div>
+
+            {previousRecord && (
+              <div
+                className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-black ${
+                  netDiff >= 0
+                    ? 'bg-[#E9F7F1] text-[#008F5B] border border-[#008F5B]/30'
+                    : 'bg-[#FDF2F2] text-[#D83B3B] border border-[#D83B3B]/30'
+                }`}
+              >
+                {netDiff >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                <span>
+                  {netDiff >= 0 ? '+' : ''}
+                  {netDiffPct}% Net
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 3 Micro Comparison Stats */}
+          {previousRecord ? (
+            <div className="grid grid-cols-3 gap-2">
+              {/* Net Stat */}
+              <div className="p-2.5 rounded-xl bg-[#F5FAF7] border border-[#008F5B]/20 flex flex-col">
+                <span className="text-[8.5px] font-bold text-[#6E7974] uppercase">Net Shift</span>
+                <strong
+                  className={`text-[11.5px] font-black mt-0.5 ${
+                    netDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                  }`}
+                >
+                  {netDiff >= 0 ? '+' : ''}
+                  {formatBDT(netDiff)}
+                </strong>
+                <span className="text-[8.5px] text-[#6E7974] mt-0.5">
+                  vs {formatBDT(previousRecord.net)}
+                </span>
+              </div>
+
+              {/* Gross Stat */}
+              <div className="p-2.5 rounded-xl bg-[#F5FAF7] border border-[#008F5B]/20 flex flex-col">
+                <span className="text-[8.5px] font-bold text-[#6E7974] uppercase">Gross Shift</span>
+                <strong
+                  className={`text-[11.5px] font-black mt-0.5 ${
+                    grossDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                  }`}
+                >
+                  {grossDiff >= 0 ? '+' : ''}
+                  {formatBDT(grossDiff)}
+                </strong>
+                <span className="text-[8.5px] text-[#6E7974] mt-0.5">
+                  vs {formatBDT(previousRecord.gross)}
+                </span>
+              </div>
+
+              {/* Deduction Stat */}
+              <div className="p-2.5 rounded-xl bg-[#FDFBFB] border border-[#D83B3B]/20 flex flex-col">
+                <span className="text-[8.5px] font-bold text-[#6E7974] uppercase">Deduct Shift</span>
+                <strong
+                  className={`text-[11.5px] font-black mt-0.5 ${
+                    dedDiff <= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                  }`}
+                >
+                  {dedDiff >= 0 ? '+' : ''}
+                  {formatBDT(dedDiff)}
+                </strong>
+                <span className="text-[8.5px] text-[#6E7974] mt-0.5">
+                  vs {formatBDT(previousRecord.deduction)}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-[11px] text-[#6E7974] text-center py-2">
+              No previous month records found for direct comparison.
+            </div>
+          )}
+
+          {/* Action Link to Full Comparison View */}
+          <button
+            type="button"
+            id="reports-open-full-comparison-btn"
+            onClick={() => onNavigate('comparison')}
+            className="w-full mt-1 p-3 rounded-xl bg-gradient-to-r from-[#008F5B] to-[#00A86B] hover:from-[#007A4D] hover:to-[#008F5B] text-white flex items-center justify-between shadow-[0_4px_16px_rgba(0,143,91,0.2)] hover:shadow-[0_6px_20px_rgba(0,143,91,0.3)] transition-all cursor-pointer active:scale-[0.99] group"
+          >
+            <div className="flex items-center gap-2.5 text-left">
+              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                <Layers size={16} className="text-white" />
+              </div>
+              <div>
+                <strong className="block text-[12.5px] font-black text-white leading-tight">
+                  Full Salary Comparison
+                </strong>
+                <span className="text-[10px] text-white/80 block leading-tight">
+                  Item-by-item breakdown & swap months
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 text-[11px] font-black text-white bg-white/15 px-2.5 py-1.5 rounded-lg group-hover:bg-white/25 transition-all">
+              <span>Compare</span>
+              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </button>
         </div>
       </div>
     </div>

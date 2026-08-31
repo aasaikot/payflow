@@ -10,6 +10,180 @@ interface FlutterFile {
 
 const FLUTTER_FILES: FlutterFile[] = [
   {
+    name: 'payflow_top_bar.dart',
+    path: 'lib/widgets/payflow_top_bar.dart',
+    category: 'Widgets (Navigation)',
+    code: `import 'package:flutter/material.dart';
+
+/// PayFlowTopBar
+///
+/// Clean, modern, premium minimalist full-width mobile top navigation bar widget.
+/// - Full-width, rectangular (no radius) fixed top bar
+/// - Subtle bottom border & soft shadow
+/// - Left: Rounded-square logo badge with teal/cyan gradient, stylized 'P', and 'PayFlow' title (Pay: Navy, Flow: Teal)
+/// - Right: Subtle pale mint circular button with teal vertical three-dot menu icon
+/// - Zero unnecessary avatars, notifications, or badges
+/// - Safe-area friendly, responsive, customizable callbacks and dimensions
+class PayFlowTopBar extends StatelessWidget implements PreferredSizeWidget {
+  final VoidCallback? onMenuPressed;
+  final double height;
+  final EdgeInsetsGeometry padding;
+  final Color backgroundColor;
+  final Color navyTextColor;
+  final Color tealColor;
+  final Color menuButtonBgColor;
+
+  const PayFlowTopBar({
+    super.key,
+    this.onMenuPressed,
+    this.height = 64.0,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
+    this.backgroundColor = Colors.white,
+    this.navyTextColor = const Color(0xFF0F172A),
+    this.tealColor = const Color(0xFF008F5B),
+    this.menuButtonBgColor = const Color(0xFFE9F7F1),
+  });
+
+  @override
+  Size get preferredSize => Size.fromHeight(height);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: const Border(
+          bottom: BorderSide(
+            color: Color(0xFFF1F5F9),
+            width: 1.0,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withOpacity(0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          height: height,
+          padding: padding,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 1. Left Side: PayFlow Logo & Text
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Gradient Logo Badge with Stylized "P"
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF00A86B),
+                          Color(0xFF008F5B),
+                          Color(0xFF007A4D),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: tealColor.withOpacity(0.20),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      'P',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+
+                  // "PayFlow" Brand Typography
+                  RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                        fontFamily: 'Inter',
+                      ),
+                      children: [
+                        TextSpan(
+                          text: 'Pay',
+                          style: TextStyle(
+                            color: navyTextColor,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Flow',
+                          style: TextStyle(
+                            color: tealColor,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // 2. Right Side: Circular Menu Button with Vertical Three-Dots
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onMenuPressed ?? () {},
+                  borderRadius: BorderRadius.circular(20),
+                  splashColor: tealColor.withOpacity(0.12),
+                  highlightColor: tealColor.withOpacity(0.06),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: menuButtonBgColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: tealColor.withOpacity(0.10),
+                        width: 1.0,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.more_vert_rounded,
+                      color: tealColor,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+`,
+  },
+  {
     name: 'dashboard_screen.dart',
     path: 'lib/screens/dashboard/dashboard_screen.dart',
     category: 'Screens (Dashboard)',
@@ -17,6 +191,7 @@ const FLUTTER_FILES: FlutterFile[] = [
 import '../../core/constants/payflow_colors.dart';
 import '../../models/salary_record.dart';
 import '../../models/user_profile.dart';
+import '../../widgets/payflow_top_bar.dart';
 import '../../widgets/bottom_nav_dock.dart';
 import '../../services/salary_service.dart';
 
@@ -49,58 +224,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PayFlowColors.pageBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: PayFlowColors.primaryGreen,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              alignment: Alignment.center,
-              child: const Text('P', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-            ),
-            const SizedBox(width: 8),
-            RichText(
-              text: const TextSpan(
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                children: [
-                  TextSpan(text: 'Pay', style: TextStyle(color: PayFlowColors.darkText)),
-                  TextSpan(text: 'Flow', style: TextStyle(color: PayFlowColors.primaryGreen)),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Badge(
-              backgroundColor: PayFlowColors.primaryGreen,
-              smallSize: 8,
-              child: Icon(Icons.notifications_outlined, color: PayFlowColors.darkText),
-            ),
-            onPressed: () {},
-          ),
-          GestureDetector(
-            onTap: widget.onOpenProfile,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: PayFlowColors.primaryGreen,
-                child: const CircleAvatar(
-                  radius: 16,
-                  backgroundImage: NetworkImage('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'),
-                ),
-              ),
-            ),
-          ),
-        ],
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: PayFlowTopBar(
+        onMenuPressed: () {
+          // Placeholder callback for menu options
+        },
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

@@ -58,22 +58,69 @@ const DEFAULT_DEDUCTION_FIELDS = [
   'Tax',
 ];
 
+// Helper to find the next available unrecorded month
+export const getNextNewMonth = (existingRecords: MonthSalaryRecord[]): string => {
+  if (!existingRecords || existingRecords.length === 0) {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    return `${y}-${m}`;
+  }
+
+  // Sort existing months descending to find the latest
+  const sortedMonths = [...existingRecords]
+    .map((r) => r.month)
+    .sort((a, b) => b.localeCompare(a));
+
+  const latestMonthStr = sortedMonths[0]; // e.g. "2026-08"
+  const [yearStr, monthStr] = latestMonthStr.split('-');
+  let year = parseInt(yearStr, 10) || 2026;
+  let month = parseInt(monthStr, 10) || 8;
+
+  // Advance by 1 month
+  month += 1;
+  if (month > 12) {
+    month = 1;
+    year += 1;
+  }
+
+  let candidate = `${year}-${String(month).padStart(2, '0')}`;
+  let safety = 0;
+  while (existingRecords.some((r) => r.month === candidate) && safety < 48) {
+    const [cy, cm] = candidate.split('-');
+    let y = parseInt(cy, 10);
+    let m = parseInt(cm, 10) + 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+    candidate = `${y}-${String(m).padStart(2, '0')}`;
+    safety++;
+  }
+
+  return candidate;
+};
+
 export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
-  initialMonth = '2026-08',
+  initialMonth,
   existingRecords,
   onSaveRecord,
   onNavigate,
 }) => {
-  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+  // If initialMonth is explicitly passed (e.g. from Edit flow), use it;
+  // Otherwise, automatically select the next unrecorded new month!
+  const defaultMonth = initialMonth || getNextNewMonth(existingRecords);
+
+  const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
   const [selectedYear, setSelectedYear] = useState(() => {
-    return initialMonth.split('-')[0] || '2026';
+    return defaultMonth.split('-')[0] || '2026';
   });
 
-  // Load existing data if available
+  // Check if current selected month already has an existing record
   const existing = existingRecords.find((r) => r.month === selectedMonth);
 
   const [incomes, setIncomes] = useState<Record<string, number>>(() => {
-    if (existing) return { ...existing.incomes };
+    if (initialMonth && existing) return { ...existing.incomes };
     const initial: Record<string, number> = {};
     DEFAULT_INCOME_FIELDS.forEach((f) => {
       initial[f] = 0;
@@ -82,7 +129,7 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
   });
 
   const [deductions, setDeductions] = useState<Record<string, number>>(() => {
-    if (existing) return { ...existing.deductions };
+    if (initialMonth && existing) return { ...existing.deductions };
     const initial: Record<string, number> = {};
     DEFAULT_DEDUCTION_FIELDS.forEach((f) => {
       initial[f] = 0;
@@ -93,6 +140,14 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
   const [newFieldName, setNewFieldName] = useState('');
   const [newFieldType, setNewFieldType] = useState<'income' | 'deduction' | null>(null);
 
+  // Default percentage states for smart auto-calculation
+  const [houseRentPct, setHouseRentPct] = useState<number>(80);
+  const [specialPct, setSpecialPct] = useState<number>(10);
+  const [pfPct, setPfPct] = useState<number>(10);
+
+  // String buffers for inputs to allow typing '50%', '40%', or raw numbers freely
+  const [inputBuffers, setInputBuffers] = useState<Record<string, string>>({});
+
   // Handle month switch
   const handleSelectMonth = (monthStr: string) => {
     setSelectedMonth(monthStr);
@@ -100,6 +155,18 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
     if (rec) {
       setIncomes({ ...rec.incomes });
       setDeductions({ ...rec.deductions });
+      setInputBuffers({});
+      if (rec.incomes['Basic Pay'] && rec.incomes['Basic Pay'] > 0) {
+        if (rec.incomes['House Rent']) {
+          setHouseRentPct(Math.round((rec.incomes['House Rent'] / rec.incomes['Basic Pay']) * 100));
+        }
+        if (rec.incomes['Special']) {
+          setSpecialPct(Math.round((rec.incomes['Special'] / rec.incomes['Basic Pay']) * 100));
+        }
+        if (rec.deductions['PF']) {
+          setPfPct(Math.round((rec.deductions['PF'] / rec.incomes['Basic Pay']) * 100));
+        }
+      }
     } else {
       // In New Entry Mode, start with 0 / blank fields
       const blankIncomes: Record<string, number> = {};
@@ -112,6 +179,10 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
       });
       setIncomes(blankIncomes);
       setDeductions(blankDeductions);
+      setInputBuffers({});
+      setHouseRentPct(80);
+      setSpecialPct(10);
+      setPfPct(10);
     }
   };
 
@@ -122,26 +193,126 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
     handleSelectMonth(`${nextYear}-${currentMonthNum}`);
   };
 
-  // Automatic calculation rule based on v85.php
+  // Helper to calculate and apply percentage on field
+  const applyPercentageToField = (
+    field: 'House Rent' | 'Special' | 'PF',
+    percentage: number,
+    baseBasic?: number
+  ) => {
+    const currentBasic = baseBasic !== undefined ? baseBasic : (incomes['Basic Pay'] || 0);
+    const calculatedAmount = Math.round(currentBasic * (percentage / 100));
+
+    if (field === 'House Rent') {
+      setHouseRentPct(percentage);
+      setIncomes((prev) => ({ ...prev, 'House Rent': calculatedAmount }));
+      setInputBuffers((prev) => ({ ...prev, 'House Rent': String(calculatedAmount || '') }));
+    } else if (field === 'Special') {
+      setSpecialPct(percentage);
+      setIncomes((prev) => ({ ...prev, 'Special': calculatedAmount }));
+      setInputBuffers((prev) => ({ ...prev, 'Special': String(calculatedAmount || '') }));
+    } else if (field === 'PF') {
+      setPfPct(percentage);
+      setDeductions((prev) => ({ ...prev, 'PF': calculatedAmount }));
+      setInputBuffers((prev) => ({ ...prev, 'PF': String(calculatedAmount || '') }));
+    }
+  };
+
+  // Automatic calculation rule: Basic Pay triggers House Rent (80%), Special (10%), PF (10%)
   const handleIncomeChange = (field: string, rawVal: string) => {
+    // Keep raw string buffer for smooth typing (including %)
+    setInputBuffers((prev) => ({ ...prev, [field]: rawVal }));
+
+    const basicVal = field === 'Basic Pay' ? (parseFloat(rawVal) || 0) : (incomes['Basic Pay'] || 0);
+
+    // If typing percentage in House Rent or Special (e.g., "50%" or "40%")
+    if (rawVal.includes('%')) {
+      const parsedPct = parseFloat(rawVal.replace('%', ''));
+      if (!isNaN(parsedPct)) {
+        if (field === 'House Rent') {
+          applyPercentageToField('House Rent', parsedPct, basicVal);
+          return;
+        } else if (field === 'Special') {
+          applyPercentageToField('Special', parsedPct, basicVal);
+          return;
+        }
+      }
+    }
+
     const numVal = parseFloat(rawVal) || 0;
     const nextIncomes = { ...incomes, [field]: numVal };
 
     if (field === 'Basic Pay') {
-      nextIncomes['House Rent'] = Math.round(numVal * 0.4);
-      nextIncomes['Special'] = Math.round(numVal * 0.2);
+      // Default: House Rent = 80%, Special = 10%, PF = 10%
+      const hrAmt = Math.round(numVal * (houseRentPct / 100));
+      const spAmt = Math.round(numVal * (specialPct / 100));
+      const pfAmt = Math.round(numVal * (pfPct / 100));
+
+      nextIncomes['House Rent'] = hrAmt;
+      nextIncomes['Special'] = spAmt;
+
+      setInputBuffers((prev) => ({
+        ...prev,
+        'Basic Pay': rawVal,
+        'House Rent': hrAmt > 0 ? String(hrAmt) : '',
+        'Special': spAmt > 0 ? String(spAmt) : '',
+        'PF': pfAmt > 0 ? String(pfAmt) : '',
+      }));
+
       setDeductions((prev) => ({
         ...prev,
-        'PF': Math.round(numVal * 0.1),
+        'PF': pfAmt,
       }));
+    } else if (field === 'House Rent' && basicVal > 0) {
+      // Calculate effective percentage from manual entry
+      const derivedPct = Number(((numVal / basicVal) * 100).toFixed(1));
+      setHouseRentPct(derivedPct);
+    } else if (field === 'Special' && basicVal > 0) {
+      const derivedPct = Number(((numVal / basicVal) * 100).toFixed(1));
+      setSpecialPct(derivedPct);
     }
 
     setIncomes(nextIncomes);
   };
 
   const handleDeductionChange = (field: string, rawVal: string) => {
+    setInputBuffers((prev) => ({ ...prev, [field]: rawVal }));
+
+    const basicVal = incomes['Basic Pay'] || 0;
+
+    // If typing percentage in PF (e.g., "10%" or "8.33%")
+    if (field === 'PF' && rawVal.includes('%')) {
+      const parsedPct = parseFloat(rawVal.replace('%', ''));
+      if (!isNaN(parsedPct)) {
+        applyPercentageToField('PF', parsedPct, basicVal);
+        return;
+      }
+    }
+
     const numVal = parseFloat(rawVal) || 0;
+    if (field === 'PF' && basicVal > 0) {
+      const derivedPct = Number(((numVal / basicVal) * 100).toFixed(1));
+      setPfPct(derivedPct);
+    }
+
     setDeductions({ ...deductions, [field]: numVal });
+  };
+
+  // Helper when input loses focus: clean up display value if percentage was typed
+  const handleInputBlur = (field: string, isIncomeField: boolean) => {
+    const rawVal = inputBuffers[field];
+    if (rawVal && rawVal.includes('%')) {
+      const parsedPct = parseFloat(rawVal.replace('%', ''));
+      const basicVal = incomes['Basic Pay'] || 0;
+      if (!isNaN(parsedPct) && basicVal > 0) {
+        const calculatedAmt = Math.round(basicVal * (parsedPct / 100));
+        if (isIncomeField) {
+          setIncomes((prev) => ({ ...prev, [field]: calculatedAmt }));
+        } else {
+          setDeductions((prev) => ({ ...prev, [field]: calculatedAmt }));
+        }
+        setInputBuffers((prev) => ({ ...prev, [field]: String(calculatedAmt) }));
+      }
+    }
   };
 
   const handleAddExtraField = () => {
@@ -218,10 +389,10 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
           </button>
           <div className="flex flex-col">
             <h1 className="text-[17px] font-black text-[#17211D] tracking-tight">
-              Add Salary Slip
+              {existing ? 'Update Salary Slip' : 'Add Salary Slip (New Entry)'}
             </h1>
             <span className="text-[10px] text-[#6E7974] font-medium -mt-0.5">
-              Select 12-Month Calendar & Enter Figures
+              {existing ? 'Modify existing month records' : 'Enter figures for new month'}
             </span>
           </div>
         </div>
@@ -328,21 +499,18 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
           {/* Active Month Status Banner */}
           <div className="mt-3 pt-2.5 border-t border-[#F0F4F2] flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-[#6E7974]">Editing:</span>
+              <span className="text-[11px] text-[#6E7974]">
+                {existing ? 'Editing:' : 'Selected Month:'}
+              </span>
               <strong className="text-[12px] font-extrabold text-[#008F5B]">
                 {selectedMonthObj?.full} {selectedYear}
               </strong>
             </div>
 
-            {existing ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#008F5B] bg-[#E9F7F1] px-2 py-0.5 rounded-full">
+            {existing && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#008F5B] bg-[#E9F7F1] px-2.5 py-0.5 rounded-full border border-[#008F5B]/20">
                 <CheckCircle2 size={11} />
                 Existing Record Loaded
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#D97706] bg-[#FEF3C7] px-2 py-0.5 rounded-full">
-                <Plus size={11} />
-                New Entry Mode
               </span>
             )}
           </div>
@@ -362,26 +530,74 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
             </span>
           </div>
 
-          <div className="flex flex-col gap-2.5">
-            {Object.entries(incomes).map(([field, val]) => (
-              <div key={field} className="flex items-center justify-between gap-3">
-                <span className="text-[13px] font-semibold text-[#17211D]">
-                  {field}
-                </span>
-                <div className="relative w-36">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#6E7974]">
-                    ৳
-                  </span>
-                  <input
-                    type="number"
-                    value={val === 0 ? '' : val}
-                    onChange={(e) => handleIncomeChange(field, e.target.value)}
-                    placeholder="0.00"
-                    className="w-full h-9 pl-6 pr-2.5 rounded-xl border border-[#D7E0DC] text-right text-xs font-bold text-[#17211D] focus:border-[#008F5B] focus:ring-1 focus:ring-[#008F5B] outline-none"
-                  />
+          <div className="flex flex-col gap-3">
+            {Object.entries(incomes).map(([field, rawVal]) => {
+              const val = Number(rawVal || 0);
+              const displayVal =
+                inputBuffers[field] !== undefined
+                  ? inputBuffers[field]
+                  : val === 0
+                  ? ''
+                  : String(val);
+
+              const isHouseRent = field === 'House Rent';
+              const isSpecial = field === 'Special';
+              const hasVal = val > 0 || (incomes['Basic Pay'] || 0) > 0;
+
+              return (
+                <div
+                  key={field}
+                  className={`flex flex-col gap-1.5 p-2 rounded-xl transition-all ${
+                    (isHouseRent || isSpecial) && hasVal
+                      ? 'bg-[#F9FCFA] border border-[#008F5B]/15 shadow-2xs'
+                      : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[13px] font-semibold text-[#17211D]">
+                        {field}
+                      </span>
+                    </div>
+
+                    <div className="relative w-36">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#6E7974]">
+                        ৳
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="text"
+                        value={displayVal}
+                        onChange={(e) => handleIncomeChange(field, e.target.value)}
+                        onBlur={() => handleInputBlur(field, true)}
+                        placeholder="0.00"
+                        className="w-full h-9 pl-6 pr-2.5 rounded-xl border border-[#D7E0DC] text-right text-xs font-bold text-[#17211D] focus:border-[#008F5B] focus:ring-1 focus:ring-[#008F5B] outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bengali Info for House Rent */}
+                  {isHouseRent && hasVal && (
+                    <div className="mt-0.5 pt-1.5 border-t border-[#008F5B]/10 flex items-center gap-1 text-[10.5px] text-[#008F5B] font-medium leading-tight">
+                      <Sparkles size={11} className="shrink-0 text-[#008F5B]" />
+                      <span>
+                        আপনার হাউজ রেন্টের পার্সেন্টেজ লিখুন। যেমন: <strong>50%</strong> বা সরাসরি টাকার পরিমাণ লিখুন।
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Bengali Info for Special */}
+                  {isSpecial && hasVal && (
+                    <div className="mt-0.5 pt-1.5 border-t border-[#008F5B]/10 flex items-center gap-1 text-[10.5px] text-[#008F5B] font-medium leading-tight">
+                      <Sparkles size={11} className="shrink-0 text-[#008F5B]" />
+                      <span>
+                        আপনার স্পেশালের পার্সেন্টেজ লিখুন। যেমন: <strong>10%</strong> বা সরাসরি টাকার পরিমাণ লিখুন।
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Add Extra Income Button */}
@@ -414,26 +630,61 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
             </span>
           </div>
 
-          <div className="flex flex-col gap-2.5">
-            {Object.entries(deductions).map(([field, val]) => (
-              <div key={field} className="flex items-center justify-between gap-3">
-                <span className="text-[13px] font-semibold text-[#17211D]">
-                  {field}
-                </span>
-                <div className="relative w-36">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#6E7974]">
-                    ৳
-                  </span>
-                  <input
-                    type="number"
-                    value={val === 0 ? '' : val}
-                    onChange={(e) => handleDeductionChange(field, e.target.value)}
-                    placeholder="0.00"
-                    className="w-full h-9 pl-6 pr-2.5 rounded-xl border border-[#D7E0DC] text-right text-xs font-bold text-[#D83B3B] focus:border-[#D83B3B] focus:ring-1 focus:ring-[#D83B3B] outline-none"
-                  />
+          <div className="flex flex-col gap-3">
+            {Object.entries(deductions).map(([field, rawVal]) => {
+              const val = Number(rawVal || 0);
+              const displayVal =
+                inputBuffers[field] !== undefined
+                  ? inputBuffers[field]
+                  : val === 0
+                  ? ''
+                  : String(val);
+
+              const isPF = field === 'PF';
+              const hasVal = val > 0 || (incomes['Basic Pay'] || 0) > 0;
+
+              return (
+                <div
+                  key={field}
+                  className={`flex flex-col gap-1.5 p-2 rounded-xl transition-all ${
+                    isPF && hasVal ? 'bg-[#FDFBFB] border border-[#D83B3B]/15 shadow-2xs' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[13px] font-semibold text-[#17211D]">
+                        {field}
+                      </span>
+                    </div>
+
+                    <div className="relative w-36">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#6E7974]">
+                        ৳
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="text"
+                        value={displayVal}
+                        onChange={(e) => handleDeductionChange(field, e.target.value)}
+                        onBlur={() => handleInputBlur(field, false)}
+                        placeholder="0.00"
+                        className="w-full h-9 pl-6 pr-2.5 rounded-xl border border-[#D7E0DC] text-right text-xs font-bold text-[#D83B3B] focus:border-[#D83B3B] focus:ring-1 focus:ring-[#D83B3B] outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bengali Info for PF */}
+                  {isPF && hasVal && (
+                    <div className="mt-0.5 pt-1.5 border-t border-[#D83B3B]/10 flex items-center gap-1 text-[10.5px] text-[#D83B3B] font-medium leading-tight">
+                      <Sparkles size={11} className="shrink-0 text-[#D83B3B]" />
+                      <span>
+                        আপনার পিএফের পার্সেন্টেজ লিখুন। যেমন: <strong>10%</strong> বা সরাসরি টাকার পরিমাণ লিখুন।
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Add Extra Deduction Button */}

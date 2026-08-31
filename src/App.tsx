@@ -34,6 +34,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview');
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [activeMonth, setActiveMonth] = useState('2026-08');
+  const [editSalaryMonth, setEditSalaryMonth] = useState<string | null>(null);
   const [salaryRecords, setSalaryRecords] = useState<MonthSalaryRecord[]>(INITIAL_SALARY_RECORDS);
   const [userProfile, setUserProfile] = useState<UserProfileData>(INITIAL_USER_PROFILE);
   const [currentUid, setCurrentUid] = useState<string>('');
@@ -180,6 +181,14 @@ export default function App() {
     showToast('Signed out successfully.');
   };
 
+  const handleNavigate = (screen: ScreenType) => {
+    if (screen === 'add') {
+      // Clicking Add icon / navigation opens fresh New Entry Mode with a new month and blank fields
+      setEditSalaryMonth(null);
+    }
+    setCurrentScreen(screen);
+  };
+
   const activeRecord =
     salaryRecords.find((r) => r.month === activeMonth) || salaryRecords[0];
 
@@ -299,25 +308,28 @@ export default function App() {
                   salaryRecords={salaryRecords}
                   activeMonth={activeMonth}
                   onSelectMonth={(m) => setActiveMonth(m)}
-                  onNavigate={(screen) => setCurrentScreen(screen)}
+                  onNavigate={handleNavigate}
                 />
               )}
 
               {currentScreen === 'history' && (
                 <SalaryHistoryView
                   salaryRecords={salaryRecords}
+                  activeMonth={activeMonth}
                   onSelectMonth={(m) => setActiveMonth(m)}
-                  onNavigate={(screen) => setCurrentScreen(screen)}
+                  onNavigate={handleNavigate}
                 />
               )}
 
               {currentScreen === 'details' && (
                 <SalaryDetailsView
                   record={activeRecord}
+                  salaryRecords={salaryRecords}
                   userProfile={userProfile}
-                  onNavigate={(screen) => setCurrentScreen(screen)}
+                  onNavigate={handleNavigate}
                   onEditMonth={(m) => {
                     setActiveMonth(m);
+                    setEditSalaryMonth(m);
                     setCurrentScreen('add');
                   }}
                 />
@@ -326,16 +338,18 @@ export default function App() {
               {currentScreen === 'comparison' && (
                 <ComparisonView
                   salaryRecords={salaryRecords}
-                  onNavigate={(screen) => setCurrentScreen(screen)}
+                  activeMonth={activeMonth}
+                  onNavigate={handleNavigate}
                 />
               )}
 
               {currentScreen === 'add' && (
                 <AddSalaryView
-                  initialMonth={activeMonth}
+                  key={`add-view-${editSalaryMonth || 'new'}-${salaryRecords.length}`}
+                  initialMonth={editSalaryMonth || undefined}
                   existingRecords={salaryRecords}
                   onSaveRecord={handleSaveSalaryRecord}
-                  onNavigate={(screen) => setCurrentScreen(screen)}
+                  onNavigate={handleNavigate}
                 />
               )}
 
@@ -344,7 +358,7 @@ export default function App() {
                   salaryRecords={salaryRecords}
                   activeMonth={activeMonth}
                   onSelectMonth={(m) => setActiveMonth(m)}
-                  onNavigate={(screen) => setCurrentScreen(screen)}
+                  onNavigate={handleNavigate}
                 />
               )}
 
@@ -353,7 +367,7 @@ export default function App() {
                   userProfile={userProfile}
                   onUpdateProfile={handleUpdateProfile}
                   onLogout={handleLogout}
-                  onNavigate={(screen) => setCurrentScreen(screen)}
+                  onNavigate={handleNavigate}
                 />
               )}
             </div>
@@ -362,7 +376,7 @@ export default function App() {
             {showBottomNav && (
               <BottomNavBar
                 currentScreen={currentScreen}
-                onSelectScreen={(screen) => setCurrentScreen(screen)}
+                onSelectScreen={handleNavigate}
               />
             )}
           </AndroidFrame>

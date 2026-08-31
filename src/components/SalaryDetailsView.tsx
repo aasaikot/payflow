@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import {
   ArrowLeft,
@@ -13,12 +13,26 @@ import {
   EyeOff,
   Layers,
   ShieldAlert,
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
+  ArrowUpRight,
+  ArrowDownRight,
+  Sparkles,
+  PieChart,
+  PlusCircle,
+  MinusCircle,
+  ArrowUpDown,
+  Percent,
+  Wallet,
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType, UserProfileData } from '../types';
 import { formatBDT } from '../mockData';
 
 interface SalaryDetailsViewProps {
   record: MonthSalaryRecord;
+  salaryRecords?: MonthSalaryRecord[];
   userProfile?: UserProfileData;
   onNavigate: (screen: ScreenType) => void;
   onEditMonth: (month: string) => void;
@@ -26,11 +40,13 @@ interface SalaryDetailsViewProps {
 
 export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
   record,
+  salaryRecords = [],
   userProfile,
   onNavigate,
   onEditMonth,
 }) => {
   const [selectedTab, setSelectedTab] = useState<'income' | 'deduction'>('income');
+  const [graphTab, setGraphTab] = useState<'income' | 'deduction'>('income');
   const [copied, setCopied] = useState(false);
   const [isAmountMasked, setIsAmountMasked] = useState(false);
 
@@ -63,6 +79,62 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
     .map(([k, v]) => [k, Number(v || 0)] as [string, number])
     .filter(([, v]) => v > 0)
     .sort((a, b) => b[1] - a[1]);
+
+  // Color palettes for graphical distribution
+  const incomeColors = [
+    '#008F5B', // Primary Emerald
+    '#00B371', // Bright Mint
+    '#0EA5E9', // Sky Blue
+    '#10B981', // Teal Green
+    '#6366F1', // Indigo
+    '#F59E0B', // Amber
+    '#8B5CF6', // Purple
+    '#14B8A6', // Teal
+  ];
+
+  const deductionColors = [
+    '#D83B3B', // Crimson Red
+    '#EA580C', // Deep Orange
+    '#F97316', // Orange
+    '#E11D48', // Rose
+    '#DC2626', // Red
+    '#B91C1C', // Dark Red
+    '#7C2D12', // Rust
+    '#991B1B', // Wine
+  ];
+
+  // Find previous month record for Short Comparison
+  const sortedAllRecords = useMemo(() => {
+    return [...salaryRecords].sort((a, b) => b.month.localeCompare(a.month));
+  }, [salaryRecords]);
+
+  const previousRecord = useMemo(() => {
+    const currentIdx = sortedAllRecords.findIndex((r) => r.month === record.month);
+    if (currentIdx !== -1 && currentIdx < sortedAllRecords.length - 1) {
+      return sortedAllRecords[currentIdx + 1];
+    }
+    // If it is the oldest, fallback to whatever other record exists
+    return sortedAllRecords.find((r) => r.month !== record.month) || null;
+  }, [sortedAllRecords, record.month]);
+
+  // Comparison metrics
+  const netDiff = previousRecord ? record.net - previousRecord.net : 0;
+  const netDiffPct =
+    previousRecord && previousRecord.net > 0
+      ? Number(((netDiff / previousRecord.net) * 100).toFixed(1))
+      : 0;
+
+  const grossDiff = previousRecord ? record.gross - previousRecord.gross : 0;
+  const grossDiffPct =
+    previousRecord && previousRecord.gross > 0
+      ? Number(((grossDiff / previousRecord.gross) * 100).toFixed(1))
+      : 0;
+
+  const dedDiff = previousRecord ? record.deduction - previousRecord.deduction : 0;
+  const dedDiffPct =
+    previousRecord && previousRecord.deduction > 0
+      ? Number(((dedDiff / previousRecord.deduction) * 100).toFixed(1))
+      : 0;
 
   return (
     <div id="salary-details-screen" className="w-full flex flex-col pb-8">
@@ -338,26 +410,32 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
           <button
             type="button"
             id="tab-income-btn"
-            onClick={() => setSelectedTab('income')}
+            onClick={() => {
+              setSelectedTab('income');
+              setGraphTab('income');
+            }}
             className={`flex-1 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer text-center ${
               isIncome
                 ? 'bg-[#008F5B] text-white shadow-xs'
                 : 'text-[#6E7974] hover:text-[#17211D]'
             }`}
           >
-            Income Breakdown ({incomeEntries.length})
+            Income Breakdown
           </button>
           <button
             type="button"
             id="tab-deduction-btn"
-            onClick={() => setSelectedTab('deduction')}
+            onClick={() => {
+              setSelectedTab('deduction');
+              setGraphTab('deduction');
+            }}
             className={`flex-1 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer text-center ${
               !isIncome
                 ? 'bg-[#D83B3B] text-white shadow-xs'
                 : 'text-[#6E7974] hover:text-[#17211D]'
             }`}
           >
-            Deductions ({deductionEntries.length})
+            Deduction Breakdown
           </button>
         </div>
 
@@ -376,7 +454,7 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
           </div>
 
           <div className="flex flex-col divide-y divide-[#F0F4F2]">
-            {(isIncome ? incomeEntries : deductionEntries).map(([key, value], idx) => {
+            {(isIncome ? incomeEntries : deductionEntries).map(([key, value]) => {
               const numVal = Number(value || 0);
 
               return (
@@ -411,7 +489,346 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
           <Edit size={14} />
           <span>Edit {record.monthLabel} Figures</span>
         </button>
+
+        {/* ========================================================================= */}
+        {/* NEW SECTION 1: GRAPHICAL INTERFACE FOR EARNING & DEDUCTION COMPONENTS     */}
+        {/* ========================================================================= */}
+        <div
+          id="graphical-breakdown-section"
+          className="w-full bg-white rounded-2xl p-4 sm:p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] flex flex-col gap-3.5"
+        >
+          {/* Section Header with Graph Switcher */}
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#E4ECE8]">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  graphTab === 'income'
+                    ? 'bg-[#E9F7F1] text-[#008F5B]'
+                    : 'bg-[#FDF2F2] text-[#D83B3B]'
+                }`}
+              >
+                <BarChart3 size={17} />
+              </div>
+              <div>
+                <h2 className="text-[13.5px] font-black text-[#17211D] leading-tight">
+                  Visual Component Graph
+                </h2>
+                <span className="text-[10px] text-[#6E7974] font-medium block">
+                  Proportional share & analytics
+                </span>
+              </div>
+            </div>
+
+            {/* Quick mini switcher for graph view */}
+            <div className="flex items-center bg-[#F0F4F2] p-0.5 rounded-lg border border-[#E4ECE8]">
+              <button
+                type="button"
+                onClick={() => setGraphTab('income')}
+                className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                  graphTab === 'income'
+                    ? 'bg-white text-[#008F5B] shadow-2xs'
+                    : 'text-[#6E7974] hover:text-[#17211D]'
+                }`}
+              >
+                <PlusCircle size={10} />
+                <span>Earnings</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setGraphTab('deduction')}
+                className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                  graphTab === 'deduction'
+                    ? 'bg-white text-[#D83B3B] shadow-2xs'
+                    : 'text-[#6E7974] hover:text-[#17211D]'
+                }`}
+              >
+                <MinusCircle size={10} />
+                <span>Deductions</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Graphical Representation */}
+          {graphTab === 'income' ? (
+            /* --- 1. EARNING COMPONENTS GRAPHICAL INTERFACE --- */
+            <div className="flex flex-col gap-3.5">
+              {/* Stacked Proportional Distribution Bar */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[10.5px] font-bold text-[#6E7974]">
+                  <span>Earnings Distribution</span>
+                  <span className="text-[#008F5B] font-extrabold">Gross: {formatBDT(gross)}</span>
+                </div>
+
+                <div className="w-full h-3.5 rounded-full bg-[#EBF2EE] overflow-hidden flex shadow-inner">
+                  {incomeEntries.map(([key, val], idx) => {
+                    const pct = gross > 0 ? (val / gross) * 100 : 0;
+                    if (pct <= 0) return null;
+                    const color = incomeColors[idx % incomeColors.length];
+                    return (
+                      <div
+                        key={`stacked-inc-${key}`}
+                        style={{
+                          width: `${pct}%`,
+                          backgroundColor: color,
+                        }}
+                        className="h-full first:rounded-l-full last:rounded-r-full hover:brightness-110 transition-all cursor-default"
+                        title={`${key}: ${formatBDT(val)} (${pct.toFixed(1)}%)`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Individual Item Graphical Progress Bars */}
+              <div className="flex flex-col gap-2.5 pt-1">
+                {incomeEntries.map(([key, val], idx) => {
+                  const pct = gross > 0 ? (val / gross) * 100 : 0;
+                  const color = incomeColors[idx % incomeColors.length];
+
+                  return (
+                    <div
+                      key={`graph-inc-${key}`}
+                      className="p-2.5 rounded-xl bg-[#F9FCFA] border border-[#E4ECE8] hover:border-[#008F5B]/30 transition-all flex flex-col gap-1.5"
+                    >
+                      {/* Name, Percentage Badge & Amount */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span
+                            style={{ backgroundColor: color }}
+                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                          />
+                          <span className="text-[12px] font-bold text-[#17211D]">{key}</span>
+                          <span className="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded bg-[#E9F7F1] text-[#008F5B] border border-[#008F5B]/15">
+                            {pct.toFixed(1)}%
+                          </span>
+                        </div>
+
+                        <strong className="text-[12.5px] font-black text-[#17211D]">
+                          {formatBDT(val)}
+                        </strong>
+                      </div>
+
+                      {/* Visual Gradient Bar */}
+                      <div className="w-full h-2 rounded-full bg-[#EAEFEA] overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.max(4, pct)}%` }}
+                          transition={{ duration: 0.5, delay: idx * 0.05 }}
+                          style={{ backgroundColor: color }}
+                          className="h-full rounded-full"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+            </div>
+          ) : (
+            /* --- 2. DEDUCTION COMPONENTS GRAPHICAL INTERFACE --- */
+            <div className="flex flex-col gap-3.5">
+              {/* Stacked Proportional Distribution Bar */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[10.5px] font-bold text-[#6E7974]">
+                  <span>Deduction Distribution</span>
+                  <span className="text-[#D83B3B] font-extrabold">Total: {formatBDT(deduction)}</span>
+                </div>
+
+                <div className="w-full h-3.5 rounded-full bg-[#FBF0F0] overflow-hidden flex shadow-inner">
+                  {deductionEntries.map(([key, val], idx) => {
+                    const pct = deduction > 0 ? (val / deduction) * 100 : 0;
+                    if (pct <= 0) return null;
+                    const color = deductionColors[idx % deductionColors.length];
+                    return (
+                      <div
+                        key={`stacked-ded-${key}`}
+                        style={{
+                          width: `${pct}%`,
+                          backgroundColor: color,
+                        }}
+                        className="h-full first:rounded-l-full last:rounded-r-full hover:brightness-110 transition-all cursor-default"
+                        title={`${key}: ${formatBDT(val)} (${pct.toFixed(1)}%)`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Individual Item Graphical Progress Bars */}
+              <div className="flex flex-col gap-2.5 pt-1">
+                {deductionEntries.map(([key, val], idx) => {
+                  const pct = deduction > 0 ? (val / deduction) * 100 : 0;
+                  const color = deductionColors[idx % deductionColors.length];
+
+                  return (
+                    <div
+                      key={`graph-ded-${key}`}
+                      className="p-2.5 rounded-xl bg-[#FDFBFB] border border-[#E4ECE8] hover:border-[#D83B3B]/30 transition-all flex flex-col gap-1.5"
+                    >
+                      {/* Name, Percentage Badge & Amount */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span
+                            style={{ backgroundColor: color }}
+                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                          />
+                          <span className="text-[12px] font-bold text-[#17211D]">{key}</span>
+                          <span className="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded bg-[#FDF2F2] text-[#D83B3B] border border-[#D83B3B]/15">
+                            {pct.toFixed(1)}%
+                          </span>
+                        </div>
+
+                        <strong className="text-[12.5px] font-black text-[#D83B3B]">
+                          {formatBDT(val)}
+                        </strong>
+                      </div>
+
+                      {/* Visual Gradient Bar */}
+                      <div className="w-full h-2 rounded-full bg-[#FAECEC] overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.max(4, pct)}%` }}
+                          transition={{ duration: 0.5, delay: idx * 0.05 }}
+                          style={{ backgroundColor: color }}
+                          className="h-full rounded-full"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ========================================================================= */}
+        {/* NEW SECTION 2: SHORT COMPARISON & FULL COMPARISON LINK                    */}
+        {/* ========================================================================= */}
+        <div
+          id="short-comparison-section"
+          className="w-full bg-white rounded-2xl p-4 sm:p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] flex flex-col gap-3.5"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between pb-2 border-b border-[#E4ECE8]">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-[#E9F7F1] text-[#008F5B] flex items-center justify-center">
+                <ArrowUpDown size={16} />
+              </div>
+              <div>
+                <h2 className="text-[13.5px] font-black text-[#17211D] leading-tight">
+                  Month Comparison
+                </h2>
+                <span className="text-[10px] text-[#6E7974] font-medium block">
+                  {previousRecord
+                    ? `${record.monthLabel.split(' ')[0]} vs ${previousRecord.monthLabel.split(' ')[0]}`
+                    : 'Latest trend analysis'}
+                </span>
+              </div>
+            </div>
+
+            {previousRecord && (
+              <div
+                className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-black ${
+                  netDiff >= 0
+                    ? 'bg-[#E9F7F1] text-[#008F5B] border border-[#008F5B]/30'
+                    : 'bg-[#FDF2F2] text-[#D83B3B] border border-[#D83B3B]/30'
+                }`}
+              >
+                {netDiff >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                <span>
+                  {netDiff >= 0 ? '+' : ''}
+                  {netDiffPct}% Net
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 3 Micro Comparison Stats */}
+          {previousRecord ? (
+            <div className="grid grid-cols-3 gap-2">
+              {/* Net Stat */}
+              <div className="p-2.5 rounded-xl bg-[#F5FAF7] border border-[#008F5B]/20 flex flex-col">
+                <span className="text-[8.5px] font-bold text-[#6E7974] uppercase">Net Shift</span>
+                <strong
+                  className={`text-[11.5px] font-black mt-0.5 ${
+                    netDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                  }`}
+                >
+                  {netDiff >= 0 ? '+' : ''}
+                  {formatBDT(netDiff)}
+                </strong>
+                <span className="text-[8.5px] text-[#6E7974] mt-0.5">
+                  vs {formatBDT(previousRecord.net)}
+                </span>
+              </div>
+
+              {/* Gross Stat */}
+              <div className="p-2.5 rounded-xl bg-[#F5FAF7] border border-[#008F5B]/20 flex flex-col">
+                <span className="text-[8.5px] font-bold text-[#6E7974] uppercase">Gross Shift</span>
+                <strong
+                  className={`text-[11.5px] font-black mt-0.5 ${
+                    grossDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                  }`}
+                >
+                  {grossDiff >= 0 ? '+' : ''}
+                  {formatBDT(grossDiff)}
+                </strong>
+                <span className="text-[8.5px] text-[#6E7974] mt-0.5">
+                  vs {formatBDT(previousRecord.gross)}
+                </span>
+              </div>
+
+              {/* Deduction Stat */}
+              <div className="p-2.5 rounded-xl bg-[#FDFBFB] border border-[#D83B3B]/20 flex flex-col">
+                <span className="text-[8.5px] font-bold text-[#6E7974] uppercase">Deduct Shift</span>
+                <strong
+                  className={`text-[11.5px] font-black mt-0.5 ${
+                    dedDiff <= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                  }`}
+                >
+                  {dedDiff >= 0 ? '+' : ''}
+                  {formatBDT(dedDiff)}
+                </strong>
+                <span className="text-[8.5px] text-[#6E7974] mt-0.5">
+                  vs {formatBDT(previousRecord.deduction)}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-[11px] text-[#6E7974] text-center py-2">
+              No previous month records found for direct comparison.
+            </div>
+          )}
+
+          {/* Action Link to Full Comparison View */}
+          <button
+            type="button"
+            id="open-full-comparison-btn"
+            onClick={() => onNavigate('comparison')}
+            className="w-full mt-1 p-3 rounded-xl bg-gradient-to-r from-[#008F5B] to-[#00A86B] hover:from-[#007A4D] hover:to-[#008F5B] text-white flex items-center justify-between shadow-[0_4px_16px_rgba(0,143,91,0.2)] hover:shadow-[0_6px_20px_rgba(0,143,91,0.3)] transition-all cursor-pointer active:scale-[0.99] group"
+          >
+            <div className="flex items-center gap-2.5 text-left">
+              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                <Layers size={16} className="text-white" />
+              </div>
+              <div>
+                <strong className="block text-[12.5px] font-black text-white leading-tight">
+                  Full Salary Comparison
+                </strong>
+                <span className="text-[10px] text-white/80 block leading-tight">
+                  Item-by-item breakdown & swap months
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 text-[11px] font-black text-white bg-white/15 px-2.5 py-1.5 rounded-lg group-hover:bg-white/25 transition-all">
+              <span>Compare</span>
+              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   );
 };
+
