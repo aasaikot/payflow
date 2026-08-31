@@ -359,7 +359,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Brand New High-End 3-Card Layout for GROSS, DEDUCTION, NET */}
+        {/* Brand New High-End 3-Card Layout for GROSS, DEDUCTION, NET with Watermark Icons */}
         <div
           id="kpi-metrics-cards"
           className="grid grid-cols-3 gap-2"
@@ -368,17 +368,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('details')}
-            className="p-3 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#E0ECE6] shadow-[0_2px_10px_rgba(23,33,29,0.03)] hover:shadow-md hover:border-[#008F5B]/30 hover:bg-[#F2F9F5] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group"
+            className="p-3 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#E0ECE6] shadow-[0_2px_10px_rgba(23,33,29,0.03)] hover:shadow-md hover:border-[#008F5B]/30 hover:bg-[#F2F9F5] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group relative overflow-hidden"
           >
-            <div className="flex items-center justify-between w-full">
-              <span className="text-[9px] font-extrabold text-[#6E7974] uppercase tracking-wider">
+            {/* Watermark Icon - Top Right Clean */}
+            <div className="absolute top-2 right-2 text-[#17211D]/[0.06] group-hover:text-[#008F5B]/[0.12] transition-all duration-300 pointer-events-none group-hover:scale-105">
+              <Layers size={44} strokeWidth={1.5} />
+            </div>
+
+            <div className="w-full relative z-10">
+              <span className="text-[9.5px] font-extrabold text-[#6E7974] uppercase tracking-wider">
                 GROSS
               </span>
-              <div className="w-5 h-5 rounded-lg bg-[#EBF4F0] text-[#17211D] flex items-center justify-center group-hover:bg-[#008F5B] group-hover:text-white transition-colors">
-                <Layers size={11} />
-              </div>
             </div>
-            <div className="mt-2">
+            <div className="mt-2 relative z-10">
               <strong className="block text-[12.5px] sm:text-[13.5px] font-black text-[#17211D] tracking-tight truncate">
                 {maskValue(formatBDT(gross))}
               </strong>
@@ -392,17 +394,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('details')}
-            className="p-3 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#F5D8D8] shadow-[0_2px_10px_rgba(216,59,59,0.03)] hover:shadow-md hover:border-[#D83B3B]/40 hover:bg-[#FDF0F0] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group"
+            className="p-3 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#F5D8D8] shadow-[0_2px_10px_rgba(216,59,59,0.03)] hover:shadow-md hover:border-[#D83B3B]/40 hover:bg-[#FDF0F0] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group relative overflow-hidden"
           >
-            <div className="flex items-center justify-between w-full">
-              <span className="text-[9px] font-extrabold text-[#D83B3B] uppercase tracking-wider">
+            {/* Watermark Icon - Top Right Clean */}
+            <div className="absolute top-2 right-2 text-[#D83B3B]/[0.08] group-hover:text-[#D83B3B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+              <ShieldAlert size={44} strokeWidth={1.5} />
+            </div>
+
+            <div className="w-full relative z-10">
+              <span className="text-[9.5px] font-extrabold text-[#D83B3B] uppercase tracking-wider">
                 DEDUCTION
               </span>
-              <div className="w-5 h-5 rounded-lg bg-[#FDE8E8] text-[#D83B3B] flex items-center justify-center group-hover:bg-[#D83B3B] group-hover:text-white transition-colors">
-                <ShieldAlert size={11} />
-              </div>
             </div>
-            <div className="mt-2">
+            <div className="mt-2 relative z-10">
               <strong className="block text-[12.5px] sm:text-[13.5px] font-black text-[#D83B3B] tracking-tight truncate">
                 {maskValue(formatBDT(deduction))}
               </strong>
@@ -416,17 +420,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('details')}
-            className="p-3 rounded-xl bg-gradient-to-b from-[#E9F7F1] to-[#D8F3E5] border border-[#008F5B]/35 shadow-[0_4px_14px_rgba(0,143,91,0.08)] hover:shadow-md hover:border-[#008F5B]/60 hover:scale-[1.02] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group ring-1 ring-[#008F5B]/20"
+            className="p-3 rounded-xl bg-gradient-to-b from-[#E9F7F1] to-[#D8F3E5] border border-[#008F5B]/35 shadow-[0_4px_14px_rgba(0,143,91,0.08)] hover:shadow-md hover:border-[#008F5B]/60 hover:scale-[1.02] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group ring-1 ring-[#008F5B]/20 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between w-full">
-              <span className="text-[9px] font-black text-[#008F5B] uppercase tracking-wider">
+            {/* Watermark Icon - Top Right Clean */}
+            <div className="absolute top-2 right-2 text-[#008F5B]/[0.09] group-hover:text-[#008F5B]/[0.18] transition-all duration-300 pointer-events-none group-hover:scale-105">
+              <CheckCircle2 size={44} strokeWidth={1.5} />
+            </div>
+
+            <div className="w-full relative z-10">
+              <span className="text-[9.5px] font-black text-[#008F5B] uppercase tracking-wider">
                 NET PAID
               </span>
-              <div className="w-5 h-5 rounded-lg bg-[#008F5B] text-white flex items-center justify-center shadow-xs">
-                <CheckCircle2 size={11} />
-              </div>
             </div>
-            <div className="mt-2">
+            <div className="mt-2 relative z-10">
               <strong className="block text-[12.5px] sm:text-[13.5px] font-black text-[#008F5B] tracking-tight truncate">
                 {maskValue(formatBDT(net))}
               </strong>

@@ -314,6 +314,7 @@ export default function App() {
               {currentScreen === 'details' && (
                 <SalaryDetailsView
                   record={activeRecord}
+                  userProfile={userProfile}
                   onNavigate={(screen) => setCurrentScreen(screen)}
                   onEditMonth={(m) => {
                     setActiveMonth(m);
