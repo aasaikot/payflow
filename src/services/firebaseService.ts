@@ -143,7 +143,7 @@ export async function testFirestoreConnection(): Promise<boolean> {
 // User Profile Service
 export async function fetchUserProfile(uid: string): Promise<UserProfileData | null> {
   if (!uid || !auth.currentUser || auth.currentUser.uid !== uid) {
-    return convertFirebaseProfileToUser(RAW_FIREBASE_DATA.profile, uid || '5556');
+    return null;
   }
 
   const path = `users/${uid}`;
@@ -174,13 +174,13 @@ export async function saveUserProfile(profile: UserProfileData): Promise<void> {
     const userDocRef = doc(db, 'users', profile.uid);
     const profilePayload: FirebaseUserData['profile'] = {
       name: profile.name,
-      companyName: profile.companyName,
-      designation: profile.designation,
-      pin: profile.pin,
-      email: profile.email,
-      mobile: profile.mobile,
+      companyName: profile.companyName || '',
+      designation: profile.designation || '',
+      pin: profile.pin || '',
+      email: profile.email || auth.currentUser.email || '',
+      mobile: profile.mobile || '',
       photoURL: profile.photoURL,
-      joinDate: profile.joinDate,
+      joinDate: profile.joinDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
     };
     await setDoc(userDocRef, { profile: profilePayload }, { merge: true });
   } catch (error) {
@@ -189,10 +189,10 @@ export async function saveUserProfile(profile: UserProfileData): Promise<void> {
   }
 }
 
-// Salary Records Service - reads and transforms exact Firebase document structure
+// Salary Records Service - reads and transforms exact Firebase document structure for the isolated user
 export async function fetchSalaryRecords(uid: string): Promise<MonthSalaryRecord[]> {
   if (!uid || !auth.currentUser || auth.currentUser.uid !== uid) {
-    return convertFirebaseMonthsToRecords(RAW_FIREBASE_DATA.months);
+    return [];
   }
 
   const path = `users/${uid}`;
@@ -207,19 +207,17 @@ export async function fetchSalaryRecords(uid: string): Promise<MonthSalaryRecord
       }
     }
 
-    // If document is empty or new account, seed with exact user schema
-    await seedInitialData(uid);
-    return convertFirebaseMonthsToRecords(RAW_FIREBASE_DATA.months);
+    return [];
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
-    return convertFirebaseMonthsToRecords(RAW_FIREBASE_DATA.months);
+    return [];
   }
 }
 
-// Subscribe to realtime updates for a user's data
+// Subscribe to realtime updates for a user's isolated data
 export function subscribeToUserData(
   uid: string,
-  onData: (data: { profile: UserProfileData; records: MonthSalaryRecord[] }) => void,
+  onData: (data: { profile: UserProfileData | null; records: MonthSalaryRecord[] }) => void,
   onError?: (err: unknown) => void
 ) {
   if (!uid || !auth.currentUser || auth.currentUser.uid !== uid) {
@@ -236,12 +234,14 @@ export function subscribeToUserData(
         const data = snap.data() as Partial<FirebaseUserData>;
         const profile = data.profile
           ? convertFirebaseProfileToUser(data.profile, uid)
-          : convertFirebaseProfileToUser(RAW_FIREBASE_DATA.profile, uid);
-        const records = data.months
+          : null;
+        const records = data.months && Object.keys(data.months).length > 0
           ? convertFirebaseMonthsToRecords(data.months)
-          : convertFirebaseMonthsToRecords(RAW_FIREBASE_DATA.months);
+          : [];
 
         onData({ profile, records });
+      } else {
+        onData({ profile: null, records: [] });
       }
     },
     (error) => {
@@ -286,7 +286,7 @@ export async function saveSalaryRecord(uid: string, record: MonthSalaryRecord): 
   }
 }
 
-// Seed the complete real user dataset into Firebase Firestore
+// Ensure user document exists with isolated empty structure if not already initialized
 export async function seedInitialData(uid: string): Promise<void> {
   if (!uid || !auth.currentUser || auth.currentUser.uid !== uid) {
     return;
@@ -296,10 +296,25 @@ export async function seedInitialData(uid: string): Promise<void> {
     const userDocRef = doc(db, 'users', uid);
     const snap = await getDoc(userDocRef);
     if (!snap.exists()) {
-      await setDoc(userDocRef, RAW_FIREBASE_DATA, { merge: true });
+      await setDoc(
+        userDocRef,
+        {
+          profile: {
+            name: auth.currentUser.displayName || auth.currentUser.email?.split('@')[0]?.toUpperCase() || 'USER',
+            email: auth.currentUser.email || '',
+            companyName: '',
+            designation: '',
+            pin: '',
+            mobile: auth.currentUser.phoneNumber || '',
+            joinDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
+          },
+          months: {},
+        },
+        { merge: true }
+      );
     }
   } catch (error) {
-    console.error('Error seeding initial data to Firestore:', error);
+    console.warn('User initialization note:', error);
   }
 }
 

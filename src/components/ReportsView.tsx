@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   ArrowUpDown,
   ArrowRight,
+  ShieldAlert,
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
@@ -73,39 +74,24 @@ function resolveSalaryRecord(
   if (found) return found;
 
   const base = records[0] || {
-    gross: 55691,
-    deduction: 3270,
-    net: 52421,
-    incomes: {
-      'Basic Pay': 22460,
-      'House Rent': 17968,
-      Refreshment: 3790,
-      Special: 2246,
-      Medical: 1900,
-      Conveyance: 1150,
-      Utility: 950,
-    },
-    deductions: {
-      PF: 2246,
-      Canteen: 289,
-      Tax: 250,
-      Welfare: 100,
-      Stamps: 10,
-      'Welfare Subs': 10,
-    },
-    extraDeduction: ['Welfare Subs'],
+    gross: 0,
+    deduction: 0,
+    net: 0,
+    incomes: {},
+    deductions: {},
+    extraDeduction: [],
   };
 
   const [yS, mS] = (targetMonthKey || '2026-08').split('-');
-  const y = parseInt(yS, 10) || 2026;
-  const m = parseInt(mS, 10) || 8;
+  const y = parseInt(yS, 10) || new Date().getFullYear();
+  const m = parseInt(mS, 10) || (new Date().getMonth() + 1);
   const monthName = ALL_MONTHS[m - 1]?.full || 'Month';
   const monthShort = ALL_MONTHS[m - 1]?.short || 'M';
 
   return {
     month: targetMonthKey,
     monthLabel: `${monthName} ${y}`,
-    createdDate: `28 ${monthShort} ${y}, 10:00 AM`,
+    createdDate: `---`,
     gross: base.gross,
     deduction: base.deduction,
     net: base.net,
@@ -269,55 +255,92 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </div>
       </div>
 
-      <div className="px-4 pt-4 flex flex-col gap-3.5">
+      {salaryRecords.length === 0 ? (
+        <div className="p-8 flex flex-col items-center justify-center text-center mt-12">
+          <PieIcon size={48} className="text-[#8A9791] mb-3" />
+          <h2 className="text-base font-bold text-[#17211D]">No Salary Analytics Available</h2>
+          <p className="text-xs text-[#6E7974] mt-1 max-w-xs">
+            There are no salary records in your account yet. Add a monthly salary entry to generate income charts, deduction breakdowns, and annual summaries.
+          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate('add')}
+            className="mt-5 px-5 py-2.5 bg-[#008F5B] text-white text-xs font-bold rounded-xl hover:bg-[#007A4D] transition-all shadow-sm cursor-pointer"
+          >
+            + Add Salary Record
+          </button>
+        </div>
+      ) : (
+        <div className="px-4 pt-4 flex flex-col gap-3.5">
         {/* MODERN 3-WAY TAB SELECTOR (Monthly / Yearly / Aggregate) */}
         <div
           id="reports-segmented-tabs"
-          className="w-full bg-[#EEF3F0] p-1.5 rounded-2xl border border-[#D5E2DC] grid grid-cols-3 gap-1.5 shadow-2xs"
+          className="w-full bg-white rounded-2xl border border-[#008F5B] overflow-hidden flex items-stretch shadow-2xs"
         >
           {/* Tab 1: Monthly */}
           <button
             type="button"
             id="tab-monthly-btn"
             onClick={() => setFilterMode('monthly')}
-            className={`py-2 px-1 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+            className={`flex-1 py-2.5 sm:py-3 px-2 flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
               filterMode === 'monthly'
-                ? 'bg-white text-[#008F5B] shadow-[0_2px_8px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/20 scale-[1.01]'
-                : 'text-[#6E7974] hover:text-[#17211D] hover:bg-white/40'
+                ? 'bg-[#E8F7F0] text-[#008F5B] font-bold'
+                : 'bg-white text-[#17211D] font-bold hover:bg-[#F5FAF7]'
             }`}
           >
-            <Calendar size={14} className={filterMode === 'monthly' ? 'text-[#008F5B]' : 'text-[#8A9791]'} />
-            <span>Monthly</span>
+            <Calendar
+              size={14}
+              className={filterMode === 'monthly' ? 'text-[#008F5B]' : 'text-[#6E7974]'}
+            />
+            <span className="text-[12.5px] sm:text-[13px] leading-tight">
+              Monthly
+            </span>
           </button>
+
+          {/* Vertical Divider */}
+          <div className="w-px bg-[#008F5B] self-stretch shrink-0" />
 
           {/* Tab 2: Yearly */}
           <button
             type="button"
             id="tab-yearly-btn"
             onClick={() => setFilterMode('yearly')}
-            className={`py-2 px-1 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+            className={`flex-1 py-2.5 sm:py-3 px-2 flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
               filterMode === 'yearly'
-                ? 'bg-white text-[#008F5B] shadow-[0_2px_8px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/20 scale-[1.01]'
-                : 'text-[#6E7974] hover:text-[#17211D] hover:bg-white/40'
+                ? 'bg-[#E8F7F0] text-[#008F5B] font-bold'
+                : 'bg-white text-[#17211D] font-bold hover:bg-[#F5FAF7]'
             }`}
           >
-            <BarChart3 size={14} className={filterMode === 'yearly' ? 'text-[#008F5B]' : 'text-[#8A9791]'} />
-            <span>Yearly</span>
+            <BarChart3
+              size={14}
+              className={filterMode === 'yearly' ? 'text-[#008F5B]' : 'text-[#6E7974]'}
+            />
+            <span className="text-[12.5px] sm:text-[13px] leading-tight">
+              Yearly
+            </span>
           </button>
+
+          {/* Vertical Divider */}
+          <div className="w-px bg-[#008F5B] self-stretch shrink-0" />
 
           {/* Tab 3: Aggregate */}
           <button
             type="button"
             id="tab-aggregate-btn"
             onClick={() => setFilterMode('aggregate')}
-            className={`py-2 px-1 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+            className={`flex-1 py-2.5 sm:py-3 px-2 flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
               filterMode === 'aggregate'
-                ? 'bg-white text-[#008F5B] shadow-[0_2px_8px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/20 scale-[1.01]'
-                : 'text-[#6E7974] hover:text-[#17211D] hover:bg-white/40'
+                ? 'bg-[#E8F7F0] text-[#008F5B] font-bold'
+                : 'bg-white text-[#17211D] font-bold hover:bg-[#F5FAF7]'
             }`}
           >
-            <Layers size={14} className={filterMode === 'aggregate' ? 'text-[#008F5B]' : 'text-[#8A9791]'} />
-            <span>Aggregate</span>
+            <Layers
+              size={14}
+              className={filterMode === 'aggregate' ? 'text-[#008F5B]' : 'text-[#6E7974]'}
+            />
+            <span className="text-[12.5px] sm:text-[13px] leading-tight">
+              Aggregate
+            </span>
           </button>
         </div>
 
@@ -671,68 +694,66 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         >
           {/* Card 1: Gross */}
           <div className="bg-gradient-to-br from-white via-[#F8FAF9] to-[#EEF5F1] p-3 sm:p-3.5 rounded-2xl border border-[#D8E6DF] shadow-[0_4px_16px_rgba(0,35,20,0.04)] flex flex-col justify-between relative overflow-hidden group hover:border-[#008F5B]/40 transition-all">
-            {/* Top Row: Micro Icon + Ratio Pill */}
-            <div className="flex items-center justify-between">
-              <div className="w-6 h-6 rounded-lg bg-[#E6F4ED] text-[#008F5B] flex items-center justify-center shadow-xs">
-                <Wallet size={13} strokeWidth={2.4} />
-              </div>
-              <span className="text-[9px] font-black bg-[#E6F4ED] text-[#008F5B] px-1.5 py-0.5 rounded-full ring-1 ring-[#008F5B]/20">
-                100%
-              </span>
+            {/* Watermark Icon - Top Right Clean (kpi-metrics-cards style) */}
+            <div className="absolute top-2 right-2 text-[#17211D]/[0.06] group-hover:text-[#008F5B]/[0.12] transition-all duration-300 pointer-events-none group-hover:scale-105">
+              <Layers size={36} strokeWidth={1.5} />
             </div>
 
-            {/* Label & Value */}
-            <div className="mt-2 flex flex-col">
+            {/* Top Row: Label */}
+            <div className="flex items-center justify-between relative z-10">
               <span className="text-[9.5px] font-extrabold text-[#5C6E66] uppercase tracking-wider">
                 {filterMode === 'monthly' ? 'GROSS' : 'TOTAL GROSS'}
               </span>
-              <strong className="text-[13px] sm:text-[14.5px] font-black text-[#17211D] tracking-tight mt-0.5 leading-tight">
+            </div>
+
+            {/* Value */}
+            <div className="mt-1.5 flex flex-col relative z-10">
+              <strong className="text-[13px] sm:text-[14.5px] font-black text-[#17211D] tracking-tight leading-tight">
                 {formatBDT(gross)}
               </strong>
             </div>
 
             {/* Bottom Visual Mini Progress Bar */}
-            <div className="mt-2.5 flex flex-col gap-1">
+            <div className="mt-2.5 flex flex-col gap-1 relative z-10">
               <div className="w-full h-1.5 rounded-full bg-[#E2EBE6] overflow-hidden">
                 <div className="h-full w-full bg-gradient-to-r from-[#008F5B] to-[#00B377] rounded-full" />
               </div>
-              <span className="text-[8.5px] text-[#6E7974] font-semibold">
-                Total Accrued
+              <span className="text-[8.5px] text-[#008F5B] font-extrabold">
+                Rate: 100%
               </span>
             </div>
           </div>
 
           {/* Card 2: Deduction */}
           <div className="bg-gradient-to-br from-white via-[#FFF7F7] to-[#FEECEE] p-3 sm:p-3.5 rounded-2xl border border-[#FDCFD4] shadow-[0_4px_16px_rgba(216,59,59,0.04)] flex flex-col justify-between relative overflow-hidden group hover:border-[#DC2626]/40 transition-all">
-            {/* Top Row: Micro Icon + Ratio Pill */}
-            <div className="flex items-center justify-between">
-              <div className="w-6 h-6 rounded-lg bg-[#FEE2E2] text-[#DC2626] flex items-center justify-center shadow-xs">
-                <Receipt size={13} strokeWidth={2.4} />
-              </div>
-              <span className="text-[9px] font-black bg-[#FEE2E2] text-[#DC2626] px-1.5 py-0.5 rounded-full ring-1 ring-[#DC2626]/20">
-                {deductionRatio}%
-              </span>
+            {/* Watermark Icon - Top Right Clean (kpi-metrics-cards style) */}
+            <div className="absolute top-2 right-2 text-[#D83B3B]/[0.08] group-hover:text-[#D83B3B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+              <ShieldAlert size={36} strokeWidth={1.5} />
             </div>
 
-            {/* Label & Value */}
-            <div className="mt-2 flex flex-col">
+            {/* Top Row: Label */}
+            <div className="flex items-center justify-between relative z-10">
               <span className="text-[9.5px] font-extrabold text-[#D83B3B] uppercase tracking-wider">
                 {filterMode === 'monthly' ? 'DEDUCTION' : 'DEDUCTIONS'}
               </span>
-              <strong className="text-[13px] sm:text-[14.5px] font-black text-[#D83B3B] tracking-tight mt-0.5 leading-tight">
+            </div>
+
+            {/* Value */}
+            <div className="mt-1.5 flex flex-col relative z-10">
+              <strong className="text-[13px] sm:text-[14.5px] font-black text-[#D83B3B] tracking-tight leading-tight">
                 {formatBDT(deduction)}
               </strong>
             </div>
 
             {/* Bottom Visual Mini Progress Bar */}
-            <div className="mt-2.5 flex flex-col gap-1">
+            <div className="mt-2.5 flex flex-col gap-1 relative z-10">
               <div className="w-full h-1.5 rounded-full bg-[#FEE2E2] overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-[#DC2626] to-[#EF4444] rounded-full"
                   style={{ width: `${Math.min(100, Math.max(8, Number(deductionRatio)))}%` }}
                 />
               </div>
-              <span className="text-[8.5px] text-[#D83B3B]/80 font-bold">
+              <span className="text-[8.5px] text-[#D83B3B] font-extrabold">
                 Rate: {deductionRatio}%
               </span>
             </div>
@@ -740,28 +761,27 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
           {/* Card 3: Net Payable / Savings */}
           <div className="bg-gradient-to-br from-[#F0FDF4] via-[#E6F9EE] to-[#DCFCE7] p-3 sm:p-3.5 rounded-2xl border border-[#86EFAC] shadow-[0_6px_20px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/10 flex flex-col justify-between relative overflow-hidden group hover:border-[#008F5B] transition-all">
-            {/* Top Row: Micro Icon + Ratio Pill */}
-            <div className="flex items-center justify-between">
-              <div className="w-6 h-6 rounded-lg bg-[#008F5B] text-white flex items-center justify-center shadow-xs">
-                <Sparkles size={13} strokeWidth={2.4} />
-              </div>
-              <span className="text-[9px] font-black bg-[#008F5B] text-white px-1.5 py-0.5 rounded-full shadow-2xs">
-                {netRatio}%
-              </span>
+            {/* Watermark Icon - Top Right Clean (kpi-metrics-cards style) */}
+            <div className="absolute top-2 right-2 text-[#008F5B]/[0.08] group-hover:text-[#008F5B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+              <Wallet size={36} strokeWidth={1.5} />
             </div>
 
-            {/* Label & Value */}
-            <div className="mt-2 flex flex-col">
+            {/* Top Row: Label */}
+            <div className="flex items-center justify-between relative z-10">
               <span className="text-[9.5px] font-extrabold text-[#008F5B] uppercase tracking-wider">
                 {filterMode === 'monthly' ? 'NET PAYABLE' : 'NET EARNINGS'}
               </span>
-              <strong className="text-[13px] sm:text-[14.5px] font-black text-[#008F5B] tracking-tight mt-0.5 leading-tight">
+            </div>
+
+            {/* Value */}
+            <div className="mt-1.5 flex flex-col relative z-10">
+              <strong className="text-[13px] sm:text-[14.5px] font-black text-[#008F5B] tracking-tight leading-tight">
                 {formatBDT(net)}
               </strong>
             </div>
 
             {/* Bottom Visual Mini Progress Bar */}
-            <div className="mt-2.5 flex flex-col gap-1">
+            <div className="mt-2.5 flex flex-col gap-1 relative z-10">
               <div className="w-full h-1.5 rounded-full bg-[#BBF7D0] overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-[#008F5B] to-[#10B981] rounded-full"
@@ -769,7 +789,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                 />
               </div>
               <span className="text-[8.5px] text-[#008F5B] font-extrabold">
-                Take-Home Net
+                Rate: {netRatio}%
               </span>
             </div>
           </div>
@@ -1030,53 +1050,116 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
           {/* 3 Micro Comparison Stats */}
           {previousRecord ? (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {/* Net Stat */}
-              <div className="p-2.5 rounded-xl bg-[#F5FAF7] border border-[#008F5B]/20 flex flex-col">
-                <span className="text-[8.5px] font-bold text-[#6E7974] uppercase">Net Shift</span>
-                <strong
-                  className={`text-[11.5px] font-black mt-0.5 ${
-                    netDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
-                  }`}
-                >
-                  {netDiff >= 0 ? '+' : ''}
-                  {formatBDT(netDiff)}
-                </strong>
-                <span className="text-[8.5px] text-[#6E7974] mt-0.5">
-                  vs {formatBDT(previousRecord.net)}
-                </span>
+              <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F5FAF7] border border-[#008F5B]/30 shadow-[0_2px_8px_rgba(0,143,91,0.04)] flex flex-col justify-between relative overflow-hidden group">
+                {/* Theme Watermark Icon (Net/Wallet) - Top Right like KPI cards */}
+                <div className="absolute top-2 right-2 text-[#008F5B]/[0.08] group-hover:text-[#008F5B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                  <Wallet size={36} strokeWidth={1.5} />
+                </div>
+
+                <div className="relative z-10">
+                  <span className="text-[9px] sm:text-[9.5px] font-black text-[#008F5B] uppercase tracking-wider block">
+                    Net Shift
+                  </span>
+                </div>
+
+                <div className="mt-1 relative z-10">
+                  <strong
+                    className={`block text-[10.5px] sm:text-[12.5px] font-black tracking-tight leading-tight whitespace-nowrap ${
+                      netDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                    }`}
+                  >
+                    {netDiff >= 0 ? '+' : ''}
+                    {formatBDT(netDiff)}
+                  </strong>
+
+                  {/* Vs previous month with font-size 10px, font-weight 700 and large bold Taka symbol */}
+                  <div className="mt-1 text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                    <span className="text-[#6E7974] font-bold">Vs</span>
+                    <span className="text-[12px] font-extrabold text-[#17211D] leading-none">৳</span>
+                    <span className="font-bold text-[#17211D]">
+                      {Number(previousRecord.net || 0).toLocaleString('en-BD', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Gross Stat */}
-              <div className="p-2.5 rounded-xl bg-[#F5FAF7] border border-[#008F5B]/20 flex flex-col">
-                <span className="text-[8.5px] font-bold text-[#6E7974] uppercase">Gross Shift</span>
-                <strong
-                  className={`text-[11.5px] font-black mt-0.5 ${
-                    grossDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
-                  }`}
-                >
-                  {grossDiff >= 0 ? '+' : ''}
-                  {formatBDT(grossDiff)}
-                </strong>
-                <span className="text-[8.5px] text-[#6E7974] mt-0.5">
-                  vs {formatBDT(previousRecord.gross)}
-                </span>
+              <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#D8E6DF] shadow-[0_2px_8px_rgba(23,33,29,0.03)] flex flex-col justify-between relative overflow-hidden group">
+                {/* Theme Watermark Icon (Gross/Layers) - Top Right like KPI cards */}
+                <div className="absolute top-2 right-2 text-[#17211D]/[0.07] group-hover:text-[#008F5B]/[0.12] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                  <Layers size={36} strokeWidth={1.5} />
+                </div>
+
+                <div className="relative z-10">
+                  <span className="text-[9px] sm:text-[9.5px] font-black text-[#5C6E66] uppercase tracking-wider block">
+                    Gross Shift
+                  </span>
+                </div>
+
+                <div className="mt-1 relative z-10">
+                  <strong
+                    className={`block text-[10.5px] sm:text-[12.5px] font-black tracking-tight leading-tight whitespace-nowrap ${
+                      grossDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                    }`}
+                  >
+                    {grossDiff >= 0 ? '+' : ''}
+                    {formatBDT(grossDiff)}
+                  </strong>
+
+                  {/* Vs previous month with font-size 10px, font-weight 700 and large bold Taka symbol */}
+                  <div className="mt-1 text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                    <span className="text-[#6E7974] font-bold">Vs</span>
+                    <span className="text-[12px] font-extrabold text-[#17211D] leading-none">৳</span>
+                    <span className="font-bold text-[#17211D]">
+                      {Number(previousRecord.gross || 0).toLocaleString('en-BD', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Deduction Stat */}
-              <div className="p-2.5 rounded-xl bg-[#FDFBFB] border border-[#D83B3B]/20 flex flex-col">
-                <span className="text-[8.5px] font-bold text-[#6E7974] uppercase">Deduct Shift</span>
-                <strong
-                  className={`text-[11.5px] font-black mt-0.5 ${
-                    dedDiff <= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
-                  }`}
-                >
-                  {dedDiff >= 0 ? '+' : ''}
-                  {formatBDT(dedDiff)}
-                </strong>
-                <span className="text-[8.5px] text-[#6E7974] mt-0.5">
-                  vs {formatBDT(previousRecord.deduction)}
-                </span>
+              <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#FDCFD4] shadow-[0_2px_8px_rgba(216,59,59,0.03)] flex flex-col justify-between relative overflow-hidden group">
+                {/* Theme Watermark Icon (Deduction/ShieldAlert) - Top Right like KPI cards */}
+                <div className="absolute top-2 right-2 text-[#D83B3B]/[0.08] group-hover:text-[#D83B3B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                  <ShieldAlert size={36} strokeWidth={1.5} />
+                </div>
+
+                <div className="relative z-10">
+                  <span className="text-[9px] sm:text-[9.5px] font-black text-[#D83B3B] uppercase tracking-wider block">
+                    Deduct Shift
+                  </span>
+                </div>
+
+                <div className="mt-1 relative z-10">
+                  <strong
+                    className={`block text-[10.5px] sm:text-[12.5px] font-black tracking-tight leading-tight whitespace-nowrap ${
+                      dedDiff <= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                    }`}
+                  >
+                    {dedDiff >= 0 ? '+' : ''}
+                    {formatBDT(dedDiff)}
+                  </strong>
+
+                  {/* Vs previous month with font-size 10px, font-weight 700 and large bold Taka symbol */}
+                  <div className="mt-1 text-[10px] font-bold text-[#8A1A1A] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                    <span className="text-[#D83B3B]/80 font-bold">Vs</span>
+                    <span className="text-[12px] font-extrabold text-[#D83B3B] leading-none">৳</span>
+                    <span className="font-bold text-[#D83B3B]">
+                      {Number(previousRecord.deduction || 0).toLocaleString('en-BD', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
@@ -1113,6 +1196,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Mail,
   Lock,
@@ -15,6 +15,13 @@ import {
 import { PayFlowLogo } from './PayFlowLogo';
 import { auth, signInWithEmailAndPassword, fetchSignInMethodsForEmail } from '../firebase';
 import { signInWithGoogle } from '../services/firebaseService';
+import {
+  authenticateWithBiometrics,
+  getSavedBiometricCredentials,
+  getLastBiometricUser,
+  isInIFrame,
+} from '../services/biometricService';
+import { FingerprintPromptModal } from './FingerprintPromptModal';
 
 interface LoginViewProps {
   onNavigateToRegister: () => void;
@@ -140,17 +147,78 @@ export const LoginView: React.FC<LoginViewProps> = ({
     }
   };
 
-  const handleBiometricAuth = () => {
-    setIsBiometricLoading(true);
+  // Check if biometric credential exists on this device
+  const [hasBiometricEnrolled, setHasBiometricEnrolled] = useState(false);
+  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+  const [pendingBiometricUser, setPendingBiometricUser] = useState<{ email: string; uid?: string } | null>(null);
+
+  useEffect(() => {
+    const creds = getSavedBiometricCredentials();
+    if (creds.length > 0) {
+      setHasBiometricEnrolled(true);
+      const last = getLastBiometricUser();
+      if (last?.email) {
+        if (!email) setEmail(last.email);
+        setPendingBiometricUser(last);
+      } else {
+        setPendingBiometricUser({ email: creds[0].email, uid: creds[0].uid });
+      }
+    }
+  }, []);
+
+  const handleBiometricAuth = async () => {
     setGeneralError(null);
     setEmailError(null);
     setPasswordError(null);
     setInfoMessage(null);
 
-    setTimeout(() => {
+    const creds = getSavedBiometricCredentials();
+    if (creds.length === 0 && !email) {
+      setGeneralError('এই ডিভাইসে কোনো ফিঙ্গারপ্রিন্ট রেজিস্টার করা নেই। প্রথমে পাসওয়ার্ড দিয়ে লগইন করে Profile থেকে Fingerprint Toggle টি ON করুন।');
+      return;
+    }
+
+    // Determine target user
+    let targetEmail = email;
+    let targetUid: string | undefined;
+
+    if (creds.length > 0) {
+      const match = creds.find(c => email && c.email.toLowerCase() === email.toLowerCase()) || creds[0];
+      targetEmail = match.email;
+      targetUid = match.uid;
+    }
+
+    setPendingBiometricUser({ email: targetEmail || email, uid: targetUid });
+
+    // In iframe or preview container, open interactive touch modal
+    if (isInIFrame()) {
+      setIsPromptModalOpen(true);
+      return;
+    }
+
+    setIsBiometricLoading(true);
+    try {
+      const res = await authenticateWithBiometrics(targetEmail);
       setIsBiometricLoading(false);
-      setInfoMessage('Fingerprint & Biometric Login will be configured in the next update. Please sign in with Email & Password or Google for now.');
-    }, 600);
+
+      if (res.success && res.email) {
+        setInfoMessage('ফিঙ্গারপ্রিন্ট ভেরিফিকেশন সফল হয়েছে! লগইন করা হচ্ছে...');
+        onLoginSuccess(res.email, res.uid);
+      } else {
+        // Fallback to modal if browser blocked dialog
+        setIsPromptModalOpen(true);
+      }
+    } catch (err: any) {
+      setIsBiometricLoading(false);
+      setIsPromptModalOpen(true);
+    }
+  };
+
+  const handleModalSuccess = () => {
+    setIsPromptModalOpen(false);
+    const target = pendingBiometricUser || { email: email || 'user@payflow.com' };
+    setInfoMessage('ফিঙ্গারপ্রিন্ট ভেরিফিকেশন সফল হয়েছে! প্রবেশ করা হচ্ছে...');
+    onLoginSuccess(target.email, target.uid);
   };
 
   return (
@@ -400,14 +468,30 @@ export const LoginView: React.FC<LoginViewProps> = ({
               type="button"
               onClick={handleBiometricAuth}
               disabled={isLoading || isGoogleLoading || isBiometricLoading}
-              className="h-[46px] bg-[#E9F7F1]/60 hover:bg-[#E9F7F1] active:scale-[0.99] disabled:opacity-75 border border-[#008F5B]/30 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-[#008F5B] transition-all cursor-pointer"
+              className={`h-[46px] relative ${
+                hasBiometricEnrolled
+                  ? 'bg-gradient-to-r from-[#E9F7F1] to-[#DCF5E9] border-[#008F5B]/50 hover:border-[#008F5B] text-[#008F5B] shadow-xs'
+                  : 'bg-[#F5FAF7] hover:bg-[#E9F7F1] border-[#D7E0DC] text-[#4A5568]'
+              } active:scale-[0.99] disabled:opacity-75 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer`}
+              title={
+                hasBiometricEnrolled
+                  ? 'Sign in with enrolled fingerprint'
+                  : 'Fingerprint Biometric Sign In'
+              }
             >
               {isBiometricLoading ? (
                 <Loader2 size={17} className="animate-spin text-[#008F5B]" />
               ) : (
                 <>
-                  <Fingerprint size={17} strokeWidth={2.2} />
+                  <Fingerprint
+                    size={17}
+                    strokeWidth={2.2}
+                    className={hasBiometricEnrolled ? 'text-[#008F5B]' : 'text-[#6E7974]'}
+                  />
                   <span>Fingerprint</span>
+                  {hasBiometricEnrolled && (
+                    <span className="w-2 h-2 rounded-full bg-[#008F5B] animate-pulse" />
+                  )}
                 </>
               )}
             </button>
@@ -447,6 +531,15 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Fingerprint Biometric Prompt Modal */}
+      <FingerprintPromptModal
+        isOpen={isPromptModalOpen}
+        mode="verify"
+        userEmail={pendingBiometricUser?.email || email}
+        onSuccess={handleModalSuccess}
+        onCancel={() => setIsPromptModalOpen(false)}
+      />
     </div>
   );
 };

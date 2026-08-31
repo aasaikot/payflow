@@ -110,21 +110,17 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
         console.warn('Profile name update note:', profErr);
       }
 
-      // 3. Create initial Firestore Profile
+      // 3. Create initial isolated Firestore Profile
       await saveUserProfile({
         uid,
         name: cleanName,
-        companyName: 'Essential Drugs Company Limited',
-        designation: 'Assistant Engineering Officer',
+        companyName: '',
+        designation: '',
         pin: cleanPin,
         email: cleanEmail,
-        mobile: '+880 1719-364298',
-        joinDate: '01 January 2024',
-        photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        mobile: '',
+        joinDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
       });
-
-      // 4. Seed user months database
-      await seedInitialData(uid);
 
       setIsLoading(false);
       onRegisterSuccess(cleanEmail, uid);

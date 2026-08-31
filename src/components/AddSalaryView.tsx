@@ -581,7 +581,7 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
                     <div className="mt-0.5 pt-1.5 border-t border-[#008F5B]/10 flex items-center gap-1 text-[10.5px] text-[#008F5B] font-medium leading-tight">
                       <Sparkles size={11} className="shrink-0 text-[#008F5B]" />
                       <span>
-                        আপনার হাউজ রেন্টের পার্সেন্টেজ লিখুন। যেমন: <strong>50%</strong> বা সরাসরি টাকার পরিমাণ লিখুন।
+                        আপনার হাউজ রেন্টের পার্সেন্টেজ লিখুন, বা সরাসরি টাকার পরিমাণ লিখুন। উদাহরণঃ <strong>50%</strong>
                       </span>
                     </div>
                   )}
@@ -591,7 +591,7 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
                     <div className="mt-0.5 pt-1.5 border-t border-[#008F5B]/10 flex items-center gap-1 text-[10.5px] text-[#008F5B] font-medium leading-tight">
                       <Sparkles size={11} className="shrink-0 text-[#008F5B]" />
                       <span>
-                        আপনার স্পেশালের পার্সেন্টেজ লিখুন। যেমন: <strong>10%</strong> বা সরাসরি টাকার পরিমাণ লিখুন।
+                        আপনার স্পেশালের পার্সেন্টেজ লিখুন, বা সরাসরি টাকার পরিমাণ লিখুন। উদাহরণঃ <strong>10%</strong> 
                       </span>
                     </div>
                   )}
@@ -678,7 +678,7 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
                     <div className="mt-0.5 pt-1.5 border-t border-[#D83B3B]/10 flex items-center gap-1 text-[10.5px] text-[#D83B3B] font-medium leading-tight">
                       <Sparkles size={11} className="shrink-0 text-[#D83B3B]" />
                       <span>
-                        আপনার পিএফের পার্সেন্টেজ লিখুন। যেমন: <strong>10%</strong> বা সরাসরি টাকার পরিমাণ লিখুন।
+                        আপনার পিএফের পার্সেন্টেজ লিখুন, বা সরাসরি টাকার পরিমাণ লিখুন। উদাহরণঃ <strong>10%</strong>
                       </span>
                     </div>
                   )}

@@ -210,6 +210,46 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
       ? Number(((netDiff / recordB.net) * 100).toFixed(1))
       : 0;
 
+  if (salaryRecords.length < 2) {
+    return (
+      <div id="salary-comparison-screen" className="w-full flex flex-col pb-10">
+        <div className="w-full flex items-center justify-between px-4 py-3.5 bg-white/95 backdrop-blur-md border-b border-[#E4ECE8] sticky top-0 z-20 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              id="comparison-back-btn"
+              onClick={() => onNavigate('dashboard')}
+              className="w-9 h-9 rounded-full bg-[#F5FAF7] border border-[#E4ECE8] flex items-center justify-center text-[#17211D] hover:bg-[#E9F7F1] transition-all cursor-pointer shadow-2xs"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <h1 className="text-[17px] font-extrabold text-[#17211D] tracking-tight">
+              Salary Comparison
+            </h1>
+          </div>
+        </div>
+        <div className="p-8 flex flex-col items-center justify-center text-center mt-12">
+          <ArrowUpDown size={48} className="text-[#8A9791] mb-3" />
+          <h2 className="text-base font-bold text-[#17211D]">
+            {salaryRecords.length === 0 ? 'No Salary Records Available' : 'Need at least 2 Months to Compare'}
+          </h2>
+          <p className="text-xs text-[#6E7974] mt-1 max-w-xs">
+            {salaryRecords.length === 0
+              ? 'Add your monthly salary records to compare salary trends, allowances, and deductions side by side.'
+              : 'You currently have 1 monthly record. Add another month’s salary to unlock side-by-side comparison analytics.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate('add')}
+            className="mt-5 px-5 py-2.5 bg-[#008F5B] text-white text-xs font-bold rounded-xl hover:bg-[#007A4D] transition-all shadow-sm cursor-pointer"
+          >
+            + Add Salary Record
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div id="salary-comparison-screen" className="w-full flex flex-col pb-10">
       {/* Top Sticky Header */}
@@ -320,53 +360,77 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           </div>
         </div>
 
-        {/* Executive Net Salary Growth & Summary Card (Themed with PayFlow Signature Emerald) */}
+        {/* Executive Net Salary Growth & Summary Card (Themed with Clean White and PayFlow Emerald Green) */}
         <div
           id="executive-summary-card"
-          className="w-full bg-gradient-to-br from-[#008F5B] via-[#007A4D] to-[#00633E] text-white rounded-2xl p-4 sm:p-4.5 shadow-[0_8px_25px_rgba(0,143,91,0.2)] relative overflow-hidden"
+          className="w-full bg-white rounded-2xl p-4 sm:p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] flex flex-col gap-3.5 relative overflow-hidden"
         >
-          {/* Decorative Background Circles */}
-          <div className="absolute -top-10 -right-10 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-black/10 rounded-full blur-xl pointer-events-none" />
-
           {/* Header Row of the Summary Card */}
-          <div className="flex items-center gap-1.5 relative z-10 mb-3">
-            <TrendingUp size={15} className="text-white/90" />
-            <span className="text-[11.5px] font-extrabold text-white uppercase tracking-wider">
-              Net Salary Growth & Summary
-            </span>
+          <div className="flex items-center justify-between pb-2 border-b border-[#E4ECE8] relative z-10">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-[#E9F7F1] text-[#008F5B] flex items-center justify-center">
+                <TrendingUp size={16} />
+              </div>
+              <div>
+                <h2 className="text-[13.5px] font-black text-[#17211D] leading-tight">
+                  Net Salary Growth & Summary
+                </h2>
+                <span className="text-[10px] text-[#6E7974] font-medium block">
+                  {recordA?.monthLabel?.split(' ')[0]} vs {recordB?.monthLabel?.split(' ')[0]} Comparative Overview
+                </span>
+              </div>
+            </div>
+
+            <div
+              className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-black ${
+                netDiff >= 0
+                  ? 'bg-[#E9F7F1] text-[#008F5B] border border-[#008F5B]/30'
+                  : 'bg-[#FDF2F2] text-[#D83B3B] border border-[#D83B3B]/30'
+              }`}
+            >
+              {netDiff >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+              <span>
+                {netDiff >= 0 ? '+' : ''}
+                {netDiffPct}% Net
+              </span>
+            </div>
           </div>
 
-          {/* 3 Redesigned Cards as Specified */}
+          {/* 3 Metrics Cards */}
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2 relative z-10">
             {/* 1. NET PAYABLE CARD */}
-            <div className="bg-white/15 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between transition-all group relative overflow-hidden shadow-xs">
-              {/* Subtle Watermark Icon */}
-              <Wallet
-                size={34}
-                className="absolute -right-2 -bottom-2 text-white/10 pointer-events-none transition-transform group-hover:scale-110"
-              />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F5FAF7] border border-[#008F5B]/30 shadow-[0_2px_8px_rgba(0,143,91,0.04)] flex flex-col justify-between relative overflow-hidden group">
+              {/* Theme Watermark Icon (Net / Wallet) - Top Right like KPI cards */}
+              <div className="absolute top-2 right-2 text-[#008F5B]/[0.08] group-hover:text-[#008F5B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                <Wallet size={36} strokeWidth={1.5} />
+              </div>
 
               <div className="relative z-10">
-                <span className="text-[8.5px] sm:text-[9.5px] font-black text-white/80 uppercase tracking-wider block leading-tight">
-                  NET
-                </span>
-                <span className="text-[8.5px] sm:text-[9.5px] font-black text-white uppercase tracking-wider block leading-tight">
-                  PAYABLE
+                <span className="text-[9px] sm:text-[9.5px] font-black text-[#008F5B] uppercase tracking-wider block leading-tight">
+                  NET PAYABLE
                 </span>
               </div>
 
-              <div className="mt-2 relative z-10">
-                <strong className="block text-[11px] sm:text-[12.5px] font-black text-white tracking-tight leading-tight whitespace-normal break-words">
+              <div className="mt-1 relative z-10">
+                <strong className="block text-[10.5px] sm:text-[12.5px] font-black text-[#008F5B] tracking-tight leading-tight whitespace-nowrap">
                   {formatBDT(recordA?.net || 0)}
                 </strong>
-                <span className="text-[8.5px] sm:text-[9.5px] font-medium text-white/85 block mt-1 leading-tight whitespace-normal break-words">
-                  Vs {formatBDT(recordB?.net || 0)}
-                </span>
+
+                {/* Vs recordB with font-size: 10px, font-weight: 700 and large bold Taka symbol */}
+                <div className="mt-1 text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                  <span className="text-[#6E7974] font-bold">Vs</span>
+                  <span className="text-[12px] font-extrabold text-[#17211D] leading-none">৳</span>
+                  <span className="font-bold text-[#17211D]">
+                    {Number(recordB?.net || 0).toLocaleString('en-BD', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
               </div>
 
               {/* Visual Micro Progress Comparison */}
-              <div className="mt-2 w-full h-1 bg-black/15 rounded-full overflow-hidden relative z-10">
+              <div className="mt-2 w-full h-1 bg-[#E2EBE6] rounded-full overflow-hidden relative z-10">
                 <div
                   style={{
                     width: `${Math.min(
@@ -377,39 +441,44 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                       )
                     )}%`,
                   }}
-                  className="h-full bg-white rounded-full transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-[#008F5B] to-[#00B377] rounded-full transition-all duration-300"
                 />
               </div>
             </div>
 
             {/* 2. GROSS AMOUNT CARD */}
-            <div className="bg-white/15 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between transition-all group relative overflow-hidden shadow-xs">
-              {/* Subtle Watermark Icon */}
-              <Landmark
-                size={34}
-                className="absolute -right-2 -bottom-2 text-white/10 pointer-events-none transition-transform group-hover:scale-110"
-              />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#D8E6DF] shadow-[0_2px_8px_rgba(23,33,29,0.03)] flex flex-col justify-between relative overflow-hidden group">
+              {/* Theme Watermark Icon (Gross / Landmark) - Top Right like KPI cards */}
+              <div className="absolute top-2 right-2 text-[#17211D]/[0.07] group-hover:text-[#008F5B]/[0.12] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                <Landmark size={36} strokeWidth={1.5} />
+              </div>
 
               <div className="relative z-10">
-                <span className="text-[8.5px] sm:text-[9.5px] font-black text-white/80 uppercase tracking-wider block leading-tight">
-                  GROSS
-                </span>
-                <span className="text-[8.5px] sm:text-[9.5px] font-black text-white uppercase tracking-wider block leading-tight">
-                  AMOUNT
+                <span className="text-[9px] sm:text-[9.5px] font-black text-[#5C6E66] uppercase tracking-wider block leading-tight">
+                  GROSS AMOUNT
                 </span>
               </div>
 
-              <div className="mt-2 relative z-10">
-                <strong className="block text-[11px] sm:text-[12.5px] font-black text-white tracking-tight leading-tight whitespace-normal break-words">
+              <div className="mt-1 relative z-10">
+                <strong className="block text-[10.5px] sm:text-[12.5px] font-black text-[#17211D] tracking-tight leading-tight whitespace-nowrap">
                   {formatBDT(recordA?.gross || 0)}
                 </strong>
-                <span className="text-[8.5px] sm:text-[9.5px] font-medium text-white/85 block mt-1 leading-tight whitespace-normal break-words">
-                  Vs {formatBDT(recordB?.gross || 0)}
-                </span>
+
+                {/* Vs recordB with font-size: 10px, font-weight: 700 and large bold Taka symbol */}
+                <div className="mt-1 text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                  <span className="text-[#6E7974] font-bold">Vs</span>
+                  <span className="text-[12px] font-extrabold text-[#17211D] leading-none">৳</span>
+                  <span className="font-bold text-[#17211D]">
+                    {Number(recordB?.gross || 0).toLocaleString('en-BD', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
               </div>
 
               {/* Visual Micro Progress Comparison */}
-              <div className="mt-2 w-full h-1 bg-black/15 rounded-full overflow-hidden relative z-10">
+              <div className="mt-2 w-full h-1 bg-[#E2EBE6] rounded-full overflow-hidden relative z-10">
                 <div
                   style={{
                     width: `${Math.min(
@@ -420,39 +489,44 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                       )
                     )}%`,
                   }}
-                  className="h-full bg-[#52EEB6] rounded-full transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-[#008F5B] to-[#00B377] rounded-full transition-all duration-300"
                 />
               </div>
             </div>
 
             {/* 3. TOTAL DEDUCTION CARD */}
-            <div className="bg-white/15 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between transition-all group relative overflow-hidden shadow-xs">
-              {/* Subtle Watermark Icon */}
-              <ShieldAlert
-                size={34}
-                className="absolute -right-2 -bottom-2 text-white/10 pointer-events-none transition-transform group-hover:scale-110"
-              />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#FDCFD4] shadow-[0_2px_8px_rgba(216,59,59,0.03)] flex flex-col justify-between relative overflow-hidden group">
+              {/* Theme Watermark Icon (Deduction / ShieldAlert) - Top Right like KPI cards */}
+              <div className="absolute top-2 right-2 text-[#D83B3B]/[0.08] group-hover:text-[#D83B3B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                <ShieldAlert size={36} strokeWidth={1.5} />
+              </div>
 
               <div className="relative z-10">
-                <span className="text-[8.5px] sm:text-[9.5px] font-black text-white/80 uppercase tracking-wider block leading-tight">
-                  TOTAL
-                </span>
-                <span className="text-[8.5px] sm:text-[9.5px] font-black text-[#FFD6D6] uppercase tracking-wider block leading-tight">
-                  DEDUCTION
+                <span className="text-[9px] sm:text-[9.5px] font-black text-[#D83B3B] uppercase tracking-wider block leading-tight">
+                  TOTAL DEDUCT
                 </span>
               </div>
 
-              <div className="mt-2 relative z-10">
-                <strong className="block text-[11px] sm:text-[12.5px] font-black text-[#FFD6D6] tracking-tight leading-tight whitespace-normal break-words">
+              <div className="mt-1 relative z-10">
+                <strong className="block text-[10.5px] sm:text-[12.5px] font-black text-[#D83B3B] tracking-tight leading-tight whitespace-nowrap">
                   {formatBDT(recordA?.deduction || 0)}
                 </strong>
-                <span className="text-[8.5px] sm:text-[9.5px] font-medium text-white/85 block mt-1 leading-tight whitespace-normal break-words">
-                  Vs {formatBDT(recordB?.deduction || 0)}
-                </span>
+
+                {/* Vs recordB with font-size: 10px, font-weight: 700 and large bold Taka symbol */}
+                <div className="mt-1 text-[10px] font-bold text-[#8A1A1A] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                  <span className="text-[#D83B3B]/80 font-bold">Vs</span>
+                  <span className="text-[12px] font-extrabold text-[#D83B3B] leading-none">৳</span>
+                  <span className="font-bold text-[#D83B3B]">
+                    {Number(recordB?.deduction || 0).toLocaleString('en-BD', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
               </div>
 
               {/* Visual Micro Progress Comparison */}
-              <div className="mt-2 w-full h-1 bg-black/15 rounded-full overflow-hidden relative z-10">
+              <div className="mt-2 w-full h-1 bg-[#FEE2E2] rounded-full overflow-hidden relative z-10">
                 <div
                   style={{
                     width: `${Math.min(
@@ -463,25 +537,25 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                       )
                     )}%`,
                   }}
-                  className="h-full bg-[#FF8080] rounded-full transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-[#DC2626] to-[#EF4444] rounded-full transition-all duration-300"
                 />
               </div>
             </div>
           </div>
 
-          {/* Bottom Row: Month Comparison Label on Left and Net Growth Diff on Right (Small) */}
-          <div className="w-full flex items-center justify-between pt-2.5 relative z-10">
-            <span className="text-[10.5px] text-white/80 font-medium tracking-wide">
-              {recordA?.monthLabel?.split(' ')[0]} vs {recordB?.monthLabel?.split(' ')[0]}
+          {/* Bottom Row: Month Comparison Label on Left and Net Growth Diff on Right */}
+          <div className="w-full flex items-center justify-between pt-1 relative z-10">
+            <span className="text-[10.5px] text-[#6E7974] font-semibold tracking-wide">
+              {recordA?.monthLabel?.split(' ')[0]} vs {recordB?.monthLabel?.split(' ')[0]} Difference
             </span>
 
             <div className="flex items-center gap-1 font-extrabold text-[10.5px]">
               {netDiff >= 0 ? (
-                <ArrowUpRight size={13} className="text-[#52EEB6] stroke-[2.5]" />
+                <ArrowUpRight size={13} className="text-[#008F5B] stroke-[2.5]" />
               ) : (
-                <ArrowDownRight size={13} className="text-[#FFBDBD] stroke-[2.5]" />
+                <ArrowDownRight size={13} className="text-[#D83B3B] stroke-[2.5]" />
               )}
-              <span className={netDiff >= 0 ? 'text-[#E0FFF2] tracking-wide' : 'text-[#FFD8D8] tracking-wide'}>
+              <span className={netDiff >= 0 ? 'text-[#008F5B] tracking-wide' : 'text-[#D83B3B] tracking-wide'}>
                 {netDiff >= 0 ? '+' : ''}
                 {formatBDT(netDiff)} ({netDiffPct >= 0 ? '+' : ''}
                 {netDiffPct}%)
@@ -493,42 +567,65 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         {/* Section Filter Switcher (All / Income / Deduction) */}
         <div
           id="comparison-section-tabs"
-          className="w-full bg-[#EEF4F1] p-1 rounded-xl border border-[#D7E0DC] grid grid-cols-3 gap-1 shadow-inner"
+          className="w-full bg-white rounded-2xl border border-[#008F5B] overflow-hidden flex items-stretch shadow-2xs"
         >
+          {/* Tab 1: All Items */}
           <button
             type="button"
             onClick={() => setFilterTab('all')}
-            className={`py-2 rounded-lg text-[11.5px] font-extrabold transition-all cursor-pointer ${
+            className={`flex-1 py-2.5 sm:py-3 px-2 flex items-center justify-center cursor-pointer transition-all ${
               filterTab === 'all'
-                ? 'bg-white text-[#17211D] shadow-xs ring-1 ring-black/5'
-                : 'text-[#6E7974] hover:text-[#17211D]'
+                ? 'bg-[#E8F7F0] text-[#008F5B] font-bold'
+                : 'bg-white text-[#17211D] font-bold hover:bg-[#F5FAF7]'
             }`}
           >
-            All Items
+            <span className="text-[12.5px] sm:text-[13px] leading-tight">
+              All Items
+            </span>
           </button>
+
+          {/* Vertical Divider */}
+          <div className="w-px bg-[#008F5B] self-stretch shrink-0" />
+
+          {/* Tab 2: Income Only */}
           <button
             type="button"
             onClick={() => setFilterTab('income')}
-            className={`py-2 rounded-lg text-[11.5px] font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`flex-1 py-2.5 sm:py-3 px-2 flex items-center justify-center gap-1 cursor-pointer transition-all ${
               filterTab === 'income'
-                ? 'bg-white text-[#008F5B] shadow-xs ring-1 ring-[#008F5B]/20'
-                : 'text-[#6E7974] hover:text-[#008F5B]'
+                ? 'bg-[#E8F7F0] text-[#008F5B] font-bold'
+                : 'bg-white text-[#17211D] font-bold hover:bg-[#F5FAF7]'
             }`}
           >
-            <PlusCircle size={12} />
-            <span>Income Only</span>
+            <PlusCircle
+              size={13}
+              className={filterTab === 'income' ? 'text-[#008F5B]' : 'text-[#6E7974]'}
+            />
+            <span className="text-[12.5px] sm:text-[13px] leading-tight">
+              Income
+            </span>
           </button>
+
+          {/* Vertical Divider */}
+          <div className="w-px bg-[#008F5B] self-stretch shrink-0" />
+
+          {/* Tab 3: Deduction Only */}
           <button
             type="button"
             onClick={() => setFilterTab('deduction')}
-            className={`py-2 rounded-lg text-[11.5px] font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`flex-1 py-2.5 sm:py-3 px-2 flex items-center justify-center gap-1 cursor-pointer transition-all ${
               filterTab === 'deduction'
-                ? 'bg-white text-[#D83B3B] shadow-xs ring-1 ring-[#D83B3B]/20'
-                : 'text-[#6E7974] hover:text-[#D83B3B]'
+                ? 'bg-[#E8F7F0] text-[#008F5B] font-bold'
+                : 'bg-white text-[#17211D] font-bold hover:bg-[#F5FAF7]'
             }`}
           >
-            <MinusCircle size={12} />
-            <span>Deduction Only</span>
+            <MinusCircle
+              size={13}
+              className={filterTab === 'deduction' ? 'text-[#008F5B]' : 'text-[#6E7974]'}
+            />
+            <span className="text-[12.5px] sm:text-[13px] leading-tight">
+              Deduction
+            </span>
           </button>
         </div>
 

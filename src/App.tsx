@@ -29,14 +29,25 @@ import {
 } from './services/firebaseService';
 import { Smartphone, Code, CheckCircle, LogOut, Cloud, ShieldCheck } from 'lucide-react';
 
+const BLANK_USER_PROFILE: UserProfileData = {
+  uid: '',
+  name: '',
+  email: '',
+  companyName: '',
+  designation: '',
+  pin: '',
+  mobile: '',
+  joinDate: '',
+};
+
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>('login');
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview');
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [activeMonth, setActiveMonth] = useState('2026-08');
   const [editSalaryMonth, setEditSalaryMonth] = useState<string | null>(null);
-  const [salaryRecords, setSalaryRecords] = useState<MonthSalaryRecord[]>(INITIAL_SALARY_RECORDS);
-  const [userProfile, setUserProfile] = useState<UserProfileData>(INITIAL_USER_PROFILE);
+  const [salaryRecords, setSalaryRecords] = useState<MonthSalaryRecord[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfileData>(BLANK_USER_PROFILE);
   const [currentUid, setCurrentUid] = useState<string>('');
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -46,11 +57,8 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Ensure Firebase connection and anonymous session if not logged in
+  // Test Firebase Firestore connection
   useEffect(() => {
-    autoSignInIfGuest().catch((err) => {
-      console.warn('Guest sign-in note:', err);
-    });
     testFirestoreConnection().then((connected) => {
       setIsFirebaseConnected(connected);
     });
@@ -62,26 +70,31 @@ export default function App() {
       if (firebaseUser) {
         setCurrentUid(firebaseUser.uid);
         setIsFirebaseConnected(true);
+        setCurrentScreen('dashboard');
 
-        // Load profile and salary records from Firestore
+        // Load isolated profile and salary records from Firestore
         const profile = await fetchUserProfile(firebaseUser.uid);
         if (profile) {
           setUserProfile(profile);
         } else {
-          setUserProfile((prev) => ({
-            ...prev,
+          setUserProfile({
+            ...BLANK_USER_PROFILE,
             uid: firebaseUser.uid,
-            email: firebaseUser.email || prev.email,
-          }));
+            email: firebaseUser.email || '',
+            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0]?.toUpperCase() || 'USER',
+          });
         }
 
         const records = await fetchSalaryRecords(firebaseUser.uid);
+        setSalaryRecords(records || []);
         if (records && records.length > 0) {
-          setSalaryRecords(records);
           setActiveMonth(records[0].month);
         }
       } else {
         setCurrentUid('');
+        setUserProfile(BLANK_USER_PROFILE);
+        setSalaryRecords([]);
+        setCurrentScreen('login');
       }
     });
 
@@ -96,8 +109,9 @@ export default function App() {
       currentUid,
       ({ profile, records }) => {
         if (profile) setUserProfile(profile);
+        setSalaryRecords(records || []);
         if (records && records.length > 0) {
-          setSalaryRecords(records);
+          setActiveMonth((prev) => (records.some((r) => r.month === prev) ? prev : records[0].month));
         }
       },
       (err) => {
@@ -109,15 +123,16 @@ export default function App() {
   }, [currentUid]);
 
   const handleLoginSuccess = async (email: string, uid?: string) => {
-    const effectiveUid = uid || currentUid;
+    const effectiveUid = uid || auth.currentUser?.uid || currentUid;
     setCurrentUid(effectiveUid);
     setUserProfile((prev) => ({ ...prev, email, uid: effectiveUid }));
 
     // Try fetching remote records from Firestore
     try {
       const records = await fetchSalaryRecords(effectiveUid);
+      setSalaryRecords(records || []);
       if (records && records.length > 0) {
-        setSalaryRecords(records);
+        setActiveMonth(records[0].month);
       }
       const remoteProfile = await fetchUserProfile(effectiveUid);
       if (remoteProfile) {
@@ -132,9 +147,10 @@ export default function App() {
   };
 
   const handleRegisterSuccess = async (email: string, uid?: string) => {
-    const effectiveUid = uid || currentUid;
+    const effectiveUid = uid || auth.currentUser?.uid || currentUid;
     setCurrentUid(effectiveUid);
     setUserProfile((prev) => ({ ...prev, email, uid: effectiveUid }));
+    setSalaryRecords([]);
     setCurrentScreen('dashboard');
     showToast(`Account registered & synchronized with Firebase!`);
   };

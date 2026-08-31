@@ -7,6 +7,8 @@ import {
   ChevronDown,
   TrendingUp,
   ArrowRight,
+  ArrowUpRight,
+  ArrowDownRight,
   Eye,
   EyeOff,
   Download,
@@ -33,6 +35,21 @@ import { MonthSalaryRecord, UserProfileData, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
 import { PayFlowTopBar } from './PayFlowTopBar';
 
+const getMonthYearFull = (monthStr: string, monthLabel?: string): string => {
+  if (monthLabel) {
+    return monthLabel.toUpperCase();
+  }
+  if (monthStr && monthStr.includes('-')) {
+    const [year, m] = monthStr.split('-');
+    const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+    const mIdx = parseInt(m, 10) - 1;
+    if (mIdx >= 0 && mIdx < 12) {
+      return `${monthNames[mIdx]} ${year}`;
+    }
+  }
+  return monthStr;
+};
+
 interface DashboardViewProps {
   userProfile: UserProfileData;
   salaryRecords: MonthSalaryRecord[];
@@ -53,24 +70,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   const activeRecord =
-    salaryRecords.find((r) => r.month === activeMonth) || salaryRecords[0];
+    salaryRecords.find((r) => r.month === activeMonth) || salaryRecords[0] || null;
 
+  const hasRecords = salaryRecords.length > 0;
   const gross = activeRecord?.gross || 0;
   const deduction = activeRecord?.deduction || 0;
   const net = activeRecord?.net || 0;
-  const incomePercentage = gross > 0 ? Math.round((net / gross) * 100) : 67;
+  const incomePercentage = gross > 0 ? Math.round((net / gross) * 100) : hasRecords ? 0 : 0;
   const deductionPercentage = 100 - incomePercentage;
 
   // Previous month for growth calculation
-  const currentIndex = salaryRecords.findIndex((r) => r.month === activeMonth);
+  const currentIndex = activeRecord ? salaryRecords.findIndex((r) => r.month === activeMonth) : -1;
   const prevRecord =
-    currentIndex < salaryRecords.length - 1
+    currentIndex !== -1 && currentIndex < salaryRecords.length - 1
       ? salaryRecords[currentIndex + 1]
       : null;
-  const netGrowth = prevRecord ? net - prevRecord.net : 6256;
+  const netGrowth = prevRecord ? net - prevRecord.net : 0;
   const growthPercent = prevRecord && prevRecord.net > 0
     ? ((netGrowth / prevRecord.net) * 100).toFixed(1)
-    : '7.9';
+    : '0.0';
 
   const handleDownloadSlip = () => {
     setDownloadSuccess(true);
@@ -177,7 +195,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex items-start gap-2 text-[#0E3B2E] min-w-0">
                 <Building2 size={14} className="text-[#0E3B2E] shrink-0 mt-0.5 stroke-[1.8]" />
                 <span className="text-[11.5px] sm:text-[12.5px] font-semibold text-[#0E3B2E] leading-snug break-words">
-                  {userProfile.companyName || 'Tech Solutions Ltd.'}
+                  {userProfile.companyName || 'PayFlow Workspace'}
                 </span>
               </div>
 
@@ -185,7 +203,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex items-start gap-2 text-[#0E3B2E] min-w-0">
                 <User size={14} className="text-[#0E3B2E] shrink-0 mt-0.5 stroke-[1.8]" />
                 <span className="text-[11.5px] sm:text-[12.5px] font-semibold text-[#0E3B2E] leading-snug break-words">
-                  {userProfile.name || 'Saikot Ahmed'}
+                  {userProfile.name || userProfile.email?.split('@')[0] || 'Employee'}
                 </span>
               </div>
 
@@ -193,7 +211,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex items-start gap-2 text-[#0E3B2E] min-w-0">
                 <Briefcase size={14} className="text-[#0E3B2E] shrink-0 mt-0.5 stroke-[1.8]" />
                 <span className="text-[11.5px] sm:text-[12.5px] font-semibold text-[#0E3B2E] leading-snug break-words">
-                  {userProfile.designation || 'Software Engineer'}
+                  {userProfile.designation || 'Staff Member'}
                 </span>
               </div>
 
@@ -201,7 +219,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex items-center gap-2 text-[#0E3B2E] min-w-0">
                 <ShieldCheck size={14} className="text-[#0E3B2E] shrink-0 stroke-[1.8]" />
                 <span className="text-[11.5px] sm:text-[12.5px] font-semibold text-[#0E3B2E] leading-none">
-                  PIN: {userProfile.pin || userProfile.employeeId || '123456'}
+                  PIN: {userProfile.pin || userProfile.employeeId || '---'}
                 </span>
               </div>
             </div>
@@ -214,20 +232,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Verified Pill Badge (Repositioned above NET AMOUNT) */}
               <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/40 border border-white/70 text-[8.5px] font-bold text-[#0E3B2E] shadow-2xs mb-1">
                 <ShieldCheck size={10} className="text-[#059669]" />
-                <span className="tracking-wide">VERIFIED</span>
+                <span className="tracking-wide">{hasRecords ? 'VERIFIED' : 'READY'}</span>
               </div>
 
               {/* NET AMOUNT (Uppercase) with Mask toggle */}
               <div className="flex items-center justify-end gap-1 text-[#226352] text-[9.5px] sm:text-[10.5px] font-bold tracking-wider uppercase leading-none">
                 <span>NET AMOUNT</span>
-                <button
-                  type="button"
-                  onClick={() => setIsAmountMasked(!isAmountMasked)}
-                  className="text-[#226352]/75 hover:text-[#0E3B2E] transition-colors cursor-pointer p-0.5"
-                  title={isAmountMasked ? 'Show amount' : 'Hide amount'}
-                >
-                  {isAmountMasked ? <EyeOff size={10} /> : <Eye size={10} />}
-                </button>
+                {hasRecords && (
+                  <button
+                    type="button"
+                    onClick={() => setIsAmountMasked(!isAmountMasked)}
+                    className="text-[#226352]/75 hover:text-[#0E3B2E] transition-colors cursor-pointer p-0.5"
+                    title={isAmountMasked ? 'Show amount' : 'Hide amount'}
+                  >
+                    {isAmountMasked ? <EyeOff size={10} /> : <Eye size={10} />}
+                  </button>
+                )}
               </div>
 
               {/* Smaller Salary Font with .00 decimal format */}
@@ -239,7 +259,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 className="mt-0.5 text-right"
               >
                 <strong className="block text-[13px] sm:text-[15px] font-bold text-[#08281F] leading-none tracking-tight whitespace-nowrap">
-                  {isAmountMasked ? '••••••••' : formatBDT(net)}
+                  {hasRecords ? (isAmountMasked ? '••••••••' : formatBDT(net)) : '৳ 0.00'}
                 </strong>
               </motion.div>
             </div>
@@ -248,7 +268,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Bottom Sub-Banner Ribbon: MONTH OF AUGUST 2026 (Smaller Font) */}
           <div className="w-full bg-[#B8EDDA]/80 border-t border-[#9FE0CE]/80 py-1 px-4 flex items-center justify-center text-center relative z-10">
             <span className="text-[8px] sm:text-[8.5px] font-bold tracking-[0.25em] text-[#1B5746] uppercase">
-              MONTH OF {activeRecord.monthLabel.toUpperCase()}
+              {activeRecord?.monthLabel ? `MONTH OF ${activeRecord.monthLabel.toUpperCase()}` : 'NO SALARY ENTRIES YET'}
             </span>
           </div>
         </motion.div>
@@ -308,29 +328,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Brand New High-End 3-Card Layout for GROSS, DEDUCTION, NET with Watermark Icons */}
         <div
           id="kpi-metrics-cards"
-          className="grid grid-cols-3 gap-2"
+          className="grid grid-cols-3 gap-1.5 sm:gap-2"
         >
           {/* GROSS */}
           <button
             type="button"
             onClick={() => onNavigate('details')}
-            className="p-3 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#E0ECE6] shadow-[0_2px_10px_rgba(23,33,29,0.03)] hover:shadow-md hover:border-[#008F5B]/30 hover:bg-[#F2F9F5] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group relative overflow-hidden"
+            className="p-2 sm:p-3 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#E0ECE6] shadow-[0_2px_10px_rgba(23,33,29,0.03)] hover:shadow-md hover:border-[#008F5B]/30 hover:bg-[#F2F9F5] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group relative overflow-hidden"
           >
             {/* Watermark Icon - Top Right Clean */}
             <div className="absolute top-2 right-2 text-[#17211D]/[0.06] group-hover:text-[#008F5B]/[0.12] transition-all duration-300 pointer-events-none group-hover:scale-105">
-              <Layers size={44} strokeWidth={1.5} />
+              <Layers size={36} strokeWidth={1.5} />
             </div>
 
             <div className="w-full relative z-10">
-              <span className="text-[9.5px] font-extrabold text-[#6E7974] uppercase tracking-wider">
+              <span className="text-[9px] sm:text-[9.5px] font-extrabold text-[#6E7974] uppercase tracking-wider block">
                 GROSS
               </span>
             </div>
-            <div className="mt-2 relative z-10">
-              <strong className="block text-[12.5px] sm:text-[13.5px] font-black text-[#17211D] tracking-tight truncate">
+            <div className="mt-1.5 relative z-10">
+              <strong className="block text-[10px] sm:text-[12.5px] font-black text-[#17211D] tracking-tight whitespace-nowrap">
                 {formatBDT(gross)}
               </strong>
-              <span className="text-[9.5px] text-[#008F5B] font-bold block mt-0.5">
+              <span className="text-[8.5px] sm:text-[9.5px] text-[#008F5B] font-bold block mt-0.5 whitespace-nowrap">
                 Total Earnings
               </span>
             </div>
@@ -340,23 +360,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('details')}
-            className="p-3 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#F5D8D8] shadow-[0_2px_10px_rgba(216,59,59,0.03)] hover:shadow-md hover:border-[#D83B3B]/40 hover:bg-[#FDF0F0] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group relative overflow-hidden"
+            className="p-2 sm:p-3 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#F5D8D8] shadow-[0_2px_10px_rgba(216,59,59,0.03)] hover:shadow-md hover:border-[#D83B3B]/40 hover:bg-[#FDF0F0] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group relative overflow-hidden"
           >
             {/* Watermark Icon - Top Right Clean */}
             <div className="absolute top-2 right-2 text-[#D83B3B]/[0.08] group-hover:text-[#D83B3B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
-              <ShieldAlert size={44} strokeWidth={1.5} />
+              <ShieldAlert size={36} strokeWidth={1.5} />
             </div>
 
             <div className="w-full relative z-10">
-              <span className="text-[9.5px] font-extrabold text-[#D83B3B] uppercase tracking-wider">
+              <span className="text-[9px] sm:text-[9.5px] font-extrabold text-[#D83B3B] uppercase tracking-wider block">
                 DEDUCTION
               </span>
             </div>
-            <div className="mt-2 relative z-10">
-              <strong className="block text-[12.5px] sm:text-[13.5px] font-black text-[#D83B3B] tracking-tight truncate">
+            <div className="mt-1.5 relative z-10">
+              <strong className="block text-[10px] sm:text-[12.5px] font-black text-[#D83B3B] tracking-tight whitespace-nowrap">
                 {formatBDT(deduction)}
               </strong>
-              <span className="text-[9.5px] text-[#D83B3B]/80 font-bold block mt-0.5">
+              <span className="text-[8.5px] sm:text-[9.5px] text-[#D83B3B]/80 font-bold block mt-0.5 whitespace-nowrap">
                 Tax, PF & Cuts
               </span>
             </div>
@@ -366,23 +386,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('details')}
-            className="p-3 rounded-xl bg-gradient-to-b from-[#E9F7F1] to-[#D8F3E5] border border-[#008F5B]/35 shadow-[0_4px_14px_rgba(0,143,91,0.08)] hover:shadow-md hover:border-[#008F5B]/60 hover:scale-[1.02] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group ring-1 ring-[#008F5B]/20 relative overflow-hidden"
+            className="p-2 sm:p-3 rounded-xl bg-gradient-to-b from-[#E9F7F1] to-[#D8F3E5] border border-[#008F5B]/35 shadow-[0_4px_14px_rgba(0,143,91,0.08)] hover:shadow-md hover:border-[#008F5B]/60 hover:scale-[1.02] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group ring-1 ring-[#008F5B]/20 relative overflow-hidden"
           >
             {/* Watermark Icon - Top Right Clean */}
             <div className="absolute top-2 right-2 text-[#008F5B]/[0.09] group-hover:text-[#008F5B]/[0.18] transition-all duration-300 pointer-events-none group-hover:scale-105">
-              <CheckCircle2 size={44} strokeWidth={1.5} />
+              <CheckCircle2 size={36} strokeWidth={1.5} />
             </div>
 
             <div className="w-full relative z-10">
-              <span className="text-[9.5px] font-black text-[#008F5B] uppercase tracking-wider">
+              <span className="text-[9px] sm:text-[9.5px] font-black text-[#008F5B] uppercase tracking-wider block">
                 NET PAID
               </span>
             </div>
-            <div className="mt-2 relative z-10">
-              <strong className="block text-[12.5px] sm:text-[13.5px] font-black text-[#008F5B] tracking-tight truncate">
+            <div className="mt-1.5 relative z-10">
+              <strong className="block text-[10px] sm:text-[12.5px] font-black text-[#008F5B] tracking-tight whitespace-nowrap">
                 {formatBDT(net)}
               </strong>
-              <span className="text-[9.5px] text-[#008F5B] font-extrabold block mt-0.5">
+              <span className="text-[8.5px] sm:text-[9.5px] text-[#008F5B] font-extrabold block mt-0.5 whitespace-nowrap">
                 Net Payable
               </span>
             </div>
@@ -483,80 +503,196 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Salary Growth & Trend
               </h3>
             </div>
-            <button
-              type="button"
-              onClick={() => onNavigate('comparison')}
-              className="text-[11px] font-bold text-[#008F5B] hover:underline cursor-pointer"
-            >
-              Full Comparison &gt;
-            </button>
+            {hasRecords && (
+              <button
+                type="button"
+                onClick={() => onNavigate('comparison')}
+                className="text-[11px] font-bold text-[#008F5B] hover:underline cursor-pointer flex items-center gap-0.5"
+              >
+                <span>Full Comparison</span>
+                <ChevronRight size={13} />
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-            {trendItems.map((item) => {
-              const fullMonthName = item.monthLabel.toUpperCase();
-              const isSelected = item.month === activeMonth;
+          {hasRecords ? (
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              {trendItems.map((item, idx) => {
+                const fullMonth = getMonthYearFull(item.month, item.monthLabel);
+                const isSelected = item.month === activeMonth;
 
-              return (
-                <button
-                  key={item.month}
-                  type="button"
-                  onClick={() => {
-                    onSelectMonth(item.month);
-                    onNavigate('comparison');
-                  }}
-                  className={`p-2 sm:p-2.5 rounded-lg text-center transition-all duration-200 cursor-pointer flex flex-col justify-between ${
-                    isSelected
-                      ? 'bg-gradient-to-b from-[#E9F7F1] to-[#DCF5E9] border border-[#008F5B]/40 text-center shadow-xs shadow-[#008F5B]/10 hover:shadow-md'
-                      : 'bg-[#F5FAF7] border border-[#E4ECE8] hover:border-[#008F5B]/30 hover:bg-[#EBF5F0]'
-                  }`}
-                >
-                  <span
-                    className={`text-[8px] sm:text-[8.5px] font-extrabold uppercase tracking-wider block truncate ${
-                      isSelected ? 'text-[#008F5B]' : 'text-[#6E7974]'
+                return (
+                  <button
+                    key={item.month}
+                    type="button"
+                    onClick={() => {
+                      onSelectMonth(item.month);
+                      onNavigate('comparison');
+                    }}
+                    className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group relative overflow-hidden ${
+                      isSelected
+                        ? 'bg-gradient-to-b from-[#E9F7F1] to-[#DCF5E9] border border-[#008F5B]/40 shadow-[0_4px_14px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/20 hover:shadow-md scale-[1.01]'
+                        : 'bg-gradient-to-b from-white to-[#F8FCFA] border border-[#E0ECE6] shadow-[0_2px_8px_rgba(23,33,29,0.02)] hover:border-[#008F5B]/30 hover:bg-[#F2F9F5] hover:shadow-sm'
                     }`}
                   >
-                    {fullMonthName}
-                  </span>
-                  <strong
-                    className={`text-[11px] sm:text-[12px] font-black block mt-0.5 whitespace-nowrap tracking-tight ${
-                      isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
-                    }`}
-                  >
-                    {formatBDT(item.net)}
-                  </strong>
-                  <span
-                    className={`text-[8px] sm:text-[8.5px] font-bold block mt-0.5 truncate ${
-                      item.isPositive ? 'text-[#008F5B]' : 'text-[#D83B3B]'
-                    }`}
-                  >
-                    {item.growthText}
-                  </span>
-                  <div className="h-3.5 flex items-center justify-center mt-1">
-                    <svg
-                      className={`w-full h-3 ${item.isPositive ? 'text-[#008F5B]' : 'text-[#D83B3B]'}`}
-                      viewBox="0 0 50 15"
-                    >
-                      <path
-                        d={
-                          item.isPositive
-                            ? 'M 0,14 L 16,9 L 34,7 L 48,1'
-                            : 'M 0,2 L 16,7 L 34,9 L 48,14'
-                        }
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={isSelected ? '2.5' : '2'}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                    {/* Top Row: Full Month Name (e.g. JUNE 2026, JULY 2026) */}
+                    <div className="w-full flex items-center justify-between relative z-10">
+                      <span
+                        className={`text-[8.5px] sm:text-[9.5px] font-extrabold uppercase tracking-tight leading-tight block truncate ${
+                          isSelected ? 'text-[#008F5B]' : 'text-[#6E7974]'
+                        }`}
+                        title={fullMonth}
+                      >
+                        {fullMonth}
+                      </span>
+                    </div>
+
+                    {/* Middle: Net Salary Amount (Full formatBDT with .00 decimals, fitted font) */}
+                    <div className="mt-1.5 mb-1 relative z-10">
+                      <strong
+                        className={`block text-[9.5px] sm:text-[11.5px] font-black tracking-tight leading-tight ${
+                          isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
+                        }`}
+                      >
+                        {formatBDT(item.net)}
+                      </strong>
+                      <span className="text-[8px] sm:text-[8.5px] text-[#8A9791] font-semibold block leading-tight mt-0.5">
+                        Net Take-Home
+                      </span>
+                    </div>
+
+                    {/* Graphical Micro Area Sparkline with Curved Flow & Multi-Color Point Dots */}
+                    <div className="w-full h-7 relative z-10 mt-1">
+                      <svg
+                        className="w-full h-full overflow-visible"
+                        viewBox="0 0 80 26"
+                        preserveAspectRatio="none"
+                      >
+                        <defs>
+                          <linearGradient
+                            id={`trend-gradient-${item.month}`}
+                            x1="0%"
+                            y1="0%"
+                            x2="0%"
+                            y2="100%"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor={
+                                item.growthText === 'Baseline'
+                                  ? '#008F5B'
+                                  : item.isPositive
+                                  ? '#008F5B'
+                                  : '#D83B3B'
+                              }
+                              stopOpacity="0.28"
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor={
+                                item.growthText === 'Baseline'
+                                  ? '#008F5B'
+                                  : item.isPositive
+                                  ? '#008F5B'
+                                  : '#D83B3B'
+                              }
+                              stopOpacity="0.0"
+                            />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Subtle baseline reference line */}
+                        <line
+                          x1="0"
+                          y1="23"
+                          x2="80"
+                          y2="23"
+                          stroke="#E6EFEA"
+                          strokeWidth="0.75"
+                          strokeDasharray="2,2"
+                        />
+
+                        {/* Area Gradient Fill */}
+                        <path
+                          d={
+                            item.growthText === 'Baseline'
+                              ? 'M 0,16 C 24,14 54,12 80,10 L 80,24 L 0,24 Z'
+                              : item.isPositive
+                              ? 'M 0,20 C 26,18 52,9 80,4 L 80,24 L 0,24 Z'
+                              : 'M 0,6 C 26,11 52,17 80,21 L 80,24 L 0,24 Z'
+                          }
+                          fill={`url(#trend-gradient-${item.month})`}
+                        />
+
+                        {/* Curve Stroke Line */}
+                        <path
+                          d={
+                            item.growthText === 'Baseline'
+                              ? 'M 0,16 C 24,14 54,12 80,10'
+                              : item.isPositive
+                              ? 'M 0,20 C 26,18 52,9 80,4'
+                              : 'M 0,6 C 26,11 52,17 80,21'
+                          }
+                          fill="none"
+                          stroke={
+                            item.growthText === 'Baseline'
+                              ? '#008F5B'
+                              : item.isPositive
+                              ? '#008F5B'
+                              : '#D83B3B'
+                          }
+                          strokeWidth={isSelected ? '2' : '1.75'}
+                          strokeLinecap="round"
+                        />
+
+                        {/* Multi-Color Point Dots along the Curve */}
+                        {item.growthText === 'Baseline' ? (
+                          <>
+                            <circle cx="2" cy="16" r="2" fill="#0284C7" stroke="white" strokeWidth="0.8" />
+                            <circle cx="27" cy="14" r="2" fill="#8B5CF6" stroke="white" strokeWidth="0.8" />
+                            <circle cx="54" cy="12" r="2" fill="#F59E0B" stroke="white" strokeWidth="0.8" />
+                            <circle cx="78" cy="10" r="2.6" fill="#008F5B" stroke="white" strokeWidth="1" />
+                          </>
+                        ) : item.isPositive ? (
+                          <>
+                            <circle cx="2" cy="20" r="2" fill="#F59E0B" stroke="white" strokeWidth="0.8" />
+                            <circle cx="27" cy="17" r="2" fill="#0284C7" stroke="white" strokeWidth="0.8" />
+                            <circle cx="54" cy="10" r="2" fill="#8B5CF6" stroke="white" strokeWidth="0.8" />
+                            <circle cx="78" cy="4" r="2.6" fill="#008F5B" stroke="white" strokeWidth="1" />
+                          </>
+                        ) : (
+                          <>
+                            <circle cx="2" cy="6" r="2" fill="#0284C7" stroke="white" strokeWidth="0.8" />
+                            <circle cx="27" cy="11" r="2" fill="#8B5CF6" stroke="white" strokeWidth="0.8" />
+                            <circle cx="54" cy="17" r="2" fill="#F59E0B" stroke="white" strokeWidth="0.8" />
+                            <circle cx="78" cy="21" r="2.6" fill="#D83B3B" stroke="white" strokeWidth="1" />
+                          </>
+                        )}
+                      </svg>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-6 flex flex-col items-center justify-center text-center px-4 bg-[#F5FAF7] rounded-xl border border-dashed border-[#D1E5DC]">
+              <Calendar size={28} className="text-[#8A9791] mb-2" />
+              <p className="text-xs font-semibold text-[#17211D]">No salary trends recorded</p>
+              <p className="text-[11px] text-[#6E7974] mt-0.5 max-w-xs">
+                Add your monthly salary slips to see interactive salary trends and comparisons.
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigate('add')}
+                className="mt-3 px-3 py-1.5 bg-[#008F5B] text-white text-xs font-bold rounded-lg hover:bg-[#007A4D] transition-colors shadow-2xs cursor-pointer"
+              >
+                + Add Salary Entry
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Last 3 Salary History (Redesigned with Watermark & Full Month Year) */}
+        {/* Last 3 Salary History (Redesigned with KPI-Metrics Card Layout, Watermarks & Animated Multi-Color Dots) */}
         <div
           id="last-three-history-card"
           className="w-full bg-white rounded-xl p-4 sm:p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
@@ -568,98 +704,106 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Last 3 Salary History
               </h3>
             </div>
-            <button
-              type="button"
-              onClick={() => onNavigate('history')}
-              className="text-[11px] font-bold text-[#008F5B] hover:underline cursor-pointer flex items-center gap-0.5"
-            >
-              <span>Full History</span>
-              <ChevronRight size={13} />
-            </button>
+            {hasRecords && (
+              <button
+                type="button"
+                onClick={() => onNavigate('history')}
+                className="text-[11px] font-bold text-[#008F5B] hover:underline cursor-pointer flex items-center gap-0.5"
+              >
+                <span>Full History</span>
+                <ChevronRight size={13} />
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-            {recentThree.map((rec, idx) => {
-              const isSelected = rec.month === activeMonth;
-              const fullMonthName = rec.monthLabel.toUpperCase();
+          {hasRecords ? (
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              {recentThree.map((rec, idx) => {
+                const isSelected = rec.month === activeMonth;
+                const fullMonth = getMonthYearFull(rec.month, rec.monthLabel);
 
-              // 3 distinct premium fintech themes for the 3 cards
-              const cardThemes = [
-                {
-                  Icon: Landmark,
-                  watermark: 'text-[#008F5B]/25',
-                  badge: 'text-[#008F5B] bg-[#008F5B]/10 border-[#008F5B]/20',
-                },
-                {
-                  Icon: Wallet,
-                  watermark: 'text-[#0284C7]/25',
-                  badge: 'text-[#0284C7] bg-[#0284C7]/10 border-[#0284C7]/20',
-                },
-                {
-                  Icon: ShieldCheck,
-                  watermark: 'text-[#8B5CF6]/25',
-                  badge: 'text-[#8B5CF6] bg-[#8B5CF6]/10 border-[#8B5CF6]/20',
-                },
-              ];
-              const currentTheme = cardThemes[idx % 3];
-              const WatermarkIcon = currentTheme.Icon;
+                // 3 Watermark icons for the 3 salary records
+                const watermarkIcons = [Landmark, Wallet, ShieldCheck];
+                const WatermarkIcon = watermarkIcons[idx % watermarkIcons.length];
 
-              return (
-                <button
-                  key={rec.month}
-                  type="button"
-                  onClick={() => {
-                    onSelectMonth(rec.month);
-                    onNavigate('details');
-                  }}
-                  className={`relative overflow-hidden p-2 sm:p-2.5 rounded-lg text-center transition-all duration-200 cursor-pointer flex flex-col justify-between group ${
-                    isSelected
-                      ? 'bg-gradient-to-b from-[#E9F7F1] to-[#DCF5E9] border border-[#008F5B]/50 shadow-xs shadow-[#008F5B]/15 hover:shadow-md'
-                      : 'bg-[#F5FAF7] border border-[#E4ECE8] hover:border-[#008F5B]/30 hover:bg-[#EBF5F0]'
-                  }`}
-                >
-                  {/* Premium Fintech Watermark Icon (Top-Right, inset from corner) */}
-                  <WatermarkIcon
-                    size={28}
-                    strokeWidth={1.75}
-                    className={`absolute top-2 right-2.5 pointer-events-none transition-all duration-300 group-hover:scale-115 group-hover:rotate-6 ${currentTheme.watermark}`}
-                  />
-
-                  {/* Month Label */}
-                  <span
-                    className={`text-[8px] sm:text-[8.5px] font-extrabold uppercase tracking-wider block truncate relative z-10 ${
-                      isSelected ? 'text-[#008F5B]' : 'text-[#6E7974]'
+                return (
+                  <button
+                    key={rec.month}
+                    type="button"
+                    onClick={() => {
+                      onSelectMonth(rec.month);
+                      onNavigate('details');
+                    }}
+                    className={`p-2 sm:p-3 rounded-xl transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group relative overflow-hidden ${
+                      isSelected
+                        ? 'bg-gradient-to-b from-[#E9F7F1] to-[#D8F3E5] border border-[#008F5B]/35 shadow-[0_4px_14px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/20 hover:shadow-md hover:border-[#008F5B]/60 hover:scale-[1.02]'
+                        : 'bg-gradient-to-b from-white to-[#F6FAF8] border border-[#E0ECE6] shadow-[0_2px_10px_rgba(23,33,29,0.03)] hover:shadow-md hover:border-[#008F5B]/30 hover:bg-[#F2F9F5]'
                     }`}
                   >
-                    {fullMonthName}
-                  </span>
-
-                  {/* Net Amount */}
-                  <strong
-                    className={`text-[11px] sm:text-[12px] font-black block mt-1 whitespace-nowrap tracking-tight relative z-10 ${
-                      isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
-                    }`}
-                  >
-                    {formatBDT(rec.net)}
-                  </strong>
-
-                  {/* Disbursed Status Pill with Check Icon */}
-                  <div className="mt-1.5 flex items-center justify-center relative z-10">
-                    <span
-                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[7.5px] sm:text-[8px] font-extrabold tracking-wide uppercase transition-colors ${
+                    {/* Watermark Icon - Top Right Clean matching KPI card */}
+                    <div
+                      className={`absolute top-2 right-2 transition-all duration-300 pointer-events-none group-hover:scale-105 ${
                         isSelected
-                          ? 'bg-[#008F5B]/15 text-[#008F5B] border border-[#008F5B]/25'
-                          : 'bg-white/80 text-[#008F5B] border border-[#008F5B]/15 shadow-2xs'
+                          ? 'text-[#008F5B]/[0.09] group-hover:text-[#008F5B]/[0.18]'
+                          : 'text-[#17211D]/[0.06] group-hover:text-[#008F5B]/[0.12]'
                       }`}
                     >
-                      <CheckCircle2 size={8} className="text-[#008F5B] shrink-0 stroke-[2.5]" />
-                      <span>PAID</span>
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                      <WatermarkIcon size={36} strokeWidth={1.5} />
+                    </div>
+
+                    {/* Top Month Title (e.g. JUNE 2026, JULY 2026, AUGUST 2026) */}
+                    <div className="w-full relative z-10">
+                      <span
+                        className={`text-[8.5px] sm:text-[9.5px] font-extrabold uppercase tracking-tight leading-tight block truncate ${
+                          isSelected ? 'text-[#008F5B]' : 'text-[#6E7974]'
+                        }`}
+                        title={fullMonth}
+                      >
+                        {fullMonth}
+                      </span>
+                    </div>
+
+                    {/* Bottom Amount (Full formatBDT with .00 decimals) & Animated Multi-Color Dots */}
+                    <div className="mt-1.5 relative z-10">
+                      <strong
+                        className={`block text-[9.5px] sm:text-[12px] font-black tracking-tight leading-tight ${
+                          isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
+                        }`}
+                      >
+                        {formatBDT(rec.net)}
+                      </strong>
+
+                      {/* Animated Multi-Color Dots Indicator */}
+                      <div className="mt-1.5 flex items-center gap-1.5 relative z-10">
+                        <span className="relative flex h-2 w-2 shrink-0">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#008F5B] opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#008F5B]"></span>
+                        </span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#0284C7] animate-pulse shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] animate-pulse [animation-delay:200ms] shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] animate-pulse [animation-delay:400ms] shrink-0" />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-6 flex flex-col items-center justify-center text-center px-4 bg-[#F5FAF7] rounded-xl border border-dashed border-[#D1E5DC]">
+              <Clock size={28} className="text-[#8A9791] mb-2" />
+              <p className="text-xs font-semibold text-[#17211D]">No salary history available</p>
+              <p className="text-[11px] text-[#6E7974] mt-0.5 max-w-xs">
+                Your entries will be stored securely in your private account.
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigate('add')}
+                className="mt-3 px-3 py-1.5 bg-[#008F5B] text-white text-xs font-bold rounded-lg hover:bg-[#007A4D] transition-colors shadow-2xs cursor-pointer"
+              >
+                + Add Salary Entry
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

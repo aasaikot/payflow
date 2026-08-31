@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowLeft,
   Building2,
@@ -14,8 +14,19 @@ import {
   Image as ImageIcon,
   Sparkles,
   Trash2,
+  Fingerprint,
+  Loader2,
+  Info,
 } from 'lucide-react';
 import { UserProfileData, ScreenType } from '../types';
+import {
+  registerBiometrics,
+  isBiometricRegisteredForUser,
+  removeBiometricForUser,
+  saveBiometricDirectly,
+  isInIFrame,
+} from '../services/biometricService';
+import { FingerprintPromptModal } from './FingerprintPromptModal';
 
 interface ProfileViewProps {
   userProfile: UserProfileData;
@@ -35,6 +46,76 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [editForm, setEditForm] = useState<UserProfileData>({ ...userProfile });
   const [photoUrlInput, setPhotoUrlInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Biometrics State
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState<boolean>(false);
+  const [isBiometricSettingUp, setIsBiometricSettingUp] = useState<boolean>(false);
+  const [isPromptModalOpen, setIsPromptModalOpen] = useState<boolean>(false);
+  const [biometricFeedback, setBiometricFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    setIsBiometricEnabled(
+      isBiometricRegisteredForUser(userProfile.uid, userProfile.email)
+    );
+  }, [userProfile.uid, userProfile.email]);
+
+  const handleEnableBiometric = async () => {
+    setBiometricFeedback(null);
+
+    // If inside an iframe sandbox or user needs clear UI touch prompt, open interactive modal
+    if (isInIFrame()) {
+      setIsPromptModalOpen(true);
+      return;
+    }
+
+    setIsBiometricSettingUp(true);
+    try {
+      const res = await registerBiometrics(
+        userProfile.uid,
+        userProfile.email,
+        userProfile.name
+      );
+      if (res.success) {
+        setIsBiometricEnabled(true);
+        setBiometricFeedback({ type: 'success', message: res.message });
+      } else {
+        // If native prompt fails due to security/timeout, offer interactive modal
+        setIsPromptModalOpen(true);
+      }
+    } catch (e: any) {
+      setIsPromptModalOpen(true);
+    } finally {
+      setIsBiometricSettingUp(false);
+    }
+  };
+
+  const handleModalSuccess = () => {
+    setIsPromptModalOpen(false);
+    const res = saveBiometricDirectly(
+      userProfile.uid,
+      userProfile.email,
+      userProfile.name
+    );
+    if (res.success) {
+      setIsBiometricEnabled(true);
+      setBiometricFeedback({
+        type: 'success',
+        message: 'ফিঙ্গারপ্রিন্ট সফলভাবে সক্রিয় (ON) হয়েছে! এখন লগইন স্ক্রিনে ফিঙ্গারপ্রিন্ট দিয়ে ঢুকতে পারবেন।',
+      });
+    }
+  };
+
+  const handleDisableBiometric = () => {
+    removeBiometricForUser(userProfile.uid);
+    setIsBiometricEnabled(false);
+    setBiometricFeedback({
+      type: 'success',
+      message: 'এই ডিভাইসে ফিঙ্গারপ্রিন্ট লগইন বন্ধ করা হয়েছে।',
+    });
+  };
 
   // Suggested preset avatars for quick pick
   const avatarPresets = [
@@ -224,6 +305,88 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </strong>
             </div>
           </div>
+        </div>
+
+        {/* Biometric & Security Settings Card with Modern ON/OFF Toggle Switch */}
+        <div
+          id="profile-biometric-card"
+          className="w-full bg-white rounded-xl p-4 sm:p-5 border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex flex-col gap-2"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                isBiometricEnabled
+                  ? 'bg-[#E9F7F1] border border-[#008F5B]/30 text-[#008F5B]'
+                  : 'bg-[#F5FAF7] border border-[#E4ECE8] text-[#8A9791]'
+              }`}>
+                <Fingerprint size={22} strokeWidth={2.2} />
+              </div>
+              <div>
+                <h3 className="text-[13.5px] font-extrabold text-[#17211D] flex items-center gap-2">
+                  <span>Fingerprint Login</span>
+                  <span
+                    className={`text-[9px] px-2 py-0.2 rounded-full font-bold tracking-wider uppercase transition-colors ${
+                      isBiometricEnabled
+                        ? 'bg-[#008F5B] text-white shadow-2xs'
+                        : 'bg-[#E4ECE8] text-[#6E7974]'
+                    }`}
+                  >
+                    {isBiometricEnabled ? 'ON' : 'OFF'}
+                  </span>
+                </h3>
+              </div>
+            </div>
+
+            {/* Modern ON / OFF Switch Toggle */}
+            <button
+              type="button"
+              id="biometric-toggle-switch"
+              role="switch"
+              aria-checked={isBiometricEnabled}
+              disabled={isBiometricSettingUp}
+              onClick={() => {
+                if (isBiometricEnabled) {
+                  handleDisableBiometric();
+                } else {
+                  handleEnableBiometric();
+                }
+              }}
+              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden disabled:opacity-60 ${
+                isBiometricEnabled ? 'bg-[#008F5B]' : 'bg-[#D1DDD7]'
+              }`}
+              title={isBiometricEnabled ? 'Turn OFF Fingerprint Login' : 'Turn ON Fingerprint Login'}
+            >
+              <span className="sr-only">Toggle Fingerprint Login</span>
+              <span
+                className={`pointer-events-none flex items-center justify-center h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                  isBiometricEnabled ? 'translate-x-5' : 'translate-x-0.5'
+                }`}
+              >
+                {isBiometricSettingUp ? (
+                  <Loader2 size={11} className="animate-spin text-[#008F5B]" />
+                ) : (
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isBiometricEnabled ? 'bg-[#008F5B]' : 'bg-[#A0AEA7]'
+                    }`}
+                  />
+                )}
+              </span>
+            </button>
+          </div>
+
+          {biometricFeedback && (
+            <div
+              className={`p-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 mt-1 ${
+                biometricFeedback.type === 'success'
+                  ? 'bg-[#E9F7F1] text-[#008F5B] border border-[#008F5B]/25'
+                  : 'bg-[#FEF2F2] text-[#D83B3B] border border-[#D83B3B]/25'
+              }`}
+            >
+              <Info size={14} className="shrink-0" />
+              <span>{biometricFeedback.message}</span>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons: Edit Profile & Logout */}
@@ -524,6 +687,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Fingerprint Biometric Setup Modal */}
+      <FingerprintPromptModal
+        isOpen={isPromptModalOpen}
+        mode="enroll"
+        userEmail={userProfile.email}
+        userName={userProfile.name}
+        onSuccess={handleModalSuccess}
+        onCancel={() => setIsPromptModalOpen(false)}
+      />
     </div>
   );
 };
