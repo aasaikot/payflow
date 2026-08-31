@@ -72,7 +72,7 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search month (e.g. August 2026)..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#D7E0DC] rounded-2xl text-xs text-[#17211D] placeholder:text-[#8A9791] focus:outline-hidden focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/20 transition-all shadow-2xs"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#D7E0DC] rounded-xl text-xs text-[#17211D] placeholder:text-[#8A9791] focus:outline-hidden focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/20 transition-all shadow-2xs"
           />
         </div>
 
@@ -91,7 +91,7 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
                   onSelectMonth(r.month);
                   onNavigate('details');
                 }}
-                className={`w-full rounded-[22px] p-4 text-left border transition-all duration-200 cursor-pointer flex flex-col gap-2 group ${
+                className={`w-full rounded-xl p-4 text-left border transition-all duration-200 cursor-pointer flex flex-col gap-2 group ${
                   r.month === activeMonth
                     ? 'bg-gradient-to-br from-white via-[#F4FAF7] to-[#E8F7F0] border-[#008F5B]/50 shadow-[0_8px_20px_rgba(0,143,91,0.08)]'
                     : 'bg-white border-[#E4ECE8] hover:border-[#008F5B]/30 hover:shadow-xs shadow-[0_2px_10px_rgba(23,33,29,0.02)]'

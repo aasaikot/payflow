@@ -94,7 +94,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         {/* 3 Summary Metric Cards (Highest / Lowest / Average) */}
         <div className="grid grid-cols-3 gap-2">
           {/* Highest Net */}
-          <div className="p-3 rounded-[20px] bg-white border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex flex-col relative overflow-hidden">
+          <div className="p-3 rounded-xl bg-white border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex flex-col relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-bold text-[#6E7974] uppercase tracking-wider">
                 PEAK NET
@@ -110,7 +110,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           </div>
 
           {/* Lowest Net */}
-          <div className="p-3 rounded-[20px] bg-white border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex flex-col relative overflow-hidden">
+          <div className="p-3 rounded-xl bg-white border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex flex-col relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-bold text-[#6E7974] uppercase tracking-wider">
                 LOWEST NET
@@ -126,7 +126,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           </div>
 
           {/* Average Net */}
-          <div className="p-3 rounded-[20px] bg-white border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex flex-col relative overflow-hidden">
+          <div className="p-3 rounded-xl bg-white border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex flex-col relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-bold text-[#6E7974] uppercase tracking-wider">
                 AVG NET
@@ -145,7 +145,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         {/* Dual Interactive Bar & Growth Chart Card */}
         <div
           id="comparison-chart-card"
-          className="w-full bg-white rounded-[24px] p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
+          className="w-full bg-white rounded-xl p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
         >
           {/* Chart Header & Legend */}
           <div className="flex items-center justify-between mb-3">
@@ -237,7 +237,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
         {/* Premium Responsive Month-By-Month Breakdown Cards (Zero Overflow) */}
         <div
           id="comparison-table-card"
-          className="w-full bg-white rounded-[24px] p-4 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] flex flex-col gap-3"
+          className="w-full bg-white rounded-xl p-4 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] flex flex-col gap-3"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -263,7 +263,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               return (
                 <div
                   key={r.month}
-                  className="w-full p-3 rounded-2xl bg-[#F9FCFA] border border-[#E4ECE8] hover:border-[#008F5B]/30 hover:bg-[#F3F9F6] transition-all flex flex-col gap-2"
+                  className="w-full p-3 rounded-lg bg-[#F9FCFA] border border-[#E4ECE8] hover:border-[#008F5B]/30 hover:bg-[#F3F9F6] transition-all flex flex-col gap-2"
                 >
                   {/* Top Row: Month, Growth Pill & Net Amount */}
                   <div className="flex items-center justify-between">

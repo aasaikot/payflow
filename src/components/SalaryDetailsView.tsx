@@ -41,8 +41,15 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const incomeEntries = Object.entries(record.incomes || {});
-  const deductionEntries = Object.entries(record.deductions || {});
+  const incomeEntries = Object.entries(record.incomes || {})
+    .map(([k, v]) => [k, Number(v || 0)] as [string, number])
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1]);
+
+  const deductionEntries = Object.entries(record.deductions || {})
+    .map(([k, v]) => [k, Number(v || 0)] as [string, number])
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1]);
 
   return (
     <div id="salary-details-screen" className="w-full flex flex-col pb-8">
@@ -95,7 +102,7 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
         {/* Dynamic High-Impact Hero Card */}
         <div
           id="details-hero-card"
-          className={`w-full rounded-[26px] p-5 text-white shadow-xl relative overflow-hidden transition-all duration-500 ${
+          className={`w-full rounded-xl p-5 text-white shadow-xl relative overflow-hidden transition-all duration-500 ${
             isIncome
               ? 'bg-gradient-to-br from-[#04281E] via-[#054C37] to-[#008F5B] shadow-[0_16px_36px_rgba(0,143,91,0.28)]'
               : 'bg-gradient-to-br from-[#5E0C0C] via-[#8C1B1B] to-[#D83B3B] shadow-[0_16px_36px_rgba(216,59,59,0.28)]'
@@ -141,13 +148,13 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
         {/* Tab Switcher (Income vs Deduction) */}
         <div
           id="details-tab-switcher"
-          className="w-full flex items-center bg-[#EAEFEA]/80 p-1 rounded-2xl border border-[#D7E0DC] shadow-inner"
+          className="w-full flex items-center bg-[#EAEFEA]/80 p-1 rounded-xl border border-[#D7E0DC] shadow-inner"
         >
           <button
             type="button"
             id="tab-income-btn"
             onClick={() => setSelectedTab('income')}
-            className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer text-center ${
+            className={`flex-1 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer text-center ${
               isIncome
                 ? 'bg-[#008F5B] text-white shadow-xs'
                 : 'text-[#6E7974] hover:text-[#17211D]'
@@ -159,7 +166,7 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
             type="button"
             id="tab-deduction-btn"
             onClick={() => setSelectedTab('deduction')}
-            className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer text-center ${
+            className={`flex-1 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer text-center ${
               !isIncome
                 ? 'bg-[#D83B3B] text-white shadow-xs'
                 : 'text-[#6E7974] hover:text-[#17211D]'
@@ -172,7 +179,7 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
         {/* Itemized List with Visual Percentage Progress Bars */}
         <div
           id="details-itemized-card"
-          className="w-full bg-white rounded-[24px] p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
+          className="w-full bg-white rounded-xl p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-bold text-[#6E7974] uppercase tracking-wider">
@@ -214,7 +221,7 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
         <button
           type="button"
           onClick={() => onEditMonth(record.month)}
-          className="w-full py-3.5 rounded-[20px] bg-white border border-[#D7E0DC] hover:border-[#008F5B] text-xs font-extrabold text-[#008F5B] hover:bg-[#E9F7F1] transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
+          className="w-full py-3.5 rounded-xl bg-white border border-[#D7E0DC] hover:border-[#008F5B] text-xs font-extrabold text-[#008F5B] hover:bg-[#E9F7F1] transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
         >
           <Edit size={14} />
           <span>Edit {record.monthLabel} Figures</span>

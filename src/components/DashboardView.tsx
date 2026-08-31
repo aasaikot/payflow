@@ -19,6 +19,7 @@ import {
   Activity,
   Calendar,
   Building2,
+  User,
   Briefcase,
   KeyRound,
   BadgeCheck,
@@ -79,8 +80,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return '৳••••••';
   };
 
-  // Recent 3 records for quick preview
+  // Recent 3 records for quick preview and trend visualization
   const recentThree = salaryRecords.slice(0, 3);
+  const trendItems = [...recentThree].reverse().map((rec) => {
+    const originalIdx = salaryRecords.findIndex((r) => r.month === rec.month);
+    const prevRec = originalIdx < salaryRecords.length - 1 ? salaryRecords[originalIdx + 1] : null;
+    let growthText = 'Baseline';
+    let isPositive = true;
+    if (prevRec && prevRec.net > 0) {
+      const diff = rec.net - prevRec.net;
+      const pct = ((diff / prevRec.net) * 100).toFixed(1);
+      const prevMonthShort = prevRec.monthLabel.split(' ')[0].slice(0, 3);
+      isPositive = Number(pct) >= 0;
+      growthText = `${isPositive ? '+' : ''}${pct}% vs ${prevMonthShort}`;
+    }
+    return {
+      ...rec,
+      growthText,
+      isPositive,
+      isHighlighted: rec.month === activeMonth,
+    };
+  });
 
   return (
     <div id="dashboard-view-screen" className="w-full flex flex-col pb-8">
@@ -144,140 +164,153 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       <div className="px-4 pt-4 flex flex-col gap-4">
-        {/* Compact & Ultra-Modern Executive Hero Card (Optimized for all screen sizes) */}
+        {/* Hero Card matching user reference design exactly */}
         <motion.div
           id="hero-salary-card"
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
-          className="w-full rounded-[22px] bg-gradient-to-br from-[#021811] via-[#05291E] to-[#0A3D2D] p-4 sm:p-5 text-white shadow-[0_16px_35px_rgba(2,24,17,0.3)] border border-emerald-400/25 relative overflow-hidden transition-all duration-300 group"
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+          className="w-full rounded-2xl bg-gradient-to-br from-[#DDF8EF] via-[#C9F3E4] to-[#5FD9B8] text-[#0E3B2E] shadow-[0_10px_28px_rgba(0,143,91,0.09)] border border-[#A4E4D2] relative overflow-hidden transition-all duration-300 flex flex-col"
         >
-          {/* Animated Ambient Background Glows */}
-          <motion.div
-            animate={{
-              scale: [1, 1.15, 1],
-              opacity: [0.1, 0.18, 0.1],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-            className="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-emerald-400 blur-3xl pointer-events-none"
-          />
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.06, 0.14, 0.06],
-            }}
-            transition={{
-              duration: 6,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              delay: 1,
-            }}
-            className="absolute -left-10 -bottom-10 w-40 h-40 rounded-full bg-[#00FF9D] blur-2xl pointer-events-none"
-          />
+          {/* Smooth Background Decorative Curves & Ripple Glows */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {/* Soft Ambient Radial Glow on right */}
+            <div className="absolute -right-6 -top-6 w-48 h-48 rounded-full bg-white/25 blur-2xl pointer-events-none" />
+            <div className="absolute right-6 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-[#34D399]/20 blur-xl pointer-events-none" />
 
-          {/* Shimmer Light Sweep */}
-          <motion.div
-            initial={{ x: '-150%' }}
-            animate={{ x: '250%' }}
-            transition={{
-              repeat: Infinity,
-              duration: 4,
-              ease: 'easeInOut',
-              repeatDelay: 2.5,
-            }}
-            className="absolute top-0 bottom-0 w-28 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-25deg] pointer-events-none"
-          />
-
-          <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-300/40 to-transparent pointer-events-none" />
-
-          {/* Top Row: Company Name (Wrapped & Fully Visible) & Verified Badge */}
-          <div className="flex items-start justify-between gap-2 relative z-10">
-            <div className="flex items-start gap-1.5 min-w-0 flex-1">
-              <Building2 size={13} className="text-[#00FF9D] shrink-0 mt-0.5" />
-              <span className="text-[10px] sm:text-[10.5px] font-black tracking-[0.14em] text-emerald-300/90 uppercase leading-snug drop-shadow-xs break-words">
-                {userProfile.companyName}
-              </span>
-            </div>
-
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-md border border-emerald-400/30 text-[9px] font-bold text-emerald-200 shrink-0">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00FF9D] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#00FF9D]"></span>
-              </span>
-              <ShieldCheck size={10} className="text-[#00FF9D]" />
-              <span className="tracking-wider uppercase">VERIFIED</span>
-            </div>
-          </div>
-
-          {/* Sequence 1: Name (ASIF ARMAN SAIKOT) */}
-          <div className="mt-3.5 relative z-10 flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-[17px] sm:text-[18.5px] font-black text-white tracking-tight leading-tight uppercase drop-shadow-sm">
-                {userProfile.name}
-              </h2>
-              <BadgeCheck size={16} className="text-[#00FF9D] shrink-0 drop-shadow-[0_0_8px_rgba(0,255,157,0.5)]" />
-            </div>
-
-            {/* Sequence 2: Designation (Assistant Engineering Officer) */}
-            <div className="flex items-center gap-1.5 text-[11.5px] text-emerald-100/80 font-medium">
-              <Briefcase size={11} className="text-[#00FF9D]/85 shrink-0" />
-              <span>{userProfile.designation}</span>
-            </div>
-
-            {/* Sequence 3: PIN (5556) */}
-            <div className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-200/90 font-semibold mt-0.5">
-              <KeyRound size={10} className="text-[#00FF9D]/85 shrink-0" />
-              <span>{userProfile.pin}</span>
-            </div>
-          </div>
-
-          {/* Sequence 4: NET SALARY Label & Value */}
-          <div className="mt-3 relative z-10 flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <Wallet size={11} className="text-emerald-300" />
-              <span className="text-[9.5px] font-black text-emerald-300/85 uppercase tracking-[0.2em]">
-                NET SALARY
-              </span>
-              <button
-                type="button"
-                onClick={() => setIsAmountMasked(!isAmountMasked)}
-                className="text-emerald-200/60 hover:text-white transition-colors cursor-pointer p-0.5 active:scale-90 ml-0.5"
-                title={isAmountMasked ? 'Show amount' : 'Hide amount'}
-              >
-                {isAmountMasked ? <EyeOff size={12} /> : <Eye size={12} />}
-              </button>
-            </div>
-
-            <motion.div
-              key={net}
-              initial={{ scale: 0.98, opacity: 0.9 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.2 }}
-              className="mt-0.5"
+            <svg
+              className="absolute right-0 top-0 bottom-0 h-full w-[65%] pointer-events-none"
+              viewBox="0 0 300 160"
+              preserveAspectRatio="none"
+              fill="none"
             >
-              <strong className="block text-[21px] sm:text-[23px] font-black text-white leading-none tracking-tight drop-shadow-md">
-                {maskValue(formatBDT(net))}
-              </strong>
-            </motion.div>
+              {/* Organic wave fills */}
+              <path
+                d="M100 0 C150 40 180 110 300 80 L300 160 L120 160 C60 130 50 40 100 0 Z"
+                fill="url(#hero-wave-soft-1)"
+                opacity="0.35"
+              />
+              <path
+                d="M160 160 C210 100 240 60 300 20 L300 160 Z"
+                fill="url(#hero-wave-soft-2)"
+                opacity="0.25"
+              />
+              {/* Delicate contour line waves */}
+              <path
+                d="M80 0 C130 50 200 90 300 60"
+                stroke="white"
+                strokeWidth="1.6"
+                strokeOpacity="0.55"
+                fill="none"
+              />
+              <path
+                d="M130 160 C190 120 240 85 300 55"
+                stroke="white"
+                strokeWidth="1.4"
+                strokeOpacity="0.45"
+                fill="none"
+              />
+              <defs>
+                <linearGradient id="hero-wave-soft-1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#2DD4BF" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="#059669" stopOpacity="0.8" />
+                </linearGradient>
+                <linearGradient id="hero-wave-soft-2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#A7F3D0" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#34D399" stopOpacity="0.9" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
 
-          {/* Sequence 5: MONTH OF AUGUST 2026 bottom center (small font & uppercase) */}
-          <div className="mt-3.5 pt-2.5 border-t border-white/10 flex items-center justify-center relative z-10">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[8.5px] sm:text-[9px] font-bold tracking-[0.22em] text-emerald-200/90 uppercase text-center">
-              <Calendar size={10} className="text-[#00FF9D] shrink-0" />
-              <span>MONTH OF {activeRecord.monthLabel.toUpperCase()}</span>
+          {/* Main Top Section: Left Info List | Dashed Line | Net Amount + Shield */}
+          <div className="px-3.5 sm:px-4 pt-3.5 pb-3 flex items-center justify-between gap-2 relative z-10">
+            {/* Left 4-item Info List (Expanded with abundant space for long names & designation) */}
+            <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+              {/* 1. Company */}
+              <div className="flex items-start gap-2 text-[#0E3B2E] min-w-0">
+                <Building2 size={14} className="text-[#0E3B2E] shrink-0 mt-0.5 stroke-[1.8]" />
+                <span className="text-[11.5px] sm:text-[12.5px] font-semibold text-[#0E3B2E] leading-snug break-words">
+                  {userProfile.companyName || 'Tech Solutions Ltd.'}
+                </span>
+              </div>
+
+              {/* 2. Employee Name */}
+              <div className="flex items-start gap-2 text-[#0E3B2E] min-w-0">
+                <User size={14} className="text-[#0E3B2E] shrink-0 mt-0.5 stroke-[1.8]" />
+                <span className="text-[11.5px] sm:text-[12.5px] font-semibold text-[#0E3B2E] leading-snug break-words">
+                  {userProfile.name || 'Saikot Ahmed'}
+                </span>
+              </div>
+
+              {/* 3. Designation */}
+              <div className="flex items-start gap-2 text-[#0E3B2E] min-w-0">
+                <Briefcase size={14} className="text-[#0E3B2E] shrink-0 mt-0.5 stroke-[1.8]" />
+                <span className="text-[11.5px] sm:text-[12.5px] font-semibold text-[#0E3B2E] leading-snug break-words">
+                  {userProfile.designation || 'Software Engineer'}
+                </span>
+              </div>
+
+              {/* 4. PIN */}
+              <div className="flex items-center gap-2 text-[#0E3B2E] min-w-0">
+                <ShieldCheck size={14} className="text-[#0E3B2E] shrink-0 stroke-[1.8]" />
+                <span className="text-[11.5px] sm:text-[12.5px] font-semibold text-[#0E3B2E] leading-none">
+                  PIN: {userProfile.pin || userProfile.employeeId || '123456'}
+                </span>
+              </div>
             </div>
+
+            {/* Dashed Vertical Divider */}
+            <div className="h-16 w-[1px] border-r border-dashed border-[#3CAE90]/70 mx-1 shrink-0 self-center" />
+
+            {/* Right Side: Clean NET AMOUNT Block with repositioned verified badge */}
+            <div className="flex flex-col items-end justify-center shrink-0 pr-1">
+              {/* Verified Pill Badge (Repositioned above NET AMOUNT) */}
+              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/40 border border-white/70 text-[8.5px] font-bold text-[#0E3B2E] shadow-2xs mb-1">
+                <ShieldCheck size={10} className="text-[#059669]" />
+                <span className="tracking-wide">VERIFIED</span>
+              </div>
+
+              {/* NET AMOUNT (Uppercase) with Mask toggle */}
+              <div className="flex items-center justify-end gap-1 text-[#226352] text-[9.5px] sm:text-[10.5px] font-bold tracking-wider uppercase leading-none">
+                <span>NET AMOUNT</span>
+                <button
+                  type="button"
+                  onClick={() => setIsAmountMasked(!isAmountMasked)}
+                  className="text-[#226352]/75 hover:text-[#0E3B2E] transition-colors cursor-pointer p-0.5"
+                  title={isAmountMasked ? 'Show amount' : 'Hide amount'}
+                >
+                  {isAmountMasked ? <EyeOff size={10} /> : <Eye size={10} />}
+                </button>
+              </div>
+
+              {/* Smaller Salary Font with .00 decimal format */}
+              <motion.div
+                key={net}
+                initial={{ scale: 0.96, opacity: 0.9 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.2 }}
+                className="mt-0.5 text-right"
+              >
+                <strong className="block text-[13px] sm:text-[15px] font-bold text-[#08281F] leading-none tracking-tight whitespace-nowrap">
+                  {isAmountMasked ? '••••••••' : formatBDT(net)}
+                </strong>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Bottom Sub-Banner Ribbon: MONTH OF AUGUST 2026 (Smaller Font) */}
+          <div className="w-full bg-[#B8EDDA]/80 border-t border-[#9FE0CE]/80 py-1 px-4 flex items-center justify-center text-center relative z-10">
+            <span className="text-[8px] sm:text-[8.5px] font-bold tracking-[0.25em] text-[#1B5746] uppercase">
+              MONTH OF {activeRecord.monthLabel.toUpperCase()}
+            </span>
           </div>
         </motion.div>
 
         {/* Process Flow Visualizer: Gross ➔ Deductions ➔ Net Take-Home */}
         <div
           id="salary-process-flow-card"
-          className="w-full bg-white rounded-[22px] p-4 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
+          className="w-full bg-white rounded-xl p-4 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
         >
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-1.5">
@@ -307,7 +340,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#008F5B] shrink-0" />
               <div className="flex flex-col">
-                <span className="text-[10px] text-[#6E7974] font-medium">Net Take-Home</span>
+                <span className="text-[10px] text-[#6E7974] font-medium">Net Amount</span>
                 <strong className="text-[12px] font-bold text-[#008F5B]">
                   {maskValue(formatBDT(net))} ({incomePercentage}%)
                 </strong>
@@ -335,7 +368,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('details')}
-            className="p-3 rounded-[20px] bg-gradient-to-b from-white to-[#F6FAF8] border border-[#E0ECE6] shadow-[0_2px_10px_rgba(23,33,29,0.03)] hover:shadow-md hover:border-[#008F5B]/30 hover:bg-[#F2F9F5] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group"
+            className="p-3 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#E0ECE6] shadow-[0_2px_10px_rgba(23,33,29,0.03)] hover:shadow-md hover:border-[#008F5B]/30 hover:bg-[#F2F9F5] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group"
           >
             <div className="flex items-center justify-between w-full">
               <span className="text-[9px] font-extrabold text-[#6E7974] uppercase tracking-wider">
@@ -359,7 +392,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('details')}
-            className="p-3 rounded-[20px] bg-gradient-to-b from-white to-[#FFF6F6] border border-[#F5D8D8] shadow-[0_2px_10px_rgba(216,59,59,0.03)] hover:shadow-md hover:border-[#D83B3B]/40 hover:bg-[#FDF0F0] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group"
+            className="p-3 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#F5D8D8] shadow-[0_2px_10px_rgba(216,59,59,0.03)] hover:shadow-md hover:border-[#D83B3B]/40 hover:bg-[#FDF0F0] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group"
           >
             <div className="flex items-center justify-between w-full">
               <span className="text-[9px] font-extrabold text-[#D83B3B] uppercase tracking-wider">
@@ -383,7 +416,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('details')}
-            className="p-3 rounded-[20px] bg-gradient-to-b from-[#E9F7F1] to-[#D8F3E5] border border-[#008F5B]/35 shadow-[0_4px_14px_rgba(0,143,91,0.08)] hover:shadow-md hover:border-[#008F5B]/60 hover:scale-[1.02] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group ring-1 ring-[#008F5B]/20"
+            className="p-3 rounded-xl bg-gradient-to-b from-[#E9F7F1] to-[#D8F3E5] border border-[#008F5B]/35 shadow-[0_4px_14px_rgba(0,143,91,0.08)] hover:shadow-md hover:border-[#008F5B]/60 hover:scale-[1.02] transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group ring-1 ring-[#008F5B]/20"
           >
             <div className="flex items-center justify-between w-full">
               <span className="text-[9px] font-black text-[#008F5B] uppercase tracking-wider">
@@ -398,7 +431,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {maskValue(formatBDT(net))}
               </strong>
               <span className="text-[9.5px] text-[#008F5B] font-extrabold block mt-0.5">
-                Take-Home Pay
+                Net Payable
               </span>
             </div>
           </button>
@@ -407,7 +440,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Income vs Deduction Interactive Donut & Visual Card */}
         <div
           id="income-vs-deduction-card"
-          className="w-full bg-white rounded-[24px] p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
+          className="w-full bg-white rounded-xl p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
@@ -430,7 +463,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* Left Legend & Values */}
             <div className="flex flex-col gap-2 flex-1 min-w-0">
               {/* Income Row */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-[#F5FAF7] border border-[#E4ECE8]/60">
+              <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#F5FAF7] border border-[#E4ECE8]/60">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#008F5B] shadow-xs shadow-[#008F5B]/30 shrink-0" />
                   <span className="text-[11.5px] font-semibold text-[#17211D] truncate">Income</span>
@@ -441,7 +474,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* Deduction Row */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-[#FFF5F5] border border-[#FFECEC]">
+              <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#FFF5F5] border border-[#FFECEC]">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#D83B3B] shadow-xs shadow-[#D83B3B]/30 shrink-0" />
                   <span className="text-[11.5px] font-semibold text-[#17211D] truncate">Deduction</span>
@@ -489,7 +522,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Month Comparison Card with Dynamic Sparklines & Growth Flags */}
         <div
           id="month-comparison-preview-card"
-          className="w-full bg-white rounded-[24px] p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
+          className="w-full bg-white rounded-xl p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
@@ -508,84 +541,73 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-            {/* June */}
-            <div className="p-2 sm:p-2.5 rounded-[16px] bg-[#F5FAF7] border border-[#E4ECE8] text-center hover:shadow-xs transition-all">
-              <span className="text-[8.5px] sm:text-[9px] font-bold text-[#6E7974] uppercase tracking-wider block">
-                JUNE
-              </span>
-              <strong className="text-[11px] sm:text-[12px] font-extrabold text-[#17211D] block mt-0.5 whitespace-nowrap">
-                {maskValue(formatBDT(78500))}
-              </strong>
-              <span className="text-[8.5px] sm:text-[9px] text-[#008F5B] font-bold block mt-0.5">
-                +2.1% vs May
-              </span>
-              <div className="h-3.5 flex items-center justify-center mt-1">
-                <svg className="w-full h-3 text-[#008F5B]" viewBox="0 0 50 15">
-                  <path
-                    d="M 0,12 L 15,8 L 30,10 L 48,2"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-            </div>
+            {trendItems.map((item) => {
+              const monthName = item.monthLabel.split(' ')[0].toUpperCase();
+              const isSelected = item.month === activeMonth;
 
-            {/* July */}
-            <div className="p-2 sm:p-2.5 rounded-[16px] bg-[#F5FAF7] border border-[#E4ECE8] text-center hover:shadow-xs transition-all">
-              <span className="text-[8.5px] sm:text-[9px] font-bold text-[#6E7974] uppercase tracking-wider block">
-                JULY
-              </span>
-              <strong className="text-[11px] sm:text-[12px] font-extrabold text-[#17211D] block mt-0.5 whitespace-nowrap">
-                {maskValue(formatBDT(79000))}
-              </strong>
-              <span className="text-[8.5px] sm:text-[9px] text-[#008F5B] font-bold block mt-0.5">
-                +0.6% vs Jun
-              </span>
-              <div className="h-3.5 flex items-center justify-center mt-1">
-                <svg className="w-full h-3 text-[#008F5B]" viewBox="0 0 50 15">
-                  <path
-                    d="M 0,10 L 18,12 L 32,6 L 48,3"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            {/* August (Current Highlight) */}
-            <div className="p-2 sm:p-2.5 rounded-[16px] bg-gradient-to-b from-[#E9F7F1] to-[#DCF5E9] border border-[#008F5B]/40 text-center shadow-xs shadow-[#008F5B]/10">
-              <span className="text-[8.5px] sm:text-[9px] font-extrabold text-[#008F5B] uppercase tracking-wider block">
-                AUGUST
-              </span>
-              <strong className="text-[11px] sm:text-[12px] font-black text-[#008F5B] block mt-0.5 whitespace-nowrap">
-                {maskValue(formatBDT(85256))}
-              </strong>
-              <span className="text-[8.5px] sm:text-[9px] text-[#008F5B] font-extrabold block mt-0.5">
-                +7.9% vs Jul
-              </span>
-              <div className="h-3.5 flex items-center justify-center mt-1">
-                <svg className="w-full h-3 text-[#008F5B]" viewBox="0 0 50 15">
-                  <path
-                    d="M 0,14 L 16,9 L 34,7 L 48,1"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-            </div>
+              return (
+                <button
+                  key={item.month}
+                  type="button"
+                  onClick={() => {
+                    onSelectMonth(item.month);
+                    onNavigate('details');
+                  }}
+                  className={`p-2 sm:p-2.5 rounded-lg text-center transition-all duration-200 cursor-pointer flex flex-col justify-between ${
+                    isSelected
+                      ? 'bg-gradient-to-b from-[#E9F7F1] to-[#DCF5E9] border border-[#008F5B]/40 text-center shadow-xs shadow-[#008F5B]/10 hover:shadow-md'
+                      : 'bg-[#F5FAF7] border border-[#E4ECE8] hover:border-[#008F5B]/30 hover:bg-[#EBF5F0]'
+                  }`}
+                >
+                  <span
+                    className={`text-[8.5px] sm:text-[9px] font-extrabold uppercase tracking-wider block truncate ${
+                      isSelected ? 'text-[#008F5B]' : 'text-[#6E7974]'
+                    }`}
+                  >
+                    {monthName}
+                  </span>
+                  <strong
+                    className={`text-[11px] sm:text-[12px] font-black block mt-0.5 whitespace-nowrap tracking-tight ${
+                      isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
+                    }`}
+                  >
+                    {maskValue(formatBDT(item.net))}
+                  </strong>
+                  <span
+                    className={`text-[8.5px] sm:text-[9px] font-bold block mt-0.5 truncate ${
+                      item.isPositive ? 'text-[#008F5B]' : 'text-[#D83B3B]'
+                    }`}
+                  >
+                    {item.growthText}
+                  </span>
+                  <div className="h-3.5 flex items-center justify-center mt-1">
+                    <svg
+                      className={`w-full h-3 ${item.isPositive ? 'text-[#008F5B]' : 'text-[#D83B3B]'}`}
+                      viewBox="0 0 50 15"
+                    >
+                      <path
+                        d={
+                          item.isPositive
+                            ? 'M 0,14 L 16,9 L 34,7 L 48,1'
+                            : 'M 0,2 L 16,7 L 34,9 L 48,14'
+                        }
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={isSelected ? '2.5' : '2'}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Last 3 Salary History (3-Column Layout Matching Salary Growth & Trend) */}
         <div
           id="last-three-history-card"
-          className="w-full bg-white rounded-[24px] p-4 sm:p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
+          className="w-full bg-white rounded-xl p-4 sm:p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
@@ -606,16 +628,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             {recentThree.map((rec, idx) => {
-              const isLatest = idx === 0;
-              const isSecond = idx === 1;
-
-              // Sparklines and Growth Badges
-              const growthText = isLatest ? '+7.9% vs Jul' : isSecond ? '+0.6% vs Jun' : '+2.1% vs May';
-              const sparklinePath = isLatest
-                ? 'M 0,14 L 16,9 L 34,7 L 48,1'
-                : isSecond
-                ? 'M 0,10 L 18,12 L 32,6 L 48,3'
-                : 'M 0,12 L 15,8 L 30,10 L 48,2';
+              const isSelected = rec.month === activeMonth;
+              const originalIdx = salaryRecords.findIndex((r) => r.month === rec.month);
+              const prevRec = originalIdx < salaryRecords.length - 1 ? salaryRecords[originalIdx + 1] : null;
+              let growthText = 'Baseline';
+              let isPositive = true;
+              if (prevRec && prevRec.net > 0) {
+                const diff = rec.net - prevRec.net;
+                const pct = ((diff / prevRec.net) * 100).toFixed(1);
+                const prevMonthShort = prevRec.monthLabel.split(' ')[0].slice(0, 3);
+                isPositive = Number(pct) >= 0;
+                growthText = `${isPositive ? '+' : ''}${pct}% vs ${prevMonthShort}`;
+              }
 
               return (
                 <button
@@ -625,23 +649,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     onSelectMonth(rec.month);
                     onNavigate('details');
                   }}
-                  className={`p-2 sm:p-2.5 rounded-[18px] text-center transition-all duration-200 cursor-pointer flex flex-col justify-between ${
-                    isLatest
+                  className={`p-2 sm:p-2.5 rounded-lg text-center transition-all duration-200 cursor-pointer flex flex-col justify-between ${
+                    isSelected
                       ? 'bg-gradient-to-b from-[#E9F7F1] to-[#DCF5E9] border border-[#008F5B]/40 shadow-xs shadow-[#008F5B]/10 hover:shadow-md'
                       : 'bg-[#F5FAF7] border border-[#E4ECE8] hover:border-[#008F5B]/30 hover:bg-[#EBF5F0]'
                   }`}
                 >
                   <span
                     className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-wider block truncate ${
-                      isLatest ? 'text-[#008F5B]' : 'text-[#6E7974]'
+                      isSelected ? 'text-[#008F5B]' : 'text-[#6E7974]'
                     }`}
                   >
-                    {rec.monthLabel.toUpperCase()}
+                    {rec.monthLabel.split(' ')[0].toUpperCase()}
                   </span>
 
                   <strong
                     className={`text-[11px] sm:text-[12px] font-black block mt-0.5 whitespace-nowrap tracking-tight ${
-                      isLatest ? 'text-[#008F5B]' : 'text-[#17211D]'
+                      isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
                     }`}
                   >
                     {maskValue(formatBDT(rec.net))}
@@ -649,7 +673,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                   <span
                     className={`text-[8.5px] sm:text-[9px] font-bold block mt-0.5 truncate ${
-                      isLatest ? 'text-[#008F5B]' : 'text-[#6E7974]'
+                      isPositive ? 'text-[#008F5B]' : 'text-[#D83B3B]'
                     }`}
                   >
                     {growthText}
@@ -658,14 +682,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   {/* Micro Visual Chart Effect */}
                   <div className="h-3.5 flex items-center justify-center mt-1">
                     <svg
-                      className={`w-full h-3 ${isLatest ? 'text-[#008F5B]' : 'text-[#008F5B]/70'}`}
+                      className={`w-full h-3 ${isPositive ? 'text-[#008F5B]' : 'text-[#D83B3B]'}`}
                       viewBox="0 0 50 15"
                     >
                       <path
-                        d={sparklinePath}
+                        d={
+                          isPositive
+                            ? 'M 0,14 L 16,9 L 34,7 L 48,1'
+                            : 'M 0,2 L 16,7 L 34,9 L 48,14'
+                        }
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth={isLatest ? '2.5' : '2'}
+                        strokeWidth={isSelected ? '2.5' : '2'}
                         strokeLinecap="round"
                       />
                     </svg>

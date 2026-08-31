@@ -4,97 +4,208 @@ import {
   doc,
   getDoc,
   setDoc,
-  collection,
-  getDocs,
-  query,
-  orderBy,
+  onSnapshot,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInAnonymously,
   signOut,
   sendPasswordResetEmail,
   onAuthStateChanged,
   User,
-} from './firebase';
-import { MonthSalaryRecord, UserProfileData } from './types';
-import { INITIAL_SALARY_RECORDS, INITIAL_USER_PROFILE } from './mockData';
+  OperationType,
+  handleFirestoreError,
+} from '../firebase';
+import { getDocFromServer } from 'firebase/firestore';
+import { MonthSalaryRecord, UserProfileData } from '../types';
+import {
+  RAW_FIREBASE_DATA,
+  convertFirebaseMonthsToRecords,
+  convertFirebaseProfileToUser,
+  FirebaseUserData,
+  FirebaseMonthData,
+} from '../mockData';
+
+// Ensure user has a valid Firebase Auth session
+export async function autoSignInIfGuest(): Promise<User | null> {
+  if (auth.currentUser) return auth.currentUser;
+  try {
+    const cred = await signInAnonymously(auth);
+    return cred.user;
+  } catch (error) {
+    console.warn('Anonymous sign-in not available or skipped:', error);
+    return null;
+  }
+}
+
+// Validate Connection to Firestore as required by SKILL.md
+export async function testFirestoreConnection(): Promise<boolean> {
+  try {
+    if (!auth.currentUser) return true;
+    await getDocFromServer(doc(db, 'users', auth.currentUser.uid));
+    return true;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.warn('Firestore is offline or unreachable.');
+    }
+    return false;
+  }
+}
 
 // User Profile Service
 export async function fetchUserProfile(uid: string): Promise<UserProfileData | null> {
+  if (!uid || !auth.currentUser || auth.currentUser.uid !== uid) {
+    return convertFirebaseProfileToUser(RAW_FIREBASE_DATA.profile, uid || '5556');
+  }
+
+  const path = `users/${uid}`;
   try {
     const userDocRef = doc(db, 'users', uid);
     const snap = await getDoc(userDocRef);
     if (snap.exists()) {
-      return snap.data() as UserProfileData;
+      const data = snap.data() as Partial<FirebaseUserData>;
+      if (data.profile) {
+        return convertFirebaseProfileToUser(data.profile, uid);
+      }
     }
     return null;
   } catch (error) {
-    console.error('Error fetching user profile from Firestore:', error);
+    handleFirestoreError(error, OperationType.GET, path);
     return null;
   }
 }
 
 export async function saveUserProfile(profile: UserProfileData): Promise<void> {
+  if (!profile.uid || !auth.currentUser || auth.currentUser.uid !== profile.uid) {
+    console.warn('Skipping saveUserProfile: user is not authenticated matching this UID');
+    return;
+  }
+
+  const path = `users/${profile.uid}`;
   try {
     const userDocRef = doc(db, 'users', profile.uid);
-    await setDoc(userDocRef, profile, { merge: true });
+    const profilePayload: FirebaseUserData['profile'] = {
+      name: profile.name,
+      companyName: profile.companyName,
+      designation: profile.designation,
+      pin: profile.pin,
+      email: profile.email,
+      mobile: profile.mobile,
+    };
+    await setDoc(userDocRef, { profile: profilePayload }, { merge: true });
   } catch (error) {
-    console.error('Error saving user profile to Firestore:', error);
+    handleFirestoreError(error, OperationType.WRITE, path);
     throw error;
   }
 }
 
-// Salary Records Service
+// Salary Records Service - reads and transforms exact Firebase document structure
 export async function fetchSalaryRecords(uid: string): Promise<MonthSalaryRecord[]> {
-  try {
-    const salariesCollRef = collection(db, 'users', uid, 'salaries');
-    const q = query(salariesCollRef, orderBy('month', 'desc'));
-    const snapshot = await getDocs(q);
+  if (!uid || !auth.currentUser || auth.currentUser.uid !== uid) {
+    return convertFirebaseMonthsToRecords(RAW_FIREBASE_DATA.months);
+  }
 
-    if (snapshot.empty) {
-      // If new account, seed initial data for the user in Firestore
-      await seedInitialData(uid);
-      return INITIAL_SALARY_RECORDS;
+  const path = `users/${uid}`;
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    const snap = await getDoc(userDocRef);
+
+    if (snap.exists()) {
+      const data = snap.data() as Partial<FirebaseUserData>;
+      if (data.months && Object.keys(data.months).length > 0) {
+        return convertFirebaseMonthsToRecords(data.months);
+      }
     }
 
-    const records: MonthSalaryRecord[] = [];
-    snapshot.forEach((docSnap) => {
-      records.push(docSnap.data() as MonthSalaryRecord);
-    });
-
-    return records;
+    // If document is empty or new account, seed with exact user schema
+    await seedInitialData(uid);
+    return convertFirebaseMonthsToRecords(RAW_FIREBASE_DATA.months);
   } catch (error) {
-    console.error('Error fetching salary records from Firestore:', error);
-    return INITIAL_SALARY_RECORDS;
+    handleFirestoreError(error, OperationType.GET, path);
+    return convertFirebaseMonthsToRecords(RAW_FIREBASE_DATA.months);
   }
 }
 
+// Subscribe to realtime updates for a user's data
+export function subscribeToUserData(
+  uid: string,
+  onData: (data: { profile: UserProfileData; records: MonthSalaryRecord[] }) => void,
+  onError?: (err: unknown) => void
+) {
+  if (!uid || !auth.currentUser || auth.currentUser.uid !== uid) {
+    return () => {};
+  }
+
+  const path = `users/${uid}`;
+  const userDocRef = doc(db, 'users', uid);
+
+  return onSnapshot(
+    userDocRef,
+    (snap) => {
+      if (snap.exists()) {
+        const data = snap.data() as Partial<FirebaseUserData>;
+        const profile = data.profile
+          ? convertFirebaseProfileToUser(data.profile, uid)
+          : convertFirebaseProfileToUser(RAW_FIREBASE_DATA.profile, uid);
+        const records = data.months
+          ? convertFirebaseMonthsToRecords(data.months)
+          : convertFirebaseMonthsToRecords(RAW_FIREBASE_DATA.months);
+
+        onData({ profile, records });
+      }
+    },
+    (error) => {
+      try {
+        handleFirestoreError(error, OperationType.GET, path);
+      } catch (e) {
+        if (onError) onError(e);
+      }
+    }
+  );
+}
+
+// Save or update a single month's salary record in the user document
 export async function saveSalaryRecord(uid: string, record: MonthSalaryRecord): Promise<void> {
+  if (!uid || !auth.currentUser || auth.currentUser.uid !== uid) {
+    console.warn('Skipping remote saveSalaryRecord: user not authenticated');
+    return;
+  }
+
+  const path = `users/${uid}`;
   try {
-    const docRef = doc(db, 'users', uid, 'salaries', record.month);
-    await setDoc(docRef, record, { merge: true });
+    const userDocRef = doc(db, 'users', uid);
+    const monthData: FirebaseMonthData = {
+      income: record.incomes,
+      deduction: record.deductions,
+      extraDeduction: record.extraDeduction || [],
+      timestamp: Date.now(),
+    };
+
+    await setDoc(
+      userDocRef,
+      {
+        months: {
+          [record.month]: monthData,
+        },
+      },
+      { merge: true }
+    );
   } catch (error) {
-    console.error('Error saving salary record to Firestore:', error);
+    handleFirestoreError(error, OperationType.WRITE, path);
     throw error;
   }
 }
 
-// Seed initial demo data for new users
+// Seed the complete real user dataset into Firebase Firestore
 export async function seedInitialData(uid: string): Promise<void> {
+  if (!uid || !auth.currentUser || auth.currentUser.uid !== uid) {
+    return;
+  }
+  const path = `users/${uid}`;
   try {
-    // Seed user profile
-    const profileRef = doc(db, 'users', uid);
-    const profileSnap = await getDoc(profileRef);
-    if (!profileSnap.exists()) {
-      await setDoc(profileRef, {
-        ...INITIAL_USER_PROFILE,
-        uid,
-      });
-    }
-
-    // Seed salary records
-    for (const record of INITIAL_SALARY_RECORDS) {
-      const recordRef = doc(db, 'users', uid, 'salaries', record.month);
-      await setDoc(recordRef, record, { merge: true });
+    const userDocRef = doc(db, 'users', uid);
+    const snap = await getDoc(userDocRef);
+    if (!snap.exists()) {
+      await setDoc(userDocRef, RAW_FIREBASE_DATA, { merge: true });
     }
   } catch (error) {
     console.error('Error seeding initial data to Firestore:', error);
@@ -106,6 +217,7 @@ export {
   auth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInAnonymously,
   signOut,
   sendPasswordResetEmail,
   onAuthStateChanged,

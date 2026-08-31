@@ -23,6 +23,9 @@ import {
   fetchSalaryRecords,
   saveSalaryRecord,
   seedInitialData,
+  testFirestoreConnection,
+  subscribeToUserData,
+  autoSignInIfGuest,
 } from './services/firebaseService';
 import { Smartphone, Code, CheckCircle, LogOut, Cloud, ShieldCheck } from 'lucide-react';
 
@@ -33,7 +36,7 @@ export default function App() {
   const [activeMonth, setActiveMonth] = useState('2026-08');
   const [salaryRecords, setSalaryRecords] = useState<MonthSalaryRecord[]>(INITIAL_SALARY_RECORDS);
   const [userProfile, setUserProfile] = useState<UserProfileData>(INITIAL_USER_PROFILE);
-  const [currentUid, setCurrentUid] = useState<string>('demo-user-5556');
+  const [currentUid, setCurrentUid] = useState<string>('');
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -42,9 +45,19 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Sync auth state with Firebase
+  // Ensure Firebase connection and anonymous session if not logged in
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    autoSignInIfGuest().catch((err) => {
+      console.warn('Guest sign-in note:', err);
+    });
+    testFirestoreConnection().then((connected) => {
+      setIsFirebaseConnected(connected);
+    });
+  }, []);
+
+  // Sync auth state with Firebase and setup realtime listener
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setCurrentUid(firebaseUser.uid);
         setIsFirebaseConnected(true);
@@ -66,11 +79,33 @@ export default function App() {
           setSalaryRecords(records);
           setActiveMonth(records[0].month);
         }
+      } else {
+        setCurrentUid('');
       }
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
+
+  // Subscribe to real-time updates for authenticated currentUid
+  useEffect(() => {
+    if (!currentUid || !auth.currentUser || auth.currentUser.uid !== currentUid) return;
+
+    const unsubscribeRealtime = subscribeToUserData(
+      currentUid,
+      ({ profile, records }) => {
+        if (profile) setUserProfile(profile);
+        if (records && records.length > 0) {
+          setSalaryRecords(records);
+        }
+      },
+      (err) => {
+        console.warn('Realtime sync note:', err);
+      }
+    );
+
+    return () => unsubscribeRealtime();
+  }, [currentUid]);
 
   const handleLoginSuccess = async (email: string, uid?: string) => {
     const effectiveUid = uid || currentUid;

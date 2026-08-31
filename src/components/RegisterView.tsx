@@ -155,18 +155,18 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
         </div>
 
         {/* Auth Mode Pill Selector */}
-        <div className="w-full max-w-[280px] bg-[#EAEFEA] p-1 rounded-2xl flex items-center border border-[#D7E0DC] shadow-inner mb-4">
+        <div className="w-full max-w-[280px] bg-[#EAEFEA] p-1 rounded-xl flex items-center border border-[#D7E0DC] shadow-inner mb-4">
           <button
             type="button"
             id="switch-mode-login-pill"
             onClick={onNavigateToLogin}
-            className="flex-1 py-2 rounded-xl text-xs font-bold text-[#6E7974] hover:text-[#17211D] hover:bg-white/50 transition-colors cursor-pointer text-center"
+            className="flex-1 py-2 rounded-lg text-xs font-bold text-[#6E7974] hover:text-[#17211D] hover:bg-white/50 transition-colors cursor-pointer text-center"
           >
             Sign In
           </button>
           <button
             type="button"
-            className="flex-1 py-2 rounded-xl text-xs font-black bg-white text-[#008F5B] shadow-xs cursor-default flex items-center justify-center gap-1"
+            className="flex-1 py-2 rounded-lg text-xs font-black bg-white text-[#008F5B] shadow-xs cursor-default flex items-center justify-center gap-1"
           >
             <CheckCircle2 size={13} className="text-[#008F5B]" />
             <span>Register</span>
@@ -187,7 +187,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
       {error && (
         <div
           id="register-error-banner"
-          className="w-full max-w-[440px] mb-4 p-3.5 bg-[#FEF2F2] border border-[#D83B3B]/30 rounded-[18px] text-[#D83B3B] text-xs font-bold flex items-center gap-2.5 shadow-2xs animate-in fade-in"
+          className="w-full max-w-[440px] mb-4 p-3.5 bg-[#FEF2F2] border border-[#D83B3B]/30 rounded-xl text-[#D83B3B] text-xs font-bold flex items-center gap-2.5 shadow-2xs animate-in fade-in"
         >
           <AlertCircle size={18} className="shrink-0" />
           <span>{error}</span>
@@ -197,7 +197,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
       {/* Main Registration Card */}
       <div
         id="register-card"
-        className="w-full max-w-[440px] bg-white rounded-[26px] p-6 sm:p-7 border border-[#E4ECE8] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
+        className="w-full max-w-[440px] bg-white rounded-xl p-6 sm:p-7 border border-[#E4ECE8] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
           {/* Quick Demo Pre-fill */}
@@ -233,7 +233,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value.toUpperCase())}
                 placeholder="e.g. ASIF ARMAN SAIKOT"
-                className="w-full h-[46px] pl-12 pr-4 rounded-[14px] border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all uppercase"
+                className="w-full h-[46px] pl-12 pr-4 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all uppercase"
                 required
               />
             </div>
@@ -259,7 +259,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="asif@company.com"
-                  className="w-full h-[46px] pl-10 pr-3 rounded-[14px] border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                  className="w-full h-[46px] pl-10 pr-3 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
                   required
                 />
               </div>
@@ -283,7 +283,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                   value={employeeId}
                   onChange={(e) => setEmployeeId(e.target.value)}
                   placeholder="5556"
-                  className="w-full h-[46px] pl-10 pr-3 rounded-[14px] border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                  className="w-full h-[46px] pl-10 pr-3 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
                   required
                 />
               </div>
@@ -315,7 +315,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Create a strong password"
-                className="w-full h-[46px] pl-12 pr-11 rounded-[14px] border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                className="w-full h-[46px] pl-12 pr-11 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
                 required
               />
               <button
@@ -365,7 +365,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter password"
-                className={`w-full h-[46px] pl-12 pr-11 rounded-[14px] border outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all ${
+                className={`w-full h-[46px] pl-12 pr-11 rounded-xl border outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all ${
                   confirmPassword.length > 0
                     ? passwordsMatch
                       ? 'border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15'
@@ -389,7 +389,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
           {/* Interactive Password Criteria Mini-Chips */}
           <div
             id="password-requirements-card"
-            className="w-full bg-[#F5FAF7] rounded-[16px] p-3 border border-[#D7E0DC] flex flex-wrap gap-2"
+            className="w-full bg-[#F5FAF7] rounded-xl p-3 border border-[#D7E0DC] flex flex-wrap gap-2"
           >
             <div className="flex items-center gap-1.5 text-[11px] font-semibold">
               {hasMinLength ? (
@@ -441,7 +441,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             id="register-submit-button"
             type="submit"
             disabled={isLoading || isGoogleLoading}
-            className="w-full h-[50px] mt-1 bg-gradient-to-r from-[#008F5B] to-[#007A4D] hover:from-[#007A4D] hover:to-[#006640] active:scale-[0.99] disabled:opacity-75 text-white font-extrabold text-[15px] rounded-[15px] flex items-center justify-center gap-2 shadow-md shadow-[#008F5B]/25 transition-all cursor-pointer"
+            className="w-full h-[50px] mt-1 bg-gradient-to-r from-[#008F5B] to-[#007A4D] hover:from-[#007A4D] hover:to-[#006640] active:scale-[0.99] disabled:opacity-75 text-white font-extrabold text-[15px] rounded-xl flex items-center justify-center gap-2 shadow-md shadow-[#008F5B]/25 transition-all cursor-pointer"
           >
             {isLoading ? (
               <Loader2 size={20} className="animate-spin text-white" />
@@ -467,7 +467,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             type="button"
             onClick={handleGoogleSignIn}
             disabled={isLoading || isGoogleLoading}
-            className="h-[46px] bg-white hover:bg-[#F5FAF7] active:scale-[0.99] disabled:opacity-75 border border-[#D7E0DC] rounded-[14px] flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] transition-all cursor-pointer shadow-2xs"
+            className="h-[46px] bg-white hover:bg-[#F5FAF7] active:scale-[0.99] disabled:opacity-75 border border-[#D7E0DC] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] transition-all cursor-pointer shadow-2xs"
           >
             {isGoogleLoading ? (
               <Loader2 size={17} className="animate-spin text-[#008F5B]" />

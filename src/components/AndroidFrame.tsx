@@ -47,13 +47,13 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
       {/* Device Toolbar / Screen Mode Switcher */}
       <div className="w-full max-w-2xl flex flex-col gap-2.5 mb-3 px-1 sm:px-2 select-none">
         {/* Screen Picker Tabs */}
-        <div className="flex items-center gap-1 p-1 bg-white rounded-2xl border border-[#D7E0DC] shadow-2xs overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 p-1 bg-white rounded-xl border border-[#D7E0DC] shadow-2xs overflow-x-auto no-scrollbar">
           {screenTabs.map((tab) => (
             <button
               key={tab.id}
               id={`screen-tab-${tab.id}`}
               onClick={() => onSelectScreen(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 activeScreen === tab.id
                   ? 'bg-[#008F5B] text-white shadow-xs'
                   : 'text-[#6E7974] hover:text-[#17211D] hover:bg-[#F5FAF7]'

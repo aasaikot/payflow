@@ -75,29 +75,30 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
   const [incomes, setIncomes] = useState<Record<string, number>>(() => {
     if (existing) return { ...existing.incomes };
     return {
-      'Basic Pay': 50000,
-      'House Rent': 20000,
-      'Medical': 5000,
-      'Conveyance': 3000,
-      'Special': 10000,
-      'Dearness': 15000,
-      'Refreshment': 5000,
-      'Utility': 2500,
+      'Basic Pay': 23590,
+      'House Rent': 18872,
+      'Medical': 2660,
+      'Conveyance': 1610,
+      'Special': 2359,
+      'Refreshment': 5270,
+      'Utility': 1330,
+      'Dearness': 0,
     };
   });
 
   const [deductions, setDeductions] = useState<Record<string, number>>(() => {
     if (existing) return { ...existing.deductions };
     return {
-      'PF': 6000,
-      'PF Loan': 5000,
-      'Interest PF': 800,
-      'Canteen': 1500,
-      'Picnic': 800,
-      'Advanced': 10000,
-      'Welfare': 500,
-      'Stamps': 244,
-      'Tax': 16400,
+      'PF': 2359,
+      'PF Loan': 0,
+      'Interest PF': 0,
+      'Canteen': 374,
+      'Picnic': 0,
+      'Advanced': 0,
+      'Welfare': 100,
+      'Welfare Subs': 10,
+      'Stamps': 10,
+      'Tax': 417,
     };
   });
 
@@ -253,7 +254,7 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
         {/* 12-MONTH CALENDAR SELECTOR CARD */}
         <div
           id="calendar-month-picker-card"
-          className="w-full bg-white rounded-[24px] p-4 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
+          className="w-full bg-white rounded-xl p-4 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
         >
           {/* Year Switcher Header */}
           <div className="flex items-center justify-between pb-3 border-b border-[#F0F4F2] mb-3">
@@ -308,7 +309,7 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
                   type="button"
                   id={`calendar-month-${m.num}`}
                   onClick={() => handleSelectMonth(monthKey)}
-                  className={`py-2 px-1.5 rounded-2xl flex flex-col items-center justify-center relative transition-all duration-200 cursor-pointer ${
+                  className={`py-2 px-1.5 rounded-lg flex flex-col items-center justify-center relative transition-all duration-200 cursor-pointer ${
                     isSelected
                       ? 'bg-gradient-to-b from-[#008F5B] to-[#007A4D] text-white shadow-md shadow-[#008F5B]/30 scale-[1.03] ring-2 ring-[#008F5B]/30'
                       : hasExistingRecord
@@ -373,7 +374,7 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
         {/* 1. INCOME SECTION */}
         <div
           id="income-inputs-card"
-          className="w-full bg-white rounded-[22px] p-4 border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)]"
+          className="w-full bg-white rounded-xl p-4 border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)]"
         >
           <div className="flex items-center justify-between pb-3 border-b border-[#F0F4F2] mb-3">
             <span className="text-[12px] font-extrabold text-[#008F5B] uppercase tracking-wider">
@@ -445,7 +446,7 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
         {/* 2. DEDUCTION SECTION */}
         <div
           id="deduction-inputs-card"
-          className="w-full bg-white rounded-[22px] p-4 border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)]"
+          className="w-full bg-white rounded-xl p-4 border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)]"
         >
           <div className="flex items-center justify-between pb-3 border-b border-[#F0F4F2] mb-3">
             <span className="text-[12px] font-extrabold text-[#D83B3B] uppercase tracking-wider">
@@ -518,10 +519,10 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
       {/* Redesigned Add Custom Field Modal */}
       {newFieldType && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="w-full max-w-sm bg-white rounded-[24px] p-6 shadow-2xl border border-[#D7E0DC] flex flex-col gap-3">
+          <div className="w-full max-w-sm bg-white rounded-xl p-6 shadow-2xl border border-[#D7E0DC] flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   newFieldType === 'income'
                     ? 'bg-[#E9F7F1] text-[#008F5B]'
                     : 'bg-[#FEF2F2] text-[#D83B3B]'

@@ -103,10 +103,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
         </div>
 
         {/* Auth Mode Pill Selector */}
-        <div className="w-full max-w-[280px] bg-[#EAEFEA] p-1 rounded-2xl flex items-center border border-[#D7E0DC] shadow-inner mb-4">
+        <div className="w-full max-w-[280px] bg-[#EAEFEA] p-1 rounded-xl flex items-center border border-[#D7E0DC] shadow-inner mb-4">
           <button
             type="button"
-            className="flex-1 py-2 rounded-xl text-xs font-black bg-white text-[#008F5B] shadow-xs cursor-default flex items-center justify-center gap-1"
+            className="flex-1 py-2 rounded-lg text-xs font-black bg-white text-[#008F5B] shadow-xs cursor-default flex items-center justify-center gap-1"
           >
             <CheckCircle2 size={13} className="text-[#008F5B]" />
             <span>Sign In</span>
@@ -115,7 +115,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
             type="button"
             id="switch-mode-register-pill"
             onClick={onNavigateToRegister}
-            className="flex-1 py-2 rounded-xl text-xs font-bold text-[#6E7974] hover:text-[#17211D] hover:bg-white/50 transition-colors cursor-pointer text-center"
+            className="flex-1 py-2 rounded-lg text-xs font-bold text-[#6E7974] hover:text-[#17211D] hover:bg-white/50 transition-colors cursor-pointer text-center"
           >
             Register
           </button>
@@ -135,7 +135,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
       {error && (
         <div
           id="login-error-banner"
-          className="w-full max-w-[420px] mb-4 p-3.5 bg-[#FEF2F2] border border-[#D83B3B]/30 rounded-[18px] text-[#D83B3B] text-xs font-bold flex items-center gap-2.5 shadow-2xs animate-in fade-in"
+          className="w-full max-w-[420px] mb-4 p-3.5 bg-[#FEF2F2] border border-[#D83B3B]/30 rounded-xl text-[#D83B3B] text-xs font-bold flex items-center gap-2.5 shadow-2xs animate-in fade-in"
         >
           <AlertCircle size={18} className="shrink-0" />
           <span>{error}</span>
@@ -145,7 +145,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
       {/* Main Login White Rounded Card */}
       <div
         id="login-card"
-        className="w-full max-w-[420px] bg-white rounded-[26px] p-6 sm:p-7 border border-[#E4ECE8] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
+        className="w-full max-w-[420px] bg-white rounded-xl p-6 sm:p-7 border border-[#E4ECE8] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Email Field */}
@@ -176,7 +176,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. employee@company.com"
-                className="w-full h-[48px] pl-12 pr-4 rounded-[14px] border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                className="w-full h-[48px] pl-12 pr-4 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
                 required
               />
             </div>
@@ -210,7 +210,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your security password"
-                className="w-full h-[48px] pl-12 pr-11 rounded-[14px] border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                className="w-full h-[48px] pl-12 pr-11 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
                 required
               />
               <button
@@ -249,7 +249,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
             id="login-submit-button"
             type="submit"
             disabled={isLoading || isGoogleLoading || isBiometricLoading}
-            className="w-full h-[50px] mt-1 bg-gradient-to-r from-[#008F5B] to-[#007A4D] hover:from-[#007A4D] hover:to-[#006640] active:scale-[0.99] disabled:opacity-75 text-white font-extrabold text-[15px] rounded-[15px] flex items-center justify-center gap-2 shadow-md shadow-[#008F5B]/25 transition-all cursor-pointer"
+            className="w-full h-[50px] mt-1 bg-gradient-to-r from-[#008F5B] to-[#007A4D] hover:from-[#007A4D] hover:to-[#006640] active:scale-[0.99] disabled:opacity-75 text-white font-extrabold text-[15px] rounded-xl flex items-center justify-center gap-2 shadow-md shadow-[#008F5B]/25 transition-all cursor-pointer"
           >
             {isLoading ? (
               <Loader2 size={20} className="animate-spin text-white" />
@@ -277,7 +277,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isLoading || isGoogleLoading || isBiometricLoading}
-              className="h-[46px] bg-white hover:bg-[#F5FAF7] active:scale-[0.99] disabled:opacity-75 border border-[#D7E0DC] rounded-[14px] flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] transition-all cursor-pointer shadow-2xs"
+              className="h-[46px] bg-white hover:bg-[#F5FAF7] active:scale-[0.99] disabled:opacity-75 border border-[#D7E0DC] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] transition-all cursor-pointer shadow-2xs"
             >
               {isGoogleLoading ? (
                 <Loader2 size={17} className="animate-spin text-[#008F5B]" />
@@ -312,7 +312,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
               type="button"
               onClick={handleBiometricAuth}
               disabled={isLoading || isGoogleLoading || isBiometricLoading}
-              className="h-[46px] bg-[#E9F7F1]/60 hover:bg-[#E9F7F1] active:scale-[0.99] disabled:opacity-75 border border-[#008F5B]/30 rounded-[14px] flex items-center justify-center gap-1.5 text-xs font-bold text-[#008F5B] transition-all cursor-pointer"
+              className="h-[46px] bg-[#E9F7F1]/60 hover:bg-[#E9F7F1] active:scale-[0.99] disabled:opacity-75 border border-[#008F5B]/30 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-[#008F5B] transition-all cursor-pointer"
             >
               {isBiometricLoading ? (
                 <Loader2 size={17} className="animate-spin text-[#008F5B]" />
@@ -345,7 +345,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
       {/* Security Trust Badge */}
       <div
         id="security-info-card"
-        className="w-full max-w-[420px] mt-4 bg-white rounded-[20px] p-3.5 border border-[#E4ECE8] flex items-center gap-3 shadow-2xs"
+        className="w-full max-w-[420px] mt-4 bg-white rounded-xl p-3.5 border border-[#E4ECE8] flex items-center gap-3 shadow-2xs"
       >
         <div className="w-9 h-9 rounded-xl bg-[#E9F7F1] flex items-center justify-center shrink-0 text-[#008F5B]">
           <ShieldCheck size={20} />

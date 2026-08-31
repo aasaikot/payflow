@@ -148,134 +148,140 @@ class _DashboardScreenState extends State<DashboardScreen> {
           colors: [Color(0xFF021811), Color(0xFF05291E), Color(0xFF0A3D2D)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          colors: [Color(0xFFD7F8EE), Color(0xFFBEF3E3), Color(0xFF59D9B7)],
         ),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0x3300FF9D), width: 1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFA1E2CF), width: 1),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF021811).withOpacity(0.4),
-            blurRadius: 30,
-            offset: const Offset(0, 14),
+            color: const Color(0xFF008F5B).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Row: Company & Brand Label with Icons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.apartment_rounded, size: 14, color: Color(0xFF00FF9D)),
-                  const SizedBox(width: 6),
-                  Text(
-                    widget.userProfile.companyName.toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFFA3E5C9),
-                      letterSpacing: 1.5,
-                    ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Left Profile Info Column
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.apartment_rounded, size: 16, color: Color(0xFF0E3B2E)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              widget.userProfile.companyName,
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0E3B2E)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.person_outline_rounded, size: 16, color: Color(0xFF0E3B2E)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              widget.userProfile.name,
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0E3B2E)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.work_outline_rounded, size: 16, color: Color(0xFF0E3B2E)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              widget.userProfile.designation,
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0E3B2E)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.shield_outlined, size: 16, color: Color(0xFF0E3B2E)),
+                          const SizedBox(width: 8),
+                          Text(
+                            'PIN: \${widget.userProfile.employeeId}',
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0E3B2E)),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0x4000FF9D)),
                 ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.verified_user_rounded, size: 11, color: Color(0xFF00FF9D)),
-                    SizedBox(width: 4),
-                    Text('VERIFIED', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFFD7FFF1))),
-                  ],
+                // Dashed Divider
+                Container(
+                  height: 90,
+                  width: 1,
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  color: const Color(0xFF48BF9F).withOpacity(0.6),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          // User Name (Uppercase) & Verified Badge
-          Row(
-            children: [
-              Text(
-                widget.userProfile.name.toUpperCase(),
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
-              ),
-              const SizedBox(width: 6),
-              const Icon(Icons.verified_rounded, size: 18, color: Color(0xFF00FF9D)),
-            ],
-          ),
-          const SizedBox(height: 5),
-          Row(
-            children: [
-              const Icon(Icons.work_outline_rounded, size: 12, color: Color(0xCC00FF9D)),
-              const SizedBox(width: 4),
-              Text(
-                widget.userProfile.designation,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFFC2EFE0)),
-              ),
-              const SizedBox(width: 8),
-              const Text('•', style: TextStyle(color: Colors.white30)),
-              const SizedBox(width: 8),
-              const Icon(Icons.key_rounded, size: 11, color: Color(0xCC00FF9D)),
-              const SizedBox(width: 4),
-              Text(
-                'PIN \${widget.userProfile.employeeId}',
-                style: const TextStyle(fontSize: 12, fontFamily: 'monospace', color: Color(0xFFD7FFF1)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 22),
-          // Net Salary with Wallet Icon
-          const Row(
-            children: [
-              Icon(Icons.account_balance_wallet_rounded, size: 12, color: Color(0xFFA3E5C9)),
-              SizedBox(width: 5),
-              Text(
-                'NET SALARY',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFFA3E5C9),
-                  letterSpacing: 1.5,
+                // Right Side: Clean NET AMOUNT & Repositioned Verified Pill Badge
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.white.withOpacity(0.7)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.verified_user_rounded, size: 10, color: Color(0xFF059669)),
+                            SizedBox(width: 3),
+                            Text('VERIFIED', style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.bold, color: Color(0xFF0E3B2E))),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      const Text(
+                        'NET AMOUNT',
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8, color: Color(0xFF226352)),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        '৳85,256.00',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF08281F)),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 4),
-          const Text(
-            '৳85,256.00',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8),
-          ),
-          const SizedBox(height: 18),
-          // Bottom Center: Month Label with Calendar Icon
+          // Bottom Month Strip
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 14),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: Colors.white12)),
+              color: Color(0xD8B9EEDB),
+              border: Border(top: BorderSide(color: Color(0xCCA1E2CF))),
             ),
             child: const Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.calendar_month_rounded, size: 11, color: Color(0xFF00FF9D)),
-                  SizedBox(width: 5),
-                  Text(
-                    'MONTH OF AUGUST 2026',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2.0,
-                      color: Color(0xCCA3E5C9),
-                    ),
-                  ),
-                ],
+              child: Text(
+                'MONTH OF AUGUST 2026',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 2.0, color: Color(0xFF1B5746)),
               ),
             ),
           ),
@@ -756,6 +762,114 @@ class SalaryService {
 }`,
   },
   {
+    name: 'reports_calendar_widget.dart',
+    path: 'lib/widgets/reports_calendar_widget.dart',
+    category: 'Widgets',
+    code: `import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
+import '../core/constants/payflow_colors.dart';
+
+class ReportsCalendarWidget extends StatefulWidget {
+  final DateTime focusedDay;
+  final DateTime selectedDay;
+  final Function(DateTime) onMonthSelected;
+  final VoidCallback onClose;
+
+  const ReportsCalendarWidget({
+    super.key,
+    required this.focusedDay,
+    required this.selectedDay,
+    required this.onMonthSelected,
+    required this.onClose,
+  });
+
+  @override
+  State<ReportsCalendarWidget> createState() => _ReportsCalendarWidgetState();
+}
+
+class _ReportsCalendarWidgetState extends State<ReportsCalendarWidget> {
+  late DateTime _focused;
+  late DateTime _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _focused = widget.focusedDay;
+    _selected = widget.selectedDay;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAF9),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: PayFlowColors.borderLight),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: PayFlowColors.primaryGreen,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Salary Calendar Matrix',
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: PayFlowColors.darkText),
+                  ),
+                ],
+              ),
+              TextButton(
+                onPressed: widget.onClose,
+                child: const Text('Close', style: TextStyle(color: PayFlowColors.primaryGreen, fontWeight: FontWeight.bold, fontSize: 11)),
+              ),
+            ],
+          ),
+          TableCalendar(
+            firstDay: DateTime(2020),
+            lastDay: DateTime(2030),
+            focusedDay: _focused,
+            calendarFormat: CalendarFormat.month,
+            headerVisible: false,
+            selectedDayPredicate: (day) => isSameDay(_selected, day),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selected = selectedDay;
+                _focused = focusedDay;
+              });
+              widget.onMonthSelected(selectedDay);
+            },
+            calendarStyle: CalendarStyle(
+              todayDecoration: BoxDecoration(
+                color: PayFlowColors.primaryGreen.withOpacity(0.15),
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              selectedDecoration: BoxDecoration(
+                color: PayFlowColors.primaryGreen,
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              defaultTextStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}`,
+  },
+  {
     name: 'bottom_nav_bar.dart',
     path: 'lib/widgets/bottom_nav_bar.dart',
     category: 'Widgets',
@@ -773,26 +887,30 @@ class BottomNavBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: const Border(top: BorderSide(color: Color(0xFFE2EAE5), width: 1)),
+        border: const Border(top: BorderSide(color: Color(0xFFE3EAE6), width: 1)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF002314).withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+            color: const Color(0xFF002314).withOpacity(0.06),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
           ),
         ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.home_rounded, 'Home'),
-              _buildNavItem(1, Icons.history_rounded, 'History'),
-              _buildAddButton(),
-              _buildNavItem(3, Icons.bar_chart_rounded, 'Analytics'),
-              _buildNavItem(4, Icons.person_rounded, 'Profile'),
+              _buildNavItem(0, Icons.home_rounded, 'Home', isSolid: true),
+              _buildDivider(),
+              _buildNavItem(1, Icons.access_time_rounded, 'History'),
+              _buildDivider(),
+              _buildFloatingDiamondAddButton(),
+              _buildDivider(),
+              _buildAnalyticsItem(3, 'Analytics'),
+              _buildDivider(),
+              _buildNavItem(4, Icons.person_outline_rounded, 'Profile'),
             ],
           ),
         ),
@@ -800,38 +918,47 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
+  Widget _buildDivider() {
+    return Container(
+      width: 1,
+      height: 32,
+      color: const Color(0xFFEDF2F0),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, String label, {bool isSolid = false}) {
     final isSelected = currentIndex == index;
     return Expanded(
       child: InkWell(
         onTap: () => onTap(index),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Top active indicator bar
-              Container(
-                height: 2.5,
-                width: isSelected ? 24 : 0,
-                decoration: BoxDecoration(
-                  color: isSelected ? PayFlowColors.primaryGreen : Colors.transparent,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 4),
               Icon(
                 icon,
-                color: isSelected ? PayFlowColors.primaryGreen : const Color(0xFF7A8E85),
-                size: 21,
+                color: isSelected ? PayFlowColors.primaryGreen : const Color(0xFF475569),
+                size: 22,
               ),
               const SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  color: isSelected ? PayFlowColors.primaryGreen : const Color(0xFF7A8E85),
+                  fontSize: 11.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: isSelected ? const Color(0xFF1E293B) : const Color(0xFF475569),
+                ),
+              ),
+              const SizedBox(height: 4),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                width: isSelected ? 28 : 0,
+                height: 3.5,
+                decoration: BoxDecoration(
+                  color: isSelected ? PayFlowColors.primaryGreen : Colors.transparent,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ],
@@ -841,45 +968,103 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildAddButton() {
-    final isSelected = currentIndex == 2;
+  Widget _buildAnalyticsItem(int index, String label) {
+    final isSelected = currentIndex == index;
     return Expanded(
       child: InkWell(
-        onTap: () => onTap(2),
+        onTap: () => onTap(index),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: isSelected ? PayFlowColors.primaryGreen : const Color(0xFFE9F7F1),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: PayFlowColors.primaryGreen.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Icon(
-                  isSelected ? Icons.close_rounded : Icons.add_rounded,
-                  color: isSelected ? Colors.white : PayFlowColors.primaryGreen,
-                  size: 20,
+              Icon(
+                Icons.bar_chart_rounded,
+                color: isSelected ? PayFlowColors.primaryGreen : const Color(0xFF475569),
+                size: 22,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: isSelected ? const Color(0xFF1E293B) : const Color(0xFF475569),
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 4),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                width: isSelected ? 28 : 0,
+                height: 3.5,
+                decoration: BoxDecoration(
+                  color: isSelected ? PayFlowColors.primaryGreen : Colors.transparent,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingDiamondAddButton() {
+    final isSelected = currentIndex == 2;
+    return Expanded(
+      child: Transform.translate(
+        offset: const Offset(0, -22),
+        child: InkWell(
+          onTap: () => onTap(2),
+          borderRadius: BorderRadius.circular(30),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: PayFlowColors.primaryGreen.withOpacity(0.35),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(2),
+                child: Transform.rotate(
+                  angle: 0.785398, // 45 degrees
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF1AD69E), Color(0xFF00B377), Color(0xFF009E68)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Transform.rotate(
+                      angle: -0.785398, // counter rotate for upright icon
+                      child: Icon(
+                        isSelected ? Icons.close_rounded : Icons.add_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
               Text(
-                'Add Slip',
+                'Add',
                 style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  color: isSelected ? PayFlowColors.primaryGreen : const Color(0xFF667A72),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: PayFlowColors.primaryGreen,
                 ),
               ),
             ],

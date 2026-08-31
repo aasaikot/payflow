@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string" },
+        "designation": { "type": "string" },
+        "email": { "type": "string" },
+        "mobile": { "type": "string" },
+        "name": { "type": "string" },
+        "pin": { "type": "string" }
+      },
+      "required": ["companyName", "designation", "email", "name", "pin"]
+    },
+    "MonthSalary": {
+      "title": "MonthSalary",
+      "description": "Monthly salary record containing income and deduction items",
+      "type": "object",
+      "properties": {
+        "income": { "type": "object" },
+        "deduction": { "type": "object" },
+        "extraDeduction": { "type": "array" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["income", "deduction", "timestamp"]
+    },
+    "UserData": {
+      "title": "UserData",
+      "description": "Root user document containing profile and months collection",
+      "type": "object",
+      "properties": {
+        "profile": { "$ref": "#/entities/UserProfile" },
+        "months": { "type": "object" }
+      },
+      "required": ["profile", "months"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserData" },
+      "description": "Stores user profile and months of salary records"
+    }
+  }
+}

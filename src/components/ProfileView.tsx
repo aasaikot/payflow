@@ -95,7 +95,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         {/* Profile Details Card */}
         <div
           id="profile-info-list-card"
-          className="w-full bg-white rounded-[24px] p-5 border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex flex-col gap-4"
+          className="w-full bg-white rounded-xl p-5 border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex flex-col gap-4"
         >
           {/* Company */}
           <div className="flex items-center gap-3">
@@ -164,7 +164,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             id="open-edit-profile-btn"
             type="button"
             onClick={() => setIsEditing(true)}
-            className="flex-1 h-12 bg-white hover:bg-[#E9F7F1]/50 border border-[#008F5B] text-[#008F5B] rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer"
+            className="flex-1 h-12 bg-white hover:bg-[#E9F7F1]/50 border border-[#008F5B] text-[#008F5B] rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer"
           >
             <Edit3 size={16} />
             <span>Edit Profile</span>
@@ -174,7 +174,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             id="profile-logout-btn"
             type="button"
             onClick={onLogout}
-            className="flex-1 h-12 bg-white hover:bg-[#D83B3B]/10 border border-[#D83B3B] text-[#D83B3B] rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer"
+            className="flex-1 h-12 bg-white hover:bg-[#D83B3B]/10 border border-[#D83B3B] text-[#D83B3B] rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer"
           >
             <LogOut size={16} />
             <span>Logout</span>
@@ -185,7 +185,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {/* Edit Profile Modal */}
       {isEditing && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-[#D7E0DC] max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-sm bg-white rounded-xl p-6 shadow-2xl border border-[#D7E0DC] max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-extrabold text-[#17211D]">Edit Profile</h3>
               <button

@@ -1,199 +1,337 @@
 import { MonthSalaryRecord, UserProfileData } from './types';
 
-export const INITIAL_USER_PROFILE: UserProfileData = {
-  uid: 'user_5556',
-  name: 'ASIF ARMAN SAIKOT',
-  companyName: 'Essential Drugs Company Limited',
-  designation: 'Assistant Engineering Officer',
-  pin: '5556',
-  email: 'asif.saikot@example.com',
-  mobile: '+880 1712 345678',
-  joinDate: '01 January 2024',
-  photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+// The exact raw Firebase data structure provided by the user
+export interface FirebaseMonthData {
+  deduction: Record<string, number>;
+  extraDeduction?: string[];
+  income: Record<string, number>;
+  timestamp: number;
+}
+
+export interface FirebaseUserData {
+  profile: {
+    companyName: string;
+    designation: string;
+    email: string;
+    mobile: string;
+    name: string;
+    pin: string;
+  };
+  months: Record<string, FirebaseMonthData>;
+}
+
+export const RAW_FIREBASE_DATA: FirebaseUserData = {
+  profile: {
+    companyName: "Essential Drugs Company Limited",
+    designation: "Assistant Engineering Officer",
+    email: "saikot@saikot.bd",
+    mobile: "01719364298",
+    name: "Asif Arman Saikot",
+    pin: "5556"
+  },
+  months: {
+    "2026-01": {
+      deduction: {
+        Advanced: 0,
+        Canteen: 357,
+        "Interest PF": 0,
+        PF: 2246,
+        "PF Loan": 0,
+        Picnic: 0,
+        Stamps: 10,
+        Tax: 250,
+        Welfare: 100,
+        "Welfare Subs": 10
+      },
+      extraDeduction: ["Welfare Subs"],
+      income: {
+        "Basic Pay": 22460,
+        Conveyance: 1150,
+        Dearness: 0,
+        "House Rent": 17968,
+        Medical: 1900,
+        Refreshment: 3790,
+        Special: 2246,
+        Utility: 950
+      },
+      timestamp: 1787485392508
+    },
+    "2026-02": {
+      deduction: {
+        Advanced: 0,
+        Canteen: 289,
+        "Interest PF": 0,
+        PF: 2246,
+        "PF Loan": 0,
+        Picnic: 0,
+        Stamps: 10,
+        Tax: 250,
+        Welfare: 100,
+        "Welfare Subs": 10
+      },
+      extraDeduction: ["Welfare Subs"],
+      income: {
+        "Basic Pay": 22460,
+        Conveyance: 1150,
+        Dearness: 0,
+        "House Rent": 17968,
+        Medical: 1900,
+        Refreshment: 2710,
+        Special: 2246,
+        Utility: 950
+      },
+      timestamp: 1787485501867
+    },
+    "2026-03": {
+      deduction: {
+        Advanced: 0,
+        Canteen: 204,
+        "Interest PF": 0,
+        PF: 2246,
+        "PF Loan": 0,
+        Picnic: 0,
+        Stamps: 10,
+        Tax: 250,
+        Welfare: 100,
+        "Welfare Subs": 10
+      },
+      extraDeduction: ["Welfare Subs"],
+      income: {
+        "Basic Pay": 22460,
+        Conveyance: 1150,
+        Dearness: 0,
+        "House Rent": 17968,
+        Medical: 1900,
+        Refreshment: 2160,
+        Special: 2246,
+        Utility: 950
+      },
+      timestamp: 1787928174882
+    },
+    "2026-04": {
+      deduction: {
+        Advanced: 0,
+        Canteen: 204,
+        "Interest PF": 0,
+        PF: 2246,
+        "PF Loan": 0,
+        Picnic: 134,
+        Stamps: 10,
+        Tax: 272,
+        Welfare: 100,
+        "Welfare Subs": 10
+      },
+      extraDeduction: ["Welfare Subs"],
+      income: {
+        "Basic Pay": 22460,
+        Conveyance: 1150,
+        Dearness: 0,
+        "House Rent": 17968,
+        Medical: 1900,
+        Refreshment: 4590,
+        Special: 2246,
+        Utility: 950
+      },
+      timestamp: 1787772889508
+    },
+    "2026-05": {
+      deduction: {
+        Advanced: 0,
+        Canteen: 357,
+        "Interest PF": 0,
+        PF: 2246,
+        "PF Loan": 0,
+        Picnic: 0,
+        Stamps: 10,
+        Tax: 272,
+        Welfare: 100,
+        "Welfare Subs": 10
+      },
+      extraDeduction: ["Welfare Subs"],
+      income: {
+        "Basic Pay": 22460,
+        Conveyance: 1150,
+        Dearness: 0,
+        "House Rent": 17968,
+        Medical: 1900,
+        Refreshment: 5670,
+        Special: 2246,
+        Utility: 950
+      },
+      timestamp: 1787485874811
+    },
+    "2026-06": {
+      deduction: {
+        Advanced: 0,
+        Canteen: 204,
+        "Interest PF": 0,
+        PF: 2246,
+        "PF Loan": 0,
+        Picnic: 0,
+        Stamps: 10,
+        Tax: 776,
+        Welfare: 100,
+        "Welfare Subs": 10
+      },
+      extraDeduction: ["Welfare Subs"],
+      income: {
+        "Basic Pay": 22460,
+        Conveyance: 1150,
+        Dearness: 0,
+        "House Rent": 17968,
+        Medical: 1900,
+        Refreshment: 1080,
+        Special: 2246,
+        Utility: 950
+      },
+      timestamp: 1787485999499
+    },
+    "2026-07": {
+      deduction: {
+        Advanced: 0,
+        Canteen: 340,
+        "Interest PF": 0,
+        PF: 2359,
+        "PF Loan": 0,
+        Picnic: 0,
+        Stamps: 10,
+        Tax: 417,
+        Welfare: 100,
+        "Welfare Subs": 10
+      },
+      extraDeduction: ["Welfare Subs"],
+      income: {
+        "Basic Pay": 23590,
+        Conveyance: 1150,
+        Dearness: 0,
+        "House Rent": 18872,
+        Medical: 1900,
+        Refreshment: 3260,
+        Special: 2359,
+        Utility: 950
+      },
+      timestamp: 1787486143573
+    },
+    "2026-08": {
+      deduction: {
+        Advanced: 0,
+        Canteen: 374,
+        "Interest PF": 0,
+        PF: 2359,
+        "PF Loan": 0,
+        Picnic: 0,
+        Stamps: 10,
+        Tax: 417,
+        Welfare: 100,
+        "Welfare Subs": 10
+      },
+      extraDeduction: ["Welfare Subs"],
+      income: {
+        "Basic Pay": 23590,
+        Conveyance: 1610,
+        Dearness: 0,
+        "House Rent": 18872,
+        Medical: 2660,
+        Refreshment: 5270,
+        Special: 2359,
+        Utility: 1330
+      },
+      timestamp: 1788089802970
+    }
+  }
 };
 
-export const INITIAL_SALARY_RECORDS: MonthSalaryRecord[] = [
-  {
-    month: '2026-08',
-    monthLabel: 'August 2026',
-    createdDate: '28 Aug 2026, 10:30 AM',
-    gross: 126500,
-    deduction: 41244,
-    net: 85256,
-    incomes: {
-      'Basic Pay': 50000,
-      'House Rent': 20000,
-      'Medical': 5000,
-      'Conveyance': 3000,
-      'Special': 10000,
-      'Dearness': 15000,
-      'Refreshment': 5000,
-      'Utility': 2500,
-      'Others': 16000,
-    },
-    deductions: {
-      'PF': 6000,
-      'PF Loan': 5000,
-      'Interest PF': 800,
-      'Canteen': 1500,
-      'Picnic': 800,
-      'Advanced': 10000,
-      'Welfare': 500,
-      'Stamps': 244,
-      'Tax': 16400,
-    },
-  },
-  {
-    month: '2026-07',
-    monthLabel: 'July 2026',
-    createdDate: '28 Jul 2026, 09:20 AM',
-    gross: 120000,
-    deduction: 41000,
-    net: 79000,
-    incomes: {
-      'Basic Pay': 50000,
-      'House Rent': 20000,
-      'Medical': 5000,
-      'Conveyance': 3000,
-      'Special': 10000,
-      'Dearness': 15000,
-      'Refreshment': 5000,
-      'Utility': 2500,
-      'Others': 9500,
-    },
-    deductions: {
-      'PF': 6000,
-      'PF Loan': 5000,
-      'Interest PF': 800,
-      'Canteen': 1500,
-      'Picnic': 800,
-      'Advanced': 10000,
-      'Welfare': 500,
-      'Stamps': 244,
-      'Tax': 16156,
-    },
-  },
-  {
-    month: '2026-06',
-    monthLabel: 'June 2026',
-    createdDate: '28 Jun 2026, 09:10 AM',
-    gross: 123500,
-    deduction: 41200,
-    net: 82300,
-    incomes: {
-      'Basic Pay': 50000,
-      'House Rent': 20000,
-      'Medical': 5000,
-      'Conveyance': 3000,
-      'Special': 10000,
-      'Dearness': 15000,
-      'Refreshment': 5000,
-      'Utility': 2500,
-      'Others': 13000,
-    },
-    deductions: {
-      'PF': 6000,
-      'PF Loan': 5000,
-      'Interest PF': 800,
-      'Canteen': 1500,
-      'Picnic': 800,
-      'Advanced': 10000,
-      'Welfare': 500,
-      'Stamps': 244,
-      'Tax': 16356,
-    },
-  },
-  {
-    month: '2026-05',
-    monthLabel: 'May 2026',
-    createdDate: '28 May 2026, 09:05 AM',
-    gross: 118000,
-    deduction: 39500,
-    net: 78500,
-    incomes: {
-      'Basic Pay': 48000,
-      'House Rent': 19200,
-      'Medical': 5000,
-      'Conveyance': 3000,
-      'Special': 9600,
-      'Dearness': 15000,
-      'Refreshment': 5000,
-      'Utility': 2500,
-      'Others': 10700,
-    },
-    deductions: {
-      'PF': 5800,
-      'PF Loan': 5000,
-      'Interest PF': 800,
-      'Canteen': 1400,
-      'Picnic': 0,
-      'Advanced': 10000,
-      'Welfare': 500,
-      'Stamps': 200,
-      'Tax': 15800,
-    },
-  },
-  {
-    month: '2026-04',
-    monthLabel: 'April 2026',
-    createdDate: '28 Apr 2026, 10:15 AM',
-    gross: 110000,
-    deduction: 38000,
-    net: 72000,
-    incomes: {
-      'Basic Pay': 45000,
-      'House Rent': 18000,
-      'Medical': 5000,
-      'Conveyance': 3000,
-      'Special': 9000,
-      'Dearness': 14000,
-      'Refreshment': 4500,
-      'Utility': 2500,
-      'Others': 9000,
-    },
-    deductions: {
-      'PF': 5500,
-      'PF Loan': 5000,
-      'Interest PF': 800,
-      'Canteen': 1200,
-      'Picnic': 0,
-      'Advanced': 10000,
-      'Welfare': 500,
-      'Stamps': 200,
-      'Tax': 14800,
-    },
-  },
-  {
-    month: '2026-03',
-    monthLabel: 'March 2026',
-    createdDate: '28 Mar 2026, 09:40 AM',
-    gross: 105000,
-    deduction: 38600,
-    net: 66400,
-    incomes: {
-      'Basic Pay': 45000,
-      'House Rent': 18000,
-      'Medical': 5000,
-      'Conveyance': 3000,
-      'Special': 9000,
-      'Dearness': 12000,
-      'Refreshment': 4000,
-      'Utility': 2000,
-      'Others': 7000,
-    },
-    deductions: {
-      'PF': 5500,
-      'PF Loan': 5000,
-      'Interest PF': 800,
-      'Canteen': 1500,
-      'Picnic': 800,
-      'Advanced': 10000,
-      'Welfare': 500,
-      'Stamps': 200,
-      'Tax': 14300,
-    },
-  },
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
 ];
+
+export function getMonthLabel(monthKey: string): string {
+  const [yearStr, monthStr] = monthKey.split('-');
+  const monthIdx = parseInt(monthStr, 10) - 1;
+  const monthName = MONTH_NAMES[monthIdx] || monthStr;
+  return `${monthName} ${yearStr}`;
+}
+
+export function formatCreatedDate(timestamp?: number, monthKey?: string): string {
+  if (timestamp) {
+    const d = new Date(timestamp);
+    if (!isNaN(d.getTime())) {
+      const day = d.getDate();
+      const monthShort = MONTH_NAMES[d.getMonth()]?.slice(0, 3) || '';
+      const year = d.getFullYear();
+      let hours = d.getHours();
+      const minutes = d.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      return `${day} ${monthShort} ${year}, ${hours}:${minutes} ${ampm}`;
+    }
+  }
+  if (monthKey) {
+    const label = getMonthLabel(monthKey);
+    return `28 ${label.slice(0, 3)} ${monthKey.slice(0, 4)}, 10:00 AM`;
+  }
+  return '28 Aug 2026, 10:00 AM';
+}
+
+export function convertFirebaseMonthsToRecords(
+  months: Record<string, FirebaseMonthData>
+): MonthSalaryRecord[] {
+  const records: MonthSalaryRecord[] = [];
+  const sortedMonthKeys = Object.keys(months).sort().reverse();
+
+  for (const monthKey of sortedMonthKeys) {
+    const data = months[monthKey];
+    if (!data) continue;
+
+    const incomes = data.income || {};
+    const deductions = data.deduction || {};
+
+    const gross = Object.values(incomes).reduce((sum, v) => sum + (Number(v) || 0), 0);
+    const deduction = Object.values(deductions).reduce((sum, v) => sum + (Number(v) || 0), 0);
+    const net = gross - deduction;
+
+    records.push({
+      month: monthKey,
+      monthLabel: getMonthLabel(monthKey),
+      createdDate: formatCreatedDate(data.timestamp, monthKey),
+      gross,
+      deduction,
+      net,
+      incomes,
+      deductions,
+      extraDeduction: data.extraDeduction || [],
+    });
+  }
+
+  return records;
+}
+
+export function convertFirebaseProfileToUser(
+  rawProfile: FirebaseUserData['profile'],
+  uid: string = '5556'
+): UserProfileData {
+  return {
+    uid,
+    name: rawProfile.name || 'Asif Arman Saikot',
+    companyName: rawProfile.companyName || 'Essential Drugs Company Limited',
+    designation: rawProfile.designation || 'Assistant Engineering Officer',
+    pin: rawProfile.pin || '5556',
+    email: rawProfile.email || 'saikot@saikot.bd',
+    mobile: rawProfile.mobile || '01719364298',
+    joinDate: '01 January 2024',
+    photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+  };
+}
+
+export const INITIAL_USER_PROFILE: UserProfileData = convertFirebaseProfileToUser(
+  RAW_FIREBASE_DATA.profile,
+  '5556'
+);
+
+export const INITIAL_SALARY_RECORDS: MonthSalaryRecord[] = convertFirebaseMonthsToRecords(
+  RAW_FIREBASE_DATA.months
+);
 
 export const formatBDT = (val: number): string => {
   return '৳' + Number(val || 0).toLocaleString('en-BD', {

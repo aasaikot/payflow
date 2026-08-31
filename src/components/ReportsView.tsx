@@ -6,6 +6,7 @@ import {
   PieChart as PieIcon,
   TrendingUp,
   ArrowUpRight,
+  ArrowDownRight,
   Sparkles,
   Layers,
   Calendar,
@@ -13,6 +14,9 @@ import {
   Check,
   Percent,
   SlidersHorizontal,
+  Wallet,
+  Receipt,
+  CheckCircle2,
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
@@ -44,88 +48,181 @@ const DEDUCTION_COLORS = [
   '#475569', // Slate
 ];
 
+const ALL_MONTHS = [
+  { num: 1, key: '01', short: 'Jan', full: 'January' },
+  { num: 2, key: '02', short: 'Feb', full: 'February' },
+  { num: 3, key: '03', short: 'Mar', full: 'March' },
+  { num: 4, key: '04', short: 'Apr', full: 'April' },
+  { num: 5, key: '05', short: 'May', full: 'May' },
+  { num: 6, key: '06', short: 'Jun', full: 'June' },
+  { num: 7, key: '07', short: 'Jul', full: 'July' },
+  { num: 8, key: '08', short: 'Aug', full: 'August' },
+  { num: 9, key: '09', short: 'Sep', full: 'September' },
+  { num: 10, key: '10', short: 'Oct', full: 'October' },
+  { num: 11, key: '11', short: 'Nov', full: 'November' },
+  { num: 12, key: '12', short: 'Dec', full: 'December' },
+];
+
+function resolveSalaryRecord(
+  records: MonthSalaryRecord[],
+  targetMonthKey: string
+): MonthSalaryRecord {
+  const found = records.find((r) => r.month === targetMonthKey);
+  if (found) return found;
+
+  const base = records[0] || {
+    gross: 55691,
+    deduction: 3270,
+    net: 52421,
+    incomes: {
+      'Basic Pay': 22460,
+      'House Rent': 17968,
+      Refreshment: 3790,
+      Special: 2246,
+      Medical: 1900,
+      Conveyance: 1150,
+      Utility: 950,
+    },
+    deductions: {
+      PF: 2246,
+      Canteen: 289,
+      Tax: 250,
+      Welfare: 100,
+      Stamps: 10,
+      'Welfare Subs': 10,
+    },
+    extraDeduction: ['Welfare Subs'],
+  };
+
+  const [yS, mS] = (targetMonthKey || '2026-08').split('-');
+  const y = parseInt(yS, 10) || 2026;
+  const m = parseInt(mS, 10) || 8;
+  const monthName = ALL_MONTHS[m - 1]?.full || 'Month';
+  const monthShort = ALL_MONTHS[m - 1]?.short || 'M';
+
+  return {
+    month: targetMonthKey,
+    monthLabel: `${monthName} ${y}`,
+    createdDate: `28 ${monthShort} ${y}, 10:00 AM`,
+    gross: base.gross,
+    deduction: base.deduction,
+    net: base.net,
+    incomes: { ...base.incomes },
+    deductions: { ...base.deductions },
+    extraDeduction: base.extraDeduction || [],
+  };
+}
+
 export const ReportsView: React.FC<ReportsViewProps> = ({
   salaryRecords,
   activeMonth,
   onSelectMonth,
 }) => {
   const [filterMode, setFilterMode] = useState<'monthly' | 'yearly' | 'aggregate'>('monthly');
-  const [selectedYear, setSelectedYear] = useState<string>('2026');
-  const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<number>(() => {
+    const [y] = (activeMonth || '2026-08').split('-');
+    return parseInt(y, 10) || 2026;
+  });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [calendarViewMode, setCalendarViewMode] = useState<'monthGrid' | 'dayGrid'>('monthGrid');
   const [activeIncomeIndex, setActiveIncomeIndex] = useState<number | null>(null);
   const [activeDeductionIndex, setActiveDeductionIndex] = useState<number | null>(null);
 
-  const activeRecord =
-    salaryRecords.find((r) => r.month === activeMonth) || salaryRecords[0];
+  // Parse active year and month
+  const [activeYearStr, activeMonthStr] = (activeMonth || '2026-08').split('-');
+  const parsedActiveYear = parseInt(activeYearStr, 10) || 2026;
+  const parsedActiveMonth = parseInt(activeMonthStr, 10) || 8;
 
-  // Records filtered by mode
-  const yearRecords = salaryRecords.filter((r) => r.month.startsWith(selectedYear));
+  const activeRecord = resolveSalaryRecord(salaryRecords, activeMonth);
+
+  // Records for selected fiscal year
+  const yearRecords = salaryRecords.filter((r) => r.month.startsWith(`${selectedYear}-`));
+  const effectiveYearRecords =
+    yearRecords.length > 0
+      ? yearRecords
+      : ALL_MONTHS.map((m) =>
+          resolveSalaryRecord(salaryRecords, `${selectedYear}-${m.key}`)
+        );
+
   const activeDataset =
     filterMode === 'monthly'
-      ? [activeRecord].filter(Boolean)
+      ? [activeRecord]
       : filterMode === 'yearly'
-      ? yearRecords.length > 0
-        ? yearRecords
-        : salaryRecords
+      ? effectiveYearRecords
       : salaryRecords;
 
   // Aggregate metrics depending on filter mode
   const gross: number =
     filterMode === 'monthly'
-      ? activeRecord?.gross || 0
+      ? activeRecord.gross || 0
       : activeDataset.reduce((acc, r) => acc + (r.gross || 0), 0);
 
   const deduction: number =
     filterMode === 'monthly'
-      ? activeRecord?.deduction || 0
+      ? activeRecord.deduction || 0
       : activeDataset.reduce((acc, r) => acc + (r.deduction || 0), 0);
 
   const net: number = gross - deduction;
-  const netRatio = gross > 0 ? ((net / gross) * 100).toFixed(1) : '67.4';
-  const deductionRatio = gross > 0 ? ((deduction / gross) * 100).toFixed(1) : '32.6';
+  const netRatio = gross > 0 ? ((net / gross) * 100).toFixed(1) : '94.1';
+  const deductionRatio = gross > 0 ? ((deduction / gross) * 100).toFixed(1) : '5.9';
   const avgNet = activeDataset.length > 0 ? Math.round(net / activeDataset.length) : net;
 
-  // Income items distribution
-  const incomeItems: [string, number][] =
+  // Income items distribution (filter out items with value <= 0)
+  const incomeItems: [string, number][] = (
     filterMode === 'monthly'
-      ? Object.entries(activeRecord?.incomes || {}).map(([k, v]) => [k, Number(v || 0)])
+      ? Object.entries(activeRecord.incomes || {}).map(([k, v]) => [k, Number(v || 0)] as [string, number])
       : Object.entries(
           activeDataset.reduce((acc, r) => {
-            Object.entries(r.incomes).forEach(([k, v]) => {
+            Object.entries(r.incomes || {}).forEach(([k, v]) => {
               acc[k] = (acc[k] || 0) + Number(v || 0);
             });
             return acc;
           }, {} as Record<string, number>)
-        ).map(([k, v]) => [k, Number(v || 0)]);
+        ).map(([k, v]) => [k, Number(v || 0)] as [string, number])
+  )
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1]);
 
-  // Deduction items distribution
-  const deductionItems: [string, number][] =
+  // Deduction items distribution (filter out items with value <= 0)
+  const deductionItems: [string, number][] = (
     filterMode === 'monthly'
-      ? Object.entries(activeRecord?.deductions || {}).map(([k, v]) => [k, Number(v || 0)])
+      ? Object.entries(activeRecord.deductions || {}).map(([k, v]) => [k, Number(v || 0)] as [string, number])
       : Object.entries(
           activeDataset.reduce((acc, r) => {
-            Object.entries(r.deductions).forEach(([k, v]) => {
+            Object.entries(r.deductions || {}).forEach(([k, v]) => {
               acc[k] = (acc[k] || 0) + Number(v || 0);
             });
             return acc;
           }, {} as Record<string, number>)
-        ).map(([k, v]) => [k, Number(v || 0)]);
+        ).map(([k, v]) => [k, Number(v || 0)] as [string, number])
+  )
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1]);
 
-  const currentMonthIndex = salaryRecords.findIndex((r) => r.month === activeMonth);
+  // Continuous Calendar Navigation across years
   const handlePrevMonth = () => {
-    if (currentMonthIndex < salaryRecords.length - 1) {
-      onSelectMonth(salaryRecords[currentMonthIndex + 1].month);
+    let y = parsedActiveYear;
+    let m = parsedActiveMonth - 1;
+    if (m < 1) {
+      m = 12;
+      y -= 1;
     }
-  };
-  const handleNextMonth = () => {
-    if (currentMonthIndex > 0) {
-      onSelectMonth(salaryRecords[currentMonthIndex - 1].month);
-    }
+    const newKey = `${y}-${m.toString().padStart(2, '0')}`;
+    onSelectMonth(newKey);
+    setSelectedYear(y);
   };
 
-  const availableYears = Array.from(
-    new Set(salaryRecords.map((r) => r.month.substring(0, 4)))
-  ).sort().reverse();
+  const handleNextMonth = () => {
+    let y = parsedActiveYear;
+    let m = parsedActiveMonth + 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+    const newKey = `${y}-${m.toString().padStart(2, '0')}`;
+    onSelectMonth(newKey);
+    setSelectedYear(y);
+  };
 
   return (
     <div id="reports-view-screen" className="w-full flex flex-col pb-8">
@@ -150,16 +247,16 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         {/* MODERN 3-WAY TAB SELECTOR (Monthly / Yearly / Aggregate) */}
         <div
           id="reports-segmented-tabs"
-          className="w-full bg-[#EEF4F1] p-1.5 rounded-2xl border border-[#D7E0DC] grid grid-cols-3 gap-1 shadow-inner"
+          className="w-full bg-[#EEF3F0] p-1.5 rounded-2xl border border-[#D5E2DC] grid grid-cols-3 gap-1.5 shadow-2xs"
         >
           {/* Tab 1: Monthly */}
           <button
             type="button"
             id="tab-monthly-btn"
             onClick={() => setFilterMode('monthly')}
-            className={`py-2 px-1 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+            className={`py-2 px-1 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
               filterMode === 'monthly'
-                ? 'bg-white text-[#008F5B] shadow-sm ring-1 ring-[#008F5B]/20 scale-[1.02]'
+                ? 'bg-white text-[#008F5B] shadow-[0_2px_8px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/20 scale-[1.01]'
                 : 'text-[#6E7974] hover:text-[#17211D] hover:bg-white/40'
             }`}
           >
@@ -172,9 +269,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             type="button"
             id="tab-yearly-btn"
             onClick={() => setFilterMode('yearly')}
-            className={`py-2 px-1 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+            className={`py-2 px-1 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
               filterMode === 'yearly'
-                ? 'bg-white text-[#008F5B] shadow-sm ring-1 ring-[#008F5B]/20 scale-[1.02]'
+                ? 'bg-white text-[#008F5B] shadow-[0_2px_8px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/20 scale-[1.01]'
                 : 'text-[#6E7974] hover:text-[#17211D] hover:bg-white/40'
             }`}
           >
@@ -187,9 +284,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             type="button"
             id="tab-aggregate-btn"
             onClick={() => setFilterMode('aggregate')}
-            className={`py-2 px-1 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+            className={`py-2 px-1 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
               filterMode === 'aggregate'
-                ? 'bg-white text-[#008F5B] shadow-sm ring-1 ring-[#008F5B]/20 scale-[1.02]'
+                ? 'bg-white text-[#008F5B] shadow-[0_2px_8px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/20 scale-[1.01]'
                 : 'text-[#6E7974] hover:text-[#17211D] hover:bg-white/40'
             }`}
           >
@@ -198,113 +295,302 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </button>
         </div>
 
-        {/* SIMPLE & PREMIUM MONTH & DATE CALENDAR NAVIGATOR */}
+        {/* ELEGANT & INTUITIVE MONTH SELECTOR CARD WITH FULL CALENDAR SYSTEM */}
         {filterMode === 'monthly' && (
           <div
             id="reports-monthly-calendar-card"
-            className="w-full bg-white rounded-[22px] p-3.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] flex flex-col gap-3"
+            className="w-full bg-white rounded-2xl p-4 border border-[#E3ECE7] shadow-[0_4px_22px_rgba(23,33,29,0.04)] flex flex-col gap-3"
           >
-            {/* Header with Prev/Next and Date Range */}
-            <div className="flex items-center justify-between">
+            {/* Header: Previous / Title / Next Navigation + Calendar Mode Toggle */}
+            <div className="flex items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                disabled={currentMonthIndex >= salaryRecords.length - 1}
-                className="w-8 h-8 rounded-xl bg-[#F5FAF7] hover:bg-[#E9F7F1] disabled:opacity-30 text-[#17211D] flex items-center justify-center transition-colors cursor-pointer border border-[#E4ECE8]"
+                className="w-9 h-9 rounded-xl bg-[#F3F7F5] hover:bg-[#E7EFEA] text-[#17211D] flex items-center justify-center transition-all cursor-pointer border border-[#E2EBE6] shrink-0"
                 title="Previous Month"
+                aria-label="Previous Month"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={17} strokeWidth={2.4} />
               </button>
 
-              <div className="flex flex-col items-center">
-                <span className="text-[14px] font-black text-[#17211D] tracking-tight">
-                  {activeRecord?.monthLabel}
+              <button
+                type="button"
+                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                className="flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl hover:bg-[#F3F7F5] transition-colors cursor-pointer group"
+                title="Click to open full Calendar & Year/Month Picker"
+              >
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+                      isCalendarOpen ? 'bg-[#008F5B] text-white shadow-2xs' : 'bg-[#E9F7F1] text-[#008F5B]'
+                    }`}
+                  >
+                    <Calendar size={13} strokeWidth={2.5} />
+                  </div>
+                  <span className="text-[15px] font-black text-[#17211D] tracking-tight group-hover:text-[#008F5B] transition-colors">
+                    {activeRecord.monthLabel}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    className={`text-[#6E7974] transition-transform duration-200 ${
+                      isCalendarOpen ? 'rotate-180 text-[#008F5B]' : 'group-hover:text-[#17211D]'
+                    }`}
+                  />
+                </div>
+                <span className="text-[10.5px] text-[#6E7974] font-medium mt-0.5 flex items-center gap-1">
+                  <span>Period:</span>
+                  <span className="font-bold text-[#334155]">
+                    {(() => {
+                      const lastDay = new Date(parsedActiveYear, parsedActiveMonth, 0).getDate();
+                      const shortM = ALL_MONTHS[parsedActiveMonth - 1]?.short || 'M';
+                      return `01 ${shortM} – ${lastDay} ${shortM} ${parsedActiveYear}`;
+                    })()}
+                  </span>
                 </span>
-                <span className="text-[10px] text-[#6E7974] font-medium mt-0.5">
-                  Period: 01 {activeRecord?.monthLabel?.substring(0, 3)} – 30/31 {activeRecord?.monthLabel?.substring(0, 3)} {activeRecord?.month?.substring(0, 4)}
-                </span>
-              </div>
+              </button>
 
               <button
                 type="button"
                 onClick={handleNextMonth}
-                disabled={currentMonthIndex <= 0}
-                className="w-8 h-8 rounded-xl bg-[#F5FAF7] hover:bg-[#E9F7F1] disabled:opacity-30 text-[#17211D] flex items-center justify-center transition-colors cursor-pointer border border-[#E4ECE8]"
+                className="w-9 h-9 rounded-xl bg-[#F3F7F5] hover:bg-[#E7EFEA] text-[#17211D] flex items-center justify-center transition-all cursor-pointer border border-[#E2EBE6] shrink-0"
                 title="Next Month"
+                aria-label="Next Month"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={17} strokeWidth={2.4} />
               </button>
             </div>
 
-            {/* Clean Month Quick Selector Chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-[#F0F4F2]">
-              {salaryRecords.map((r) => {
-                const isSelected = r.month === activeMonth;
-                return (
+            {/* FLUTTER-STYLE INTERACTIVE CALENDAR & YEAR/MONTH PICKER */}
+            {isCalendarOpen && (
+              <div
+                id="flutter-calendar-widget"
+                className="p-3.5 bg-gradient-to-b from-[#F8FAF9] to-[#F1F6F3] rounded-xl border border-[#DDE7E1] flex flex-col gap-3 transition-all animate-in fade-in duration-200"
+              >
+                {/* Year Navigation Stepper */}
+                <div className="flex items-center justify-between bg-white px-2 py-1.5 rounded-xl border border-[#E2EBE6] shadow-2xs">
                   <button
-                    key={r.month}
                     type="button"
-                    onClick={() => onSelectMonth(r.month)}
-                    className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold whitespace-nowrap transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#008F5B] text-white shadow-2xs'
-                        : 'bg-[#F5FAF7] text-[#6E7974] hover:text-[#17211D] hover:bg-[#EBF2EE]'
-                    }`}
+                    onClick={() => {
+                      const prevY = parsedActiveYear - 1;
+                      onSelectMonth(`${prevY}-${activeMonthStr}`);
+                      setSelectedYear(prevY);
+                    }}
+                    className="w-7 h-7 rounded-lg bg-[#F3F7F5] hover:bg-[#E7EFEA] text-[#17211D] flex items-center justify-center transition-all cursor-pointer"
+                    title="Previous Year"
                   >
-                    {r.monthLabel.split(' ')[0]}
+                    <ChevronLeft size={14} strokeWidth={2.5} />
                   </button>
-                );
-              })}
-            </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-black text-[#17211D] tracking-tight">
+                      {parsedActiveYear}
+                    </span>
+                    {/* View mode toggle pills */}
+                    <div className="flex items-center bg-[#F3F7F5] p-0.5 rounded-lg border border-[#E2EBE6]">
+                      <button
+                        type="button"
+                        onClick={() => setCalendarViewMode('monthGrid')}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
+                          calendarViewMode === 'monthGrid'
+                            ? 'bg-[#008F5B] text-white shadow-2xs'
+                            : 'text-[#6E7974] hover:text-[#17211D]'
+                        }`}
+                      >
+                        Months
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCalendarViewMode('dayGrid')}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
+                          calendarViewMode === 'dayGrid'
+                            ? 'bg-[#008F5B] text-white shadow-2xs'
+                            : 'text-[#6E7974] hover:text-[#17211D]'
+                        }`}
+                      >
+                        Days
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextY = parsedActiveYear + 1;
+                      onSelectMonth(`${nextY}-${activeMonthStr}`);
+                      setSelectedYear(nextY);
+                    }}
+                    className="w-7 h-7 rounded-lg bg-[#F3F7F5] hover:bg-[#E7EFEA] text-[#17211D] flex items-center justify-center transition-all cursor-pointer"
+                    title="Next Year"
+                  >
+                    <ChevronRight size={14} strokeWidth={2.5} />
+                  </button>
+                </div>
+
+                {/* 1. 12-MONTH PICKER GRID (Select Any Month in 1 Tap) */}
+                {calendarViewMode === 'monthGrid' ? (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {ALL_MONTHS.map((m) => {
+                      const isCurrent = m.num === parsedActiveMonth;
+                      const monthKey = `${parsedActiveYear}-${m.key}`;
+                      const hasStatement = salaryRecords.some((r) => r.month === monthKey);
+
+                      return (
+                        <button
+                          key={m.key}
+                          type="button"
+                          onClick={() => {
+                            onSelectMonth(monthKey);
+                            setSelectedYear(parsedActiveYear);
+                          }}
+                          className={`py-2 px-1 rounded-xl text-center flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer relative ${
+                            isCurrent
+                              ? 'bg-[#008F5B] text-white shadow-[0_2px_8px_rgba(0,143,91,0.3)] font-black scale-[1.02]'
+                              : hasStatement
+                              ? 'bg-white text-[#17211D] font-bold border border-[#008F5B]/30 hover:border-[#008F5B] hover:bg-[#F0FDF4]'
+                              : 'bg-white/80 text-[#5C6E66] font-semibold border border-[#E4ECE8] hover:bg-white hover:text-[#17211D]'
+                          }`}
+                        >
+                          <span className="text-[12px]">{m.short}</span>
+                          <span className={`text-[9px] ${isCurrent ? 'text-white/80' : 'text-[#8A9791]'}`}>
+                            {hasStatement ? 'Statement' : 'Forecast'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* 2. FULL DAY MATRIX VIEW (TableCalendar) */
+                  <div className="flex flex-col gap-2">
+                    {/* Weekday headers */}
+                    <div className="grid grid-cols-7 gap-1 text-center font-bold text-[10px] text-[#6E7974] uppercase py-1 border-b border-[#E2EBE6]">
+                      <span>Su</span>
+                      <span>Mo</span>
+                      <span>Tu</span>
+                      <span>We</span>
+                      <span>Th</span>
+                      <span>Fr</span>
+                      <span>Sa</span>
+                    </div>
+
+                    {/* Days matrix */}
+                    {(() => {
+                      const daysInMonth = new Date(parsedActiveYear, parsedActiveMonth, 0).getDate();
+                      const startDayIndex = new Date(parsedActiveYear, parsedActiveMonth - 1, 1).getDay();
+                      const daysArray = [];
+
+                      for (let i = 0; i < startDayIndex; i++) {
+                        daysArray.push(null);
+                      }
+                      for (let d = 1; d <= daysInMonth; d++) {
+                        daysArray.push(d);
+                      }
+
+                      return (
+                        <div className="grid grid-cols-7 gap-1 text-center">
+                          {daysArray.map((day, idx) => {
+                            if (day === null) {
+                              return <div key={`empty-${idx}`} className="h-7" />;
+                            }
+                            const isPayDay = day === daysInMonth || day === 30 || day === 31;
+
+                            return (
+                              <div
+                                key={`day-${day}`}
+                                className={`h-7 rounded-lg flex flex-col items-center justify-center text-[11px] font-semibold transition-all relative ${
+                                  isPayDay
+                                    ? 'bg-[#008F5B] text-white font-black shadow-xs ring-2 ring-[#008F5B]/30'
+                                    : 'bg-white/70 text-[#334155] border border-[#E8EEEA]'
+                                }`}
+                              >
+                                <span>{day}</span>
+                                {isPayDay && (
+                                  <span className="w-1 h-1 rounded-full bg-white absolute bottom-0.5" />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* Footer Controls */}
+                <div className="flex items-center justify-between pt-2 border-t border-[#E2EBE6] text-[10.5px]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectMonth('2026-08');
+                      setSelectedYear(2026);
+                    }}
+                    className="font-bold text-[#008F5B] hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <Calendar size={11} />
+                    Current (Aug 2026)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCalendarOpen(false)}
+                    className="font-bold text-[#6E7974] hover:text-[#17211D] cursor-pointer"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* VISUALLY DESIGNED FISCAL YEAR CARD */}
+        {/* VISUALLY DESIGNED FISCAL YEAR CARD (NO PILLS, CLEAN STEPPER) */}
         {filterMode === 'yearly' && (
           <div
             id="reports-yearly-calendar-card"
-            className="w-full bg-white rounded-[22px] p-4 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] flex flex-col gap-3"
+            className="w-full bg-white rounded-2xl p-4 border border-[#E3ECE7] shadow-[0_4px_22px_rgba(23,33,29,0.04)] flex flex-col gap-3"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#E9F7F1] text-[#008F5B] flex items-center justify-center font-bold">
-                  <BarChart3 size={16} />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[14px] font-black text-[#17211D]">
+              {/* Previous Fiscal Year */}
+              <button
+                type="button"
+                onClick={() => setSelectedYear((prev) => prev - 1)}
+                className="w-9 h-9 rounded-xl bg-[#F3F7F5] hover:bg-[#E7EFEA] text-[#17211D] flex items-center justify-center transition-all cursor-pointer border border-[#E2EBE6] shrink-0"
+                title="Previous Year"
+              >
+                <ChevronLeft size={17} strokeWidth={2.4} />
+              </button>
+
+              {/* Fiscal Year Label */}
+              <div className="flex flex-col items-center text-center">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-6 h-6 rounded-lg bg-[#E9F7F1] text-[#008F5B] flex items-center justify-center">
+                    <BarChart3 size={13} strokeWidth={2.4} />
+                  </div>
+                  <span className="text-[15px] font-black text-[#17211D] tracking-tight">
                     Fiscal Year {selectedYear}
                   </span>
-                  <span className="text-[10.5px] text-[#6E7974] font-medium">
-                    {yearRecords.length} statements recorded in cycle
-                  </span>
                 </div>
+                <span className="text-[10.5px] text-[#6E7974] font-medium mt-0.5">
+                  {yearRecords.length > 0 ? `${yearRecords.length} Statements Recorded` : '12 Months Annual Projection'}
+                </span>
               </div>
 
-              {/* Year Selector Buttons */}
-              <div className="flex items-center gap-1 bg-[#F5FAF7] p-1 rounded-xl border border-[#E4ECE8]">
-                {availableYears.map((yr) => (
-                  <button
-                    key={yr}
-                    type="button"
-                    onClick={() => setSelectedYear(yr)}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                      selectedYear === yr
-                        ? 'bg-[#008F5B] text-white shadow-2xs'
-                        : 'text-[#6E7974] hover:text-[#17211D]'
-                    }`}
-                  >
-                    {yr}
-                  </button>
-                ))}
-              </div>
+              {/* Next Fiscal Year */}
+              <button
+                type="button"
+                onClick={() => setSelectedYear((prev) => prev + 1)}
+                className="w-9 h-9 rounded-xl bg-[#F3F7F5] hover:bg-[#E7EFEA] text-[#17211D] flex items-center justify-center transition-all cursor-pointer border border-[#E2EBE6] shrink-0"
+                title="Next Year"
+              >
+                <ChevronRight size={17} strokeWidth={2.4} />
+              </button>
             </div>
 
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F5FAF7] border border-[#E4ECE8]">
-              <span className="text-[11px] font-bold text-[#6E7974] uppercase tracking-wider">
-                MONTHLY AVERAGE NET
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] border border-[#E3ECE7] gap-1">
+              <span className="text-[11px] font-black text-[#5C6E66] uppercase tracking-wider">
+                ANNUAL AVERAGE NET AMOUNT
               </span>
-              <span className="text-[13px] font-black text-[#008F5B]">
-                {formatBDT(avgNet)}/mo
+              <span className="text-[14px] font-black text-[#008F5B] flex items-baseline gap-1">
+                <span>{formatBDT(avgNet)}</span>
+                <span className="text-[11px] font-bold text-[#6E7974]">Per Month</span>
               </span>
             </div>
           </div>
@@ -314,10 +600,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         {filterMode === 'aggregate' && (
           <div
             id="reports-aggregate-calendar-card"
-            className="w-full bg-white rounded-[22px] p-4 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] flex flex-col gap-3"
+            className="w-full bg-white rounded-2xl p-4 border border-[#E3ECE7] shadow-[0_4px_22px_rgba(23,33,29,0.04)] flex flex-col gap-3"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[#E9F7F1] text-[#008F5B] flex items-center justify-center font-bold">
                   <Layers size={16} />
                 </div>
@@ -332,55 +618,133 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F5FAF7] border border-[#E4ECE8]">
-              <span className="text-[11px] font-bold text-[#6E7974] uppercase tracking-wider">
-                HISTORICAL AVERAGE TAKE-HOME
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] border border-[#E3ECE7] gap-1">
+              <span className="text-[11px] font-black text-[#5C6E66] uppercase tracking-wider">
+                HISTORICAL AVERAGE NET AMOUNT
               </span>
-              <span className="text-[13px] font-black text-[#008F5B]">
-                {formatBDT(avgNet)}/mo
+              <span className="text-[14px] font-black text-[#008F5B] flex items-baseline gap-1">
+                <span>{formatBDT(avgNet)}</span>
+                <span className="text-[11px] font-bold text-[#6E7974]">Per Month</span>
               </span>
             </div>
           </div>
         )}
 
-        {/* 3-Column Metrics Card with Colored Badges */}
+        {/* 3-COLUMN ULTRA-MODERN METRICS CARDS WITH RICH VISUAL GRAPHICS & PROGRESS TRACKS */}
         <div
           id="reports-kpi-bar"
-          className="w-full bg-white rounded-[22px] p-4 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)] grid grid-cols-3 divide-x divide-[#E4ECE8]"
+          className="w-full grid grid-cols-3 gap-2 sm:gap-3"
         >
-          <div className="flex flex-col items-center justify-center px-1 text-center">
-            <span className="text-[10px] font-bold text-[#6E7974] uppercase tracking-wider">
-              {filterMode === 'monthly' ? 'GROSS' : 'TOTAL GROSS'}
-            </span>
-            <strong className="text-[13px] font-black text-[#17211D] mt-1">
-              {formatBDT(gross)}
-            </strong>
-            <span className="text-[9px] text-[#6E7974] font-semibold mt-0.5">100% Total</span>
+          {/* Card 1: Gross */}
+          <div className="bg-gradient-to-br from-white via-[#F8FAF9] to-[#EEF5F1] p-3 sm:p-3.5 rounded-2xl border border-[#D8E6DF] shadow-[0_4px_16px_rgba(0,35,20,0.04)] flex flex-col justify-between relative overflow-hidden group hover:border-[#008F5B]/40 transition-all">
+            {/* Top Row: Micro Icon + Ratio Pill */}
+            <div className="flex items-center justify-between">
+              <div className="w-6 h-6 rounded-lg bg-[#E6F4ED] text-[#008F5B] flex items-center justify-center shadow-xs">
+                <Wallet size={13} strokeWidth={2.4} />
+              </div>
+              <span className="text-[9px] font-black bg-[#E6F4ED] text-[#008F5B] px-1.5 py-0.5 rounded-full ring-1 ring-[#008F5B]/20">
+                100%
+              </span>
+            </div>
+
+            {/* Label & Value */}
+            <div className="mt-2 flex flex-col">
+              <span className="text-[9.5px] font-extrabold text-[#5C6E66] uppercase tracking-wider">
+                {filterMode === 'monthly' ? 'GROSS' : 'TOTAL GROSS'}
+              </span>
+              <strong className="text-[13px] sm:text-[14.5px] font-black text-[#17211D] tracking-tight mt-0.5 leading-tight">
+                {formatBDT(gross)}
+              </strong>
+            </div>
+
+            {/* Bottom Visual Mini Progress Bar */}
+            <div className="mt-2.5 flex flex-col gap-1">
+              <div className="w-full h-1.5 rounded-full bg-[#E2EBE6] overflow-hidden">
+                <div className="h-full w-full bg-gradient-to-r from-[#008F5B] to-[#00B377] rounded-full" />
+              </div>
+              <span className="text-[8.5px] text-[#6E7974] font-semibold">
+                Total Accrued
+              </span>
+            </div>
           </div>
-          <div className="flex flex-col items-center justify-center px-1 text-center">
-            <span className="text-[10px] font-bold text-[#6E7974] uppercase tracking-wider">
-              {filterMode === 'monthly' ? 'DEDUCTION' : 'TOTAL DEDUCTION'}
-            </span>
-            <strong className="text-[13px] font-black text-[#D83B3B] mt-1">
-              {formatBDT(deduction)}
-            </strong>
-            <span className="text-[9px] text-[#D83B3B] font-bold mt-0.5">{deductionRatio}%</span>
+
+          {/* Card 2: Deduction */}
+          <div className="bg-gradient-to-br from-white via-[#FFF7F7] to-[#FEECEE] p-3 sm:p-3.5 rounded-2xl border border-[#FDCFD4] shadow-[0_4px_16px_rgba(216,59,59,0.04)] flex flex-col justify-between relative overflow-hidden group hover:border-[#DC2626]/40 transition-all">
+            {/* Top Row: Micro Icon + Ratio Pill */}
+            <div className="flex items-center justify-between">
+              <div className="w-6 h-6 rounded-lg bg-[#FEE2E2] text-[#DC2626] flex items-center justify-center shadow-xs">
+                <Receipt size={13} strokeWidth={2.4} />
+              </div>
+              <span className="text-[9px] font-black bg-[#FEE2E2] text-[#DC2626] px-1.5 py-0.5 rounded-full ring-1 ring-[#DC2626]/20">
+                {deductionRatio}%
+              </span>
+            </div>
+
+            {/* Label & Value */}
+            <div className="mt-2 flex flex-col">
+              <span className="text-[9.5px] font-extrabold text-[#D83B3B] uppercase tracking-wider">
+                {filterMode === 'monthly' ? 'DEDUCTION' : 'DEDUCTIONS'}
+              </span>
+              <strong className="text-[13px] sm:text-[14.5px] font-black text-[#D83B3B] tracking-tight mt-0.5 leading-tight">
+                {formatBDT(deduction)}
+              </strong>
+            </div>
+
+            {/* Bottom Visual Mini Progress Bar */}
+            <div className="mt-2.5 flex flex-col gap-1">
+              <div className="w-full h-1.5 rounded-full bg-[#FEE2E2] overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#DC2626] to-[#EF4444] rounded-full"
+                  style={{ width: `${Math.min(100, Math.max(8, Number(deductionRatio)))}%` }}
+                />
+              </div>
+              <span className="text-[8.5px] text-[#D83B3B]/80 font-bold">
+                Rate: {deductionRatio}%
+              </span>
+            </div>
           </div>
-          <div className="flex flex-col items-center justify-center px-1 text-center">
-            <span className="text-[10px] font-bold text-[#6E7974] uppercase tracking-wider">
-              {filterMode === 'monthly' ? 'NET SAVINGS' : 'NET EARNINGS'}
-            </span>
-            <strong className="text-[13px] font-black text-[#008F5B] mt-1">
-              {formatBDT(net)}
-            </strong>
-            <span className="text-[9px] text-[#008F5B] font-bold mt-0.5">{netRatio}%</span>
+
+          {/* Card 3: Net Payable / Savings */}
+          <div className="bg-gradient-to-br from-[#F0FDF4] via-[#E6F9EE] to-[#DCFCE7] p-3 sm:p-3.5 rounded-2xl border border-[#86EFAC] shadow-[0_6px_20px_rgba(0,143,91,0.08)] ring-1 ring-[#008F5B]/10 flex flex-col justify-between relative overflow-hidden group hover:border-[#008F5B] transition-all">
+            {/* Top Row: Micro Icon + Ratio Pill */}
+            <div className="flex items-center justify-between">
+              <div className="w-6 h-6 rounded-lg bg-[#008F5B] text-white flex items-center justify-center shadow-xs">
+                <Sparkles size={13} strokeWidth={2.4} />
+              </div>
+              <span className="text-[9px] font-black bg-[#008F5B] text-white px-1.5 py-0.5 rounded-full shadow-2xs">
+                {netRatio}%
+              </span>
+            </div>
+
+            {/* Label & Value */}
+            <div className="mt-2 flex flex-col">
+              <span className="text-[9.5px] font-extrabold text-[#008F5B] uppercase tracking-wider">
+                {filterMode === 'monthly' ? 'NET PAYABLE' : 'NET EARNINGS'}
+              </span>
+              <strong className="text-[13px] sm:text-[14.5px] font-black text-[#008F5B] tracking-tight mt-0.5 leading-tight">
+                {formatBDT(net)}
+              </strong>
+            </div>
+
+            {/* Bottom Visual Mini Progress Bar */}
+            <div className="mt-2.5 flex flex-col gap-1">
+              <div className="w-full h-1.5 rounded-full bg-[#BBF7D0] overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#008F5B] to-[#10B981] rounded-full"
+                  style={{ width: `${Math.min(100, Math.max(10, Number(netRatio)))}%` }}
+                />
+              </div>
+              <span className="text-[8.5px] text-[#008F5B] font-extrabold">
+                Take-Home Net
+              </span>
+            </div>
           </div>
         </div>
 
         {/* 1. Income Breakdown Donut Card with Interactive Segment Highlight */}
         <div
           id="reports-income-breakdown-card"
-          className="w-full bg-white rounded-[24px] p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
+          className="w-full bg-white rounded-xl p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
         >
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-1.5">
@@ -407,7 +771,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                   strokeWidth="5"
                 />
                 {/* Segments */}
-                {incomeItems.slice(0, 5).map(([key, val], idx) => {
+                {incomeItems.map(([key, val], idx) => {
                   const numVal = Number(val);
                   const pct = gross > 0 ? (numVal / gross) * 100 : 0;
                   const offset = incomeItems
@@ -436,12 +800,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center leading-tight text-center px-1">
                 <span className="text-[10px] font-black text-[#008F5B] truncate max-w-[62px]">
-                  {activeIncomeIndex !== null
+                  {activeIncomeIndex !== null && incomeItems[activeIncomeIndex]
                     ? formatBDT(Number(incomeItems[activeIncomeIndex][1]))
                     : `${incomeItems.length} Heads`}
                 </span>
                 <span className="text-[7px] text-[#6E7974] font-bold uppercase truncate max-w-[62px]">
-                  {activeIncomeIndex !== null
+                  {activeIncomeIndex !== null && incomeItems[activeIncomeIndex]
                     ? incomeItems[activeIncomeIndex][0]
                     : 'Earnings'}
                 </span>
@@ -450,7 +814,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
             {/* Legend Distribution List */}
             <div className="flex-1 min-w-0 flex flex-col gap-1.5 text-xs">
-              {incomeItems.slice(0, 5).map(([key, val], idx) => {
+              {incomeItems.map(([key, val], idx) => {
                 const numVal = Number(val);
                 const isHovered = activeIncomeIndex === idx;
 
@@ -487,7 +851,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         {/* 2. Deduction Breakdown Donut Card */}
         <div
           id="reports-deduction-breakdown-card"
-          className="w-full bg-white rounded-[24px] p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
+          className="w-full bg-white rounded-xl p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
         >
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-1.5">
@@ -513,7 +877,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                   stroke="#FFEEEE"
                   strokeWidth="5"
                 />
-                {deductionItems.slice(0, 5).map(([key, val], idx) => {
+                {deductionItems.map(([key, val], idx) => {
                   const numVal = Number(val);
                   const pct = deduction > 0 ? (numVal / deduction) * 100 : 0;
                   const offset = deductionItems
@@ -542,12 +906,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center leading-tight text-center px-1">
                 <span className="text-[10px] font-black text-[#D83B3B] truncate max-w-[62px]">
-                  {activeDeductionIndex !== null
+                  {activeDeductionIndex !== null && deductionItems[activeDeductionIndex]
                     ? formatBDT(Number(deductionItems[activeDeductionIndex][1]))
                     : `${deductionItems.length} Heads`}
                 </span>
                 <span className="text-[7px] text-[#6E7974] font-bold uppercase truncate max-w-[62px]">
-                  {activeDeductionIndex !== null
+                  {activeDeductionIndex !== null && deductionItems[activeDeductionIndex]
                     ? deductionItems[activeDeductionIndex][0]
                     : 'Deductions'}
                 </span>
@@ -556,7 +920,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
             {/* Legend Distribution List */}
             <div className="flex-1 min-w-0 flex flex-col gap-1.5 text-xs">
-              {deductionItems.slice(0, 5).map(([key, val], idx) => {
+              {deductionItems.map(([key, val], idx) => {
                 const numVal = Number(val);
                 const isHovered = activeDeductionIndex === idx;
 
@@ -565,7 +929,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     key={key}
                     onMouseEnter={() => setActiveDeductionIndex(idx)}
                     onMouseLeave={() => setActiveDeductionIndex(null)}
-                    className={`flex items-center justify-between text-[11px] p-1.5 rounded-xl transition-all cursor-pointer ${
+                    className={`flex items-center justify-between text-[11px] p-1.5 rounded-lg transition-all cursor-pointer ${
                       isHovered ? 'bg-[#FFECEC]/50' : 'hover:bg-[#F5FAF7]'
                     }`}
                   >
@@ -588,20 +952,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               })}
             </div>
           </div>
-        </div>
-
-        {/* Total Records Year Banner with Modern Metallic Rim */}
-        <div
-          id="reports-total-records-banner"
-          className="w-full bg-gradient-to-r from-[#008F5B]/10 via-white to-[#008F5B]/10 rounded-2xl p-3.5 border border-[#008F5B]/20 text-center flex items-center justify-center gap-2 shadow-2xs"
-        >
-          <Sparkles size={14} className="text-[#008F5B]" />
-          <span className="text-[11px] font-bold text-[#17211D] uppercase tracking-wider">
-            Active Records in 2026:{' '}
-            <strong className="text-[#008F5B] font-black text-[13px]">
-              {String(salaryRecords.length).padStart(2, '0')} Months Synced
-            </strong>
-          </span>
         </div>
       </div>
     </div>

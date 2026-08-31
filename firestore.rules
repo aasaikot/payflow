@@ -1,29 +1,14 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check authentication
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    // Helper function to check owner access
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // User profile documents: users/{userId}
+    // Users collection rules: users can only read and write their own document and subcollections
     match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create, update: if isOwner(userId);
-      allow delete: if isOwner(userId);
-
-      // User's salary records subcollection: users/{userId}/salaries/{salaryId}
-      match /salaries/{salaryId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId);
-        allow delete: if isOwner(userId);
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
   }
 }
+

@@ -55,7 +55,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     >
       <div
         id="forgot-password-modal-card"
-        className="bg-white rounded-[24px] max-w-md w-full p-6 shadow-2xl border border-[#E4ECE8] relative"
+        className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-[#E4ECE8] relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -79,7 +79,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
             <button
               id="forgot-password-done-btn"
               onClick={handleClose}
-              className="w-full h-12 bg-[#008F5B] hover:bg-[#007A4D] text-white font-bold rounded-[14px] transition-colors"
+              className="w-full h-12 bg-[#008F5B] hover:bg-[#007A4D] text-white font-bold rounded-xl transition-colors"
             >
               Done
             </button>
@@ -125,7 +125,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full h-12 pl-10 pr-4 rounded-[14px] border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-1 focus:ring-[#008F5B] outline-none text-sm text-[#17211D] placeholder-[#9EABA5] bg-white transition-colors"
+                  className="w-full h-12 pl-10 pr-4 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-1 focus:ring-[#008F5B] outline-none text-sm text-[#17211D] placeholder-[#9EABA5] bg-white transition-colors"
                   required
                 />
               </div>
@@ -135,7 +135,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               id="forgot-password-submit-btn"
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 bg-[#008F5B] hover:bg-[#007A4D] disabled:opacity-70 text-white font-bold rounded-[14px] flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              className="w-full h-12 bg-[#008F5B] hover:bg-[#007A4D] disabled:opacity-70 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               {isLoading ? (
                 <Loader2 size={20} className="animate-spin" />
