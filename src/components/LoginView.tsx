@@ -173,22 +173,23 @@ export const LoginView: React.FC<LoginViewProps> = ({
     setInfoMessage(null);
 
     const creds = getSavedBiometricCredentials();
-    if (creds.length === 0 && !email) {
+    const lastUser = getLastBiometricUser();
+    if (creds.length === 0 && !lastUser && !email) {
       setGeneralError('এই ডিভাইসে কোনো ফিঙ্গারপ্রিন্ট রেজিস্টার করা নেই। প্রথমে পাসওয়ার্ড দিয়ে লগইন করে Profile থেকে Fingerprint Toggle টি ON করুন।');
       return;
     }
 
     // Determine target user
-    let targetEmail = email;
-    let targetUid: string | undefined;
+    let targetEmail = email || lastUser?.email || (creds[0] ? creds[0].email : '');
+    let targetUid: string | undefined = lastUser?.uid || (creds[0] ? creds[0].uid : undefined);
 
     if (creds.length > 0) {
-      const match = creds.find(c => email && c.email.toLowerCase() === email.toLowerCase()) || creds[0];
+      const match = creds.find(c => targetEmail && c.email.toLowerCase() === targetEmail.toLowerCase()) || creds[0];
       targetEmail = match.email;
       targetUid = match.uid;
     }
 
-    setPendingBiometricUser({ email: targetEmail || email, uid: targetUid });
+    setPendingBiometricUser({ email: targetEmail || 'user@payflow.com', uid: targetUid });
 
     // In iframe or preview container, open interactive touch modal
     if (isInIFrame()) {

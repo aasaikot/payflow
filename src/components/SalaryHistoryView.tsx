@@ -8,16 +8,19 @@ import {
   Sparkles,
   ChevronRight,
   CheckCircle2,
+  Trash2,
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
 import { BDT } from './BDT';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 
 interface SalaryHistoryViewProps {
   salaryRecords: MonthSalaryRecord[];
   activeMonth: string;
   onSelectMonth: (month: string) => void;
   onNavigate: (screen: ScreenType) => void;
+  onDeleteRecord?: (month: string) => Promise<void> | void;
 }
 
 export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
@@ -25,8 +28,11 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
   activeMonth,
   onSelectMonth,
   onNavigate,
+  onDeleteRecord,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [recordToDelete, setRecordToDelete] = useState<MonthSalaryRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const filteredRecords = salaryRecords.filter((r) =>
     r.monthLabel.toLowerCase().includes(searchTerm.toLowerCase())
@@ -35,8 +41,28 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
   // Highest salary record
   const highestSalary = salaryRecords.length > 0 ? Math.max(...salaryRecords.map((r) => r.net)) : 0;
 
+  const handleConfirmDelete = async (month: string) => {
+    if (!onDeleteRecord) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteRecord(month);
+      setRecordToDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div id="salary-history-screen" className="w-full flex flex-col pb-8">
+      {/* Delete Confirmation Popup */}
+      <DeleteConfirmationModal
+        isOpen={Boolean(recordToDelete)}
+        record={recordToDelete}
+        onClose={() => setRecordToDelete(null)}
+        onConfirmDelete={handleConfirmDelete}
+        isDeleting={isDeleting}
+      />
+
       {/* Top Header */}
       <div className="w-full flex items-center justify-between px-4 py-3.5 bg-white/95 backdrop-blur-md border-b border-[#E4ECE8] sticky top-0 z-20 shadow-2xs">
         <div className="flex items-center gap-3">
@@ -129,6 +155,22 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
                           PEAK
                         </span>
                       )}
+
+                      {/* Card Delete Action */}
+                      <button
+                        type="button"
+                        id={`delete-history-${r.month}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRecordToDelete(r);
+                        }}
+                        title={`Delete ${r.monthLabel} entry`}
+                        className="p-1.5 rounded-lg text-[#9AA8A1] hover:text-[#D83B3B] hover:bg-[#FFF0F0] active:scale-95 transition-all cursor-pointer"
+                        aria-label={`Delete ${r.monthLabel}`}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+
                       <ChevronRight size={16} className="text-[#8A9791] group-hover:text-[#008F5B] group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </div>

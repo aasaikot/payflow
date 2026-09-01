@@ -26,10 +26,13 @@ import {
   ArrowUpDown,
   Percent,
   Wallet,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType, UserProfileData } from '../types';
 import { formatBDT } from '../mockData';
 import { BDT } from './BDT';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 
 interface SalaryDetailsViewProps {
   record: MonthSalaryRecord;
@@ -37,6 +40,7 @@ interface SalaryDetailsViewProps {
   userProfile?: UserProfileData;
   onNavigate: (screen: ScreenType) => void;
   onEditMonth: (month: string) => void;
+  onDeleteRecord?: (month: string) => Promise<void> | void;
 }
 
 export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
@@ -45,11 +49,26 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
   userProfile,
   onNavigate,
   onEditMonth,
+  onDeleteRecord,
 }) => {
   const [selectedTab, setSelectedTab] = useState<'income' | 'deduction'>('income');
   const [graphTab, setGraphTab] = useState<'income' | 'deduction'>('income');
   const [copied, setCopied] = useState(false);
   const [isAmountMasked, setIsAmountMasked] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteConfirm = async (month: string) => {
+    if (!onDeleteRecord) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteRecord(month);
+      setIsDeleteModalOpen(false);
+      onNavigate('history');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const profile = userProfile || {
     name: '',
@@ -174,6 +193,15 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
 
   return (
     <div id="salary-details-screen" className="w-full flex flex-col pb-8">
+      {/* Delete Confirmation Popup */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        record={record}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirmDelete={handleDeleteConfirm}
+        isDeleting={isDeleting}
+      />
+
       {/* Top Header */}
       <div className="w-full flex items-center justify-between px-4 py-3.5 bg-white/95 backdrop-blur-md border-b border-[#E4ECE8] sticky top-0 z-20 shadow-2xs">
         <div className="flex items-center gap-3">
@@ -196,7 +224,7 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             id="share-slip-btn"
@@ -215,6 +243,17 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
             title="Edit this month"
           >
             <Edit size={16} />
+          </button>
+
+          <button
+            type="button"
+            id="delete-salary-btn"
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="w-9 h-9 rounded-full bg-[#FFF0F0] border border-[#FDCFD4] flex items-center justify-center text-[#D83B3B] hover:bg-[#FCE2E2] active:scale-95 transition-all cursor-pointer"
+            title="Delete this record"
+            aria-label="Delete Record"
+          >
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
@@ -302,7 +341,7 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
                   }`}
                 />
                 <span className="text-[11.5px] sm:text-[12.5px] font-semibold leading-snug break-words">
-                  {profile.companyName || 'Tech Solutions Ltd.'}
+                  {profile.companyName || 'PayFlow Workspace'}
                 </span>
               </div>
 
@@ -953,6 +992,35 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
               <span>Compare</span>
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
             </div>
+          </button>
+        </div>
+
+        {/* Danger Zone: Delete Entry Option */}
+        <div className="p-4 rounded-2xl bg-gradient-to-b from-[#FFF5F5] to-[#FFEEED] border border-[#FDCFD4] flex flex-col gap-3 shadow-2xs">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#FFF0F0] border border-[#FCD4D4] flex items-center justify-center text-[#D83B3B] shrink-0">
+                <Trash2 size={16} />
+              </div>
+              <div>
+                <h4 className="text-[13px] font-extrabold text-[#17211D] leading-tight">
+                  Delete {record.monthLabel} Entry
+                </h4>
+                <span className="text-[10.5px] text-[#7A8A83] font-medium block mt-0.5 leading-tight">
+                  Permanently remove this salary record from your history
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="bottom-delete-record-btn"
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-[#FFF0F0] text-[#D83B3B] hover:text-[#B52525] border border-[#FCD4D4] hover:border-[#D83B3B]/40 text-xs font-black transition-all flex items-center justify-center gap-2 shadow-2xs active:scale-[0.99] cursor-pointer"
+          >
+            <Trash2 size={14} />
+            <span>Delete this Salary Record</span>
           </button>
         </div>
       </div>

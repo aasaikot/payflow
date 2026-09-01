@@ -389,7 +389,7 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
           </button>
           <div className="flex flex-col">
             <h1 className="text-[17px] font-black text-[#17211D] tracking-tight">
-              {existing ? 'Update Salary Slip' : 'Add Salary Slip (New Entry)'}
+              {existing ? 'Update Salary Slip' : 'Add Salary Slip'}
             </h1>
             <span className="text-[10px] text-[#6E7974] font-medium -mt-0.5">
               {existing ? 'Modify existing month records' : 'Enter figures for new month'}

@@ -34,6 +34,7 @@ import {
 import { MonthSalaryRecord, UserProfileData, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
 import { PayFlowTopBar } from './PayFlowTopBar';
+import { NotificationModal, INITIAL_NOTIFICATIONS, NotificationItem } from './NotificationModal';
 import { BDT } from './BDT';
 
 const getMonthYearFull = (monthStr: string, monthLabel?: string): string => {
@@ -57,6 +58,8 @@ interface DashboardViewProps {
   activeMonth: string;
   onSelectMonth: (month: string) => void;
   onNavigate: (screen: ScreenType) => void;
+  notifications?: NotificationItem[];
+  onUpdateNotifications?: (updater: NotificationItem[] | ((prev: NotificationItem[]) => NotificationItem[])) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -65,10 +68,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   activeMonth,
   onSelectMonth,
   onNavigate,
+  notifications: propsNotifications,
+  onUpdateNotifications,
 }) => {
   const [isAmountMasked, setIsAmountMasked] = useState(false);
   const [chartTab, setChartTab] = useState<'donut' | 'growth'>('donut');
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [localNotifications, setLocalNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+
+  const notifications = propsNotifications || localNotifications;
+  const setNotifications = onUpdateNotifications || setLocalNotifications;
+
+  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
 
   const activeRecord =
     salaryRecords.find((r) => r.month === activeMonth) || salaryRecords[0] || null;
@@ -120,11 +132,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div id="dashboard-view-screen" className="w-full flex flex-col pb-8">
-      {/* Reusable Mobile PayFlow Top Navigation Bar */}
+      {/* Reusable Mobile PayFlow Top Navigation Bar (Concept 2: Personalized Greeting & Status Bar) */}
       <PayFlowTopBar
-        onMenuPressed={() => {
-          // Placeholder callback for 3-dot menu
-          console.log('Top navigation 3-dot menu tapped');
+        userProfile={userProfile}
+        activeMonthLabel={activeRecord?.monthLabel}
+        unreadCount={unreadNotificationCount}
+        onProfileClick={() => onNavigate('profile')}
+        onNotificationClick={() => setIsNotificationOpen(true)}
+        onMenuPressed={() => onNavigate('profile')}
+      />
+
+      {/* Notification Sheet / Modal */}
+      <NotificationModal
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        notifications={notifications}
+        setNotifications={setNotifications}
+        onNavigateToRecord={(recId) => {
+          setIsNotificationOpen(false);
+          if (recId) onSelectMonth(recId);
         }}
       />
 

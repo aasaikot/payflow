@@ -18,7 +18,7 @@ import {
   Loader2,
   Info,
 } from 'lucide-react';
-import { UserProfileData, ScreenType } from '../types';
+import { UserProfileData, MonthSalaryRecord, ScreenType } from '../types';
 import {
   registerBiometrics,
   isBiometricRegisteredForUser,
@@ -26,10 +26,12 @@ import {
   saveBiometricDirectly,
   isInIFrame,
 } from '../services/biometricService';
+import { setUserLocalCache } from '../services/firebaseService';
 import { FingerprintPromptModal } from './FingerprintPromptModal';
 
 interface ProfileViewProps {
   userProfile: UserProfileData;
+  salaryRecords?: MonthSalaryRecord[];
   onUpdateProfile: (profile: UserProfileData) => void;
   onLogout: () => void;
   onNavigate: (screen: ScreenType) => void;
@@ -37,6 +39,7 @@ interface ProfileViewProps {
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
   userProfile,
+  salaryRecords = [],
   onUpdateProfile,
   onLogout,
   onNavigate,
@@ -80,6 +83,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       );
       if (res.success) {
         setIsBiometricEnabled(true);
+        setUserLocalCache(userProfile.uid, userProfile.email, userProfile, salaryRecords);
         setBiometricFeedback({ type: 'success', message: res.message });
       } else {
         // If native prompt fails due to security/timeout, offer interactive modal
@@ -101,6 +105,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     );
     if (res.success) {
       setIsBiometricEnabled(true);
+      setUserLocalCache(userProfile.uid, userProfile.email, userProfile, salaryRecords);
       setBiometricFeedback({
         type: 'success',
         message: 'ফিঙ্গারপ্রিন্ট সফলভাবে সক্রিয় (ON) হয়েছে! এখন লগইন স্ক্রিনে ফিঙ্গারপ্রিন্ট দিয়ে ঢুকতে পারবেন।',

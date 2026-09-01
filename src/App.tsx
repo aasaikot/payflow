@@ -22,12 +22,34 @@ import {
   saveUserProfile,
   fetchSalaryRecords,
   saveSalaryRecord,
+  deleteSalaryRecord,
   seedInitialData,
   testFirestoreConnection,
   subscribeToUserData,
   autoSignInIfGuest,
 } from './services/firebaseService';
 import { Smartphone, Code, CheckCircle, LogOut, Cloud, ShieldCheck } from 'lucide-react';
+import {
+  NotificationItem,
+  INITIAL_NOTIFICATIONS,
+} from './components/NotificationModal';
+
+const NOTIFICATIONS_STORAGE_KEY = 'payflow_notifications_v1';
+
+const getStoredNotifications = (): NotificationItem[] => {
+  try {
+    const saved = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load notifications from localStorage', e);
+  }
+  return INITIAL_NOTIFICATIONS;
+};
 
 const BLANK_USER_PROFILE: UserProfileData = {
   uid: '',
@@ -51,6 +73,19 @@ export default function App() {
   const [currentUid, setCurrentUid] = useState<string>('');
   const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => getStoredNotifications());
+
+  const handleUpdateNotifications = (updater: NotificationItem[] | ((prev: NotificationItem[]) => NotificationItem[])) => {
+    setNotifications((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      try {
+        localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(next));
+      } catch (e) {
+        console.error('Failed to save notifications', e);
+      }
+      return next;
+    });
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -72,8 +107,8 @@ export default function App() {
         setIsFirebaseConnected(true);
         setCurrentScreen('dashboard');
 
-        // Load isolated profile and salary records from Firestore
-        const profile = await fetchUserProfile(firebaseUser.uid);
+        // Load isolated profile and salary records from Cache or Firestore
+        const profile = await fetchUserProfile(firebaseUser.uid, firebaseUser.email || '');
         if (profile) {
           setUserProfile(profile);
         } else {
@@ -85,12 +120,13 @@ export default function App() {
           });
         }
 
-        const records = await fetchSalaryRecords(firebaseUser.uid);
+        const records = await fetchSalaryRecords(firebaseUser.uid, firebaseUser.email || '');
         setSalaryRecords(records || []);
         if (records && records.length > 0) {
           setActiveMonth(records[0].month);
         }
       } else {
+        // When not authenticated with Firebase Auth (e.g. initial load or logged out)
         setCurrentUid('');
         setUserProfile(BLANK_USER_PROFILE);
         setSalaryRecords([]);
@@ -125,25 +161,27 @@ export default function App() {
   const handleLoginSuccess = async (email: string, uid?: string) => {
     const effectiveUid = uid || auth.currentUser?.uid || currentUid;
     setCurrentUid(effectiveUid);
-    setUserProfile((prev) => ({ ...prev, email, uid: effectiveUid }));
 
-    // Try fetching remote records from Firestore
+    // Try fetching remote or locally cached records
     try {
-      const records = await fetchSalaryRecords(effectiveUid);
+      const remoteProfile = await fetchUserProfile(effectiveUid, email);
+      if (remoteProfile) {
+        setUserProfile(remoteProfile);
+      } else {
+        setUserProfile((prev) => ({ ...prev, email, uid: effectiveUid }));
+      }
+
+      const records = await fetchSalaryRecords(effectiveUid, email);
       setSalaryRecords(records || []);
       if (records && records.length > 0) {
         setActiveMonth(records[0].month);
       }
-      const remoteProfile = await fetchUserProfile(effectiveUid);
-      if (remoteProfile) {
-        setUserProfile(remoteProfile);
-      }
     } catch (e) {
-      console.error('Firestore load error on login:', e);
+      console.error('Data load error on login:', e);
     }
 
     setCurrentScreen('dashboard');
-    showToast(`Logged in successfully with Firebase (${email})`);
+    showToast(`স্বাগতম! সফলভাবে লগইন হয়েছে (${email})`);
   };
 
   const handleRegisterSuccess = async (email: string, uid?: string) => {
@@ -168,12 +206,42 @@ export default function App() {
     });
     setActiveMonth(newRecord.month);
 
-    // Save to Firebase Firestore
+    // Save to Cache and Firebase Firestore
     try {
-      await saveSalaryRecord(currentUid, newRecord);
-      showToast(`Salary for ${newRecord.monthLabel} synced to Firebase Firestore!`);
+      await saveSalaryRecord(currentUid, newRecord, userProfile.email);
+      showToast(`Salary for ${newRecord.monthLabel} saved & synced!`);
     } catch (e) {
       showToast(`Salary for ${newRecord.monthLabel} saved locally!`);
+    }
+  };
+
+  const handleDeleteSalaryRecord = async (monthToDelete: string) => {
+    const target = salaryRecords.find((r) => r.month === monthToDelete);
+    const label = target?.monthLabel || monthToDelete;
+
+    // Update local state immediately
+    setSalaryRecords((prev) => {
+      const updated = prev.filter((r) => r.month !== monthToDelete);
+      if (activeMonth === monthToDelete) {
+        if (updated.length > 0) {
+          setActiveMonth(updated[0].month);
+        } else {
+          setActiveMonth('');
+        }
+      }
+      return updated;
+    });
+
+    // Delete from Cache and Firebase Firestore
+    try {
+      if (currentUid) {
+        await deleteSalaryRecord(currentUid, monthToDelete, userProfile.email);
+        showToast(`Salary record for ${label} deleted successfully!`);
+      } else {
+        showToast(`Salary record for ${label} deleted locally.`);
+      }
+    } catch (e) {
+      showToast(`Salary for ${label} removed.`);
     }
   };
 
@@ -233,8 +301,22 @@ export default function App() {
       <header className="w-full bg-white border-b border-[#D7E0DC] px-4 py-3 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#008F5B] text-white flex items-center justify-center font-bold text-base shadow-xs">
-              P
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+              <img
+                src="/logo.png"
+                alt="PayFlow"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  if (target.parentElement) {
+                    target.parentElement.className =
+                      'w-8 h-8 rounded-lg bg-[#008F5B] text-white flex items-center justify-center font-bold text-base shadow-xs';
+                    target.parentElement.innerHTML = '<span>P</span>';
+                  }
+                }}
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <div className="flex items-center gap-1.5 leading-none">
@@ -325,6 +407,8 @@ export default function App() {
                   activeMonth={activeMonth}
                   onSelectMonth={(m) => setActiveMonth(m)}
                   onNavigate={handleNavigate}
+                  notifications={notifications}
+                  onUpdateNotifications={handleUpdateNotifications}
                 />
               )}
 
@@ -334,6 +418,7 @@ export default function App() {
                   activeMonth={activeMonth}
                   onSelectMonth={(m) => setActiveMonth(m)}
                   onNavigate={handleNavigate}
+                  onDeleteRecord={handleDeleteSalaryRecord}
                 />
               )}
 
@@ -348,6 +433,7 @@ export default function App() {
                     setEditSalaryMonth(m);
                     setCurrentScreen('add');
                   }}
+                  onDeleteRecord={handleDeleteSalaryRecord}
                 />
               )}
 
@@ -381,6 +467,7 @@ export default function App() {
               {currentScreen === 'profile' && (
                 <ProfileView
                   userProfile={userProfile}
+                  salaryRecords={salaryRecords}
                   onUpdateProfile={handleUpdateProfile}
                   onLogout={handleLogout}
                   onNavigate={handleNavigate}

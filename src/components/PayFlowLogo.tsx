@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface PayFlowLogoProps {
   iconSize?: number;
@@ -6,6 +6,7 @@ interface PayFlowLogoProps {
   showSubtitle?: boolean;
   isHorizontal?: boolean;
   className?: string;
+  showBrandText?: boolean;
 }
 
 export const PayFlowLogo: React.FC<PayFlowLogoProps> = ({
@@ -14,23 +15,41 @@ export const PayFlowLogo: React.FC<PayFlowLogoProps> = ({
   showSubtitle = true,
   isHorizontal = false,
   className = '',
+  showBrandText = true,
 }) => {
+  const [imgError, setImgError] = useState(false);
+
   const icon = (
     <div
       id="payflow-logo-icon"
-      className="bg-[#008F5B] flex items-center justify-center shadow-lg shadow-[#008F5B]/20 text-white font-extrabold select-none transition-transform hover:scale-105"
+      className="relative flex items-center justify-center shrink-0 select-none transition-transform hover:scale-105"
       style={{
         width: `${iconSize}px`,
         height: `${iconSize}px`,
-        borderRadius: `${iconSize * 0.28}px`,
-        fontSize: `${iconSize * 0.58}px`,
       }}
     >
-      P
+      {!imgError ? (
+        <img
+          src="/logo.png"
+          alt="PayFlow Logo"
+          onError={() => setImgError(true)}
+          className="w-full h-full object-contain drop-shadow-md rounded-[22%]"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <div
+          className="w-full h-full bg-gradient-to-br from-[#00A86B] via-[#008F5B] to-[#007A4D] rounded-[28%] flex items-center justify-center text-white font-black shadow-lg shadow-[#008F5B]/20"
+          style={{
+            fontSize: `${iconSize * 0.55}px`,
+          }}
+        >
+          P
+        </div>
+      )}
     </div>
   );
 
-  const text = (
+  const text = showBrandText ? (
     <div
       id="payflow-logo-text"
       className={`flex flex-col ${isHorizontal ? 'items-start text-left' : 'items-center text-center'}`}
@@ -51,13 +70,13 @@ export const PayFlowLogo: React.FC<PayFlowLogoProps> = ({
         </span>
       )}
     </div>
-  );
+  ) : null;
 
   if (isHorizontal) {
     return (
       <div
         id="payflow-logo-horizontal"
-        className={`flex items-center gap-3.5 ${className}`}
+        className={`flex items-center gap-3 ${className}`}
       >
         {icon}
         {text}
@@ -75,3 +94,4 @@ export const PayFlowLogo: React.FC<PayFlowLogoProps> = ({
     </div>
   );
 };
+

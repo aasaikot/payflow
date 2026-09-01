@@ -23,6 +23,8 @@ import {
   query,
   orderBy,
   onSnapshot,
+  updateDoc,
+  deleteField,
 } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
@@ -104,6 +106,8 @@ export {
   query,
   orderBy,
   onSnapshot,
+  updateDoc,
+  deleteField,
 };
 
 export type { User };

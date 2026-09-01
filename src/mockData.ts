@@ -24,7 +24,7 @@ export interface FirebaseUserData {
 
 export const RAW_FIREBASE_DATA: FirebaseUserData = {
   profile: {
-    companyName: "Essential Drugs Company Limited",
+    companyName: "PayFlow Workspace",
     designation: "Assistant Engineering Officer",
     email: "saikot@saikot.bd",
     mobile: "01719364298",
@@ -316,7 +316,7 @@ export function convertFirebaseProfileToUser(
   return {
     uid,
     name: rawProfile.name || 'Asif Arman Saikot',
-    companyName: rawProfile.companyName || 'Essential Drugs Company Limited',
+    companyName: rawProfile.companyName || 'PayFlow Workspace',
     designation: rawProfile.designation || 'Assistant Engineering Officer',
     pin: rawProfile.pin || '5556',
     email: rawProfile.email || 'saikot@saikot.bd',
