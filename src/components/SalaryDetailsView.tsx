@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType, UserProfileData } from '../types';
 import { formatBDT } from '../mockData';
+import { BDT } from './BDT';
 
 interface SalaryDetailsViewProps {
   record: MonthSalaryRecord;
@@ -415,9 +416,16 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
                     isIncome ? 'text-[#08281F]' : 'text-[#3E0909]'
                   }`}
                 >
-                  {isAmountMasked
-                    ? '••••••••'
-                    : formatBDT(isIncome ? net : deduction)}
+                  {isAmountMasked ? (
+                    '••••••••'
+                  ) : (
+                    <BDT
+                      amount={isIncome ? net : deduction}
+                      symbolClassName={`text-[1.22em] font-black mr-0.5 ${
+                        isIncome ? 'text-[#08281F]' : 'text-[#3E0909]'
+                      }`}
+                    />
+                  )}
                 </strong>
               </motion.div>
             </div>
@@ -491,8 +499,12 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
             <span className="text-[11px] font-bold text-[#6E7974] uppercase tracking-wider">
               {isIncome ? 'Earning Components' : 'Deduction Components'}
             </span>
-            <span className="text-[11px] font-extrabold text-[#17211D]">
-              Total: {formatBDT(isIncome ? gross : deduction)}
+            <span className="text-[11px] font-extrabold text-[#17211D] flex items-center gap-1">
+              <span>Total:</span>
+              <BDT
+                amount={isIncome ? gross : deduction}
+                symbolClassName="text-[1.18em] font-black text-[#17211D] mr-0.5"
+              />
             </span>
           </div>
 
@@ -515,7 +527,12 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
                       isIncome ? 'text-[#17211D]' : 'text-[#D83B3B]'
                     }`}
                   >
-                    {formatBDT(numVal)}
+                    <BDT
+                      amount={numVal}
+                      symbolClassName={`text-[1.18em] font-black mr-0.5 ${
+                        isIncome ? 'text-[#17211D]' : 'text-[#D83B3B]'
+                      }`}
+                    />
                   </strong>
                 </div>
               );
@@ -599,7 +616,10 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-[10.5px] font-bold text-[#6E7974]">
                   <span>Earnings Distribution</span>
-                  <span className="text-[#008F5B] font-extrabold">Gross: {formatBDT(gross)}</span>
+                  <span className="text-[#008F5B] font-extrabold flex items-center gap-1">
+                    <span>Gross:</span>
+                    <BDT amount={gross} symbolClassName="text-[1.18em] font-black text-[#008F5B] mr-0.5" />
+                  </span>
                 </div>
 
                 <div className="w-full h-3.5 rounded-full bg-[#EBF2EE] overflow-hidden flex shadow-inner">
@@ -647,7 +667,7 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
                         </div>
 
                         <strong className="text-[12.5px] font-black text-[#17211D]">
-                          {formatBDT(val)}
+                          <BDT amount={val} symbolClassName="text-[1.18em] font-black text-[#17211D] mr-0.5" />
                         </strong>
                       </div>
 
@@ -674,7 +694,10 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-[10.5px] font-bold text-[#6E7974]">
                   <span>Deduction Distribution</span>
-                  <span className="text-[#D83B3B] font-extrabold">Total: {formatBDT(deduction)}</span>
+                  <span className="text-[#D83B3B] font-extrabold flex items-center gap-1">
+                    <span>Total:</span>
+                    <BDT amount={deduction} symbolClassName="text-[1.18em] font-black text-[#D83B3B] mr-0.5" />
+                  </span>
                 </div>
 
                 <div className="w-full h-3.5 rounded-full bg-[#FBF0F0] overflow-hidden flex shadow-inner">
@@ -722,7 +745,7 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
                         </div>
 
                         <strong className="text-[12.5px] font-black text-[#D83B3B]">
-                          {formatBDT(val)}
+                          <BDT amount={val} symbolClassName="text-[1.18em] font-black text-[#D83B3B] mr-0.5" />
                         </strong>
                       </div>
 
@@ -768,134 +791,133 @@ export const SalaryDetailsView: React.FC<SalaryDetailsViewProps> = ({
                 </span>
               </div>
             </div>
-
-            {previousRecord && (
-              <div
-                className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-black ${
-                  netDiff >= 0
-                    ? 'bg-[#E9F7F1] text-[#008F5B] border border-[#008F5B]/30'
-                    : 'bg-[#FDF2F2] text-[#D83B3B] border border-[#D83B3B]/30'
-                }`}
-              >
-                {netDiff >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                <span>
-                  {netDiff >= 0 ? '+' : ''}
-                  {netDiffPct}% Net
-                </span>
-              </div>
-            )}
           </div>
 
           {/* 3 Micro Comparison Stats */}
           {previousRecord ? (
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-3 gap-1 sm:gap-2">
               {/* Net Stat */}
-              <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F5FAF7] border border-[#008F5B]/30 shadow-[0_2px_8px_rgba(0,143,91,0.04)] flex flex-col justify-between relative overflow-hidden group">
+              <div className="p-1.5 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F5FAF7] border border-[#008F5B]/30 shadow-[0_2px_8px_rgba(0,143,91,0.04)] flex flex-col justify-between relative overflow-hidden group">
                 {/* Theme Watermark Icon (Net/Wallet) - Top Right like KPI cards */}
-                <div className="absolute top-2 right-2 text-[#008F5B]/[0.08] group-hover:text-[#008F5B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
-                  <Wallet size={36} strokeWidth={1.5} />
+                <div className="absolute top-1.5 right-1.5 text-[#008F5B]/[0.08] group-hover:text-[#008F5B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                  <Wallet size={32} strokeWidth={1.5} />
                 </div>
 
                 <div className="relative z-10">
-                  <span className="text-[9px] sm:text-[9.5px] font-black text-[#008F5B] uppercase tracking-wider block">
+                  <span className="text-[8.5px] sm:text-[9.5px] font-black text-[#008F5B] uppercase tracking-wider block leading-tight">
                     Net Shift
                   </span>
                 </div>
 
                 <div className="mt-1 relative z-10">
                   <strong
-                    className={`block text-[10.5px] sm:text-[12.5px] font-black tracking-tight leading-tight whitespace-nowrap ${
+                    className={`block text-[10px] sm:text-[12px] min-[410px]:text-[12.5px] font-black tracking-tight leading-tight whitespace-nowrap ${
                       netDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
                     }`}
                   >
-                    {netDiff >= 0 ? '+' : ''}
-                    {formatBDT(netDiff)}
+                    <BDT
+                      amount={netDiff}
+                      prefix={netDiff >= 0 ? '+' : ''}
+                      decimals={2}
+                      symbolClassName="text-[1.15em] font-black mr-0.5"
+                    />
                   </strong>
 
-                  {/* Vs previous month with font-size 10px, font-weight 700 and large bold Taka symbol */}
-                  <div className="mt-1 text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
-                    <span className="text-[#6E7974] font-bold">Vs</span>
-                    <span className="text-[12px] font-extrabold text-[#17211D] leading-none">৳</span>
-                    <span className="font-bold text-[#17211D]">
-                      {Number(previousRecord.net || 0).toLocaleString('en-BD', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                  {/* Dynamic Month label for previous month with .00 cleanly fitted on 390dp */}
+                  <div className="mt-0.5 text-[8px] min-[370px]:text-[8.5px] min-[410px]:text-[9.5px] sm:text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                    <span className="text-[#6E7974] font-bold shrink-0">
+                      {(previousRecord?.monthLabel?.split(' ')[0]?.slice(0, 3) || 'Prev') + ':'}
                     </span>
+                    <BDT
+                      amount={previousRecord.net}
+                      decimals={2}
+                      symbolClassName="text-[1.12em] font-extrabold text-[#17211D] mr-0.5"
+                      className="font-bold text-[#17211D]"
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Gross Stat */}
-              <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#D8E6DF] shadow-[0_2px_8px_rgba(23,33,29,0.03)] flex flex-col justify-between relative overflow-hidden group">
+              <div className="p-1.5 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#D8E6DF] shadow-[0_2px_8px_rgba(23,33,29,0.03)] flex flex-col justify-between relative overflow-hidden group">
                 {/* Theme Watermark Icon (Gross/Layers) - Top Right like KPI cards */}
-                <div className="absolute top-2 right-2 text-[#17211D]/[0.07] group-hover:text-[#008F5B]/[0.12] transition-all duration-300 pointer-events-none group-hover:scale-105">
-                  <Layers size={36} strokeWidth={1.5} />
+                <div className="absolute top-1.5 right-1.5 text-[#17211D]/[0.07] group-hover:text-[#008F5B]/[0.12] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                  <Layers size={32} strokeWidth={1.5} />
                 </div>
 
                 <div className="relative z-10">
-                  <span className="text-[9px] sm:text-[9.5px] font-black text-[#5C6E66] uppercase tracking-wider block">
+                  <span className="text-[8.5px] sm:text-[9.5px] font-black text-[#5C6E66] uppercase tracking-wider block leading-tight">
                     Gross Shift
                   </span>
                 </div>
 
                 <div className="mt-1 relative z-10">
                   <strong
-                    className={`block text-[10.5px] sm:text-[12.5px] font-black tracking-tight leading-tight whitespace-nowrap ${
+                    className={`block text-[10px] sm:text-[12px] min-[410px]:text-[12.5px] font-black tracking-tight leading-tight whitespace-nowrap ${
                       grossDiff >= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
                     }`}
                   >
-                    {grossDiff >= 0 ? '+' : ''}
-                    {formatBDT(grossDiff)}
+                    <BDT
+                      amount={grossDiff}
+                      prefix={grossDiff >= 0 ? '+' : ''}
+                      decimals={2}
+                      symbolClassName="text-[1.15em] font-black mr-0.5"
+                    />
                   </strong>
 
-                  {/* Vs previous month with font-size 10px, font-weight 700 and large bold Taka symbol */}
-                  <div className="mt-1 text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
-                    <span className="text-[#6E7974] font-bold">Vs</span>
-                    <span className="text-[12px] font-extrabold text-[#17211D] leading-none">৳</span>
-                    <span className="font-bold text-[#17211D]">
-                      {Number(previousRecord.gross || 0).toLocaleString('en-BD', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                  {/* Dynamic Month label for previous month with .00 cleanly fitted on 390dp */}
+                  <div className="mt-0.5 text-[8px] min-[370px]:text-[8.5px] min-[410px]:text-[9.5px] sm:text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                    <span className="text-[#6E7974] font-bold shrink-0">
+                      {(previousRecord?.monthLabel?.split(' ')[0]?.slice(0, 3) || 'Prev') + ':'}
                     </span>
+                    <BDT
+                      amount={previousRecord.gross}
+                      decimals={2}
+                      symbolClassName="text-[1.12em] font-extrabold text-[#17211D] mr-0.5"
+                      className="font-bold text-[#17211D]"
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Deduction Stat */}
-              <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#FDCFD4] shadow-[0_2px_8px_rgba(216,59,59,0.03)] flex flex-col justify-between relative overflow-hidden group">
+              <div className="p-1.5 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#FDCFD4] shadow-[0_2px_8px_rgba(216,59,59,0.03)] flex flex-col justify-between relative overflow-hidden group">
                 {/* Theme Watermark Icon (Deduction/ShieldAlert) - Top Right like KPI cards */}
-                <div className="absolute top-2 right-2 text-[#D83B3B]/[0.08] group-hover:text-[#D83B3B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
-                  <ShieldAlert size={36} strokeWidth={1.5} />
+                <div className="absolute top-1.5 right-1.5 text-[#D83B3B]/[0.08] group-hover:text-[#D83B3B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                  <ShieldAlert size={32} strokeWidth={1.5} />
                 </div>
 
                 <div className="relative z-10">
-                  <span className="text-[9px] sm:text-[9.5px] font-black text-[#D83B3B] uppercase tracking-wider block">
+                  <span className="text-[8.5px] sm:text-[9.5px] font-black text-[#D83B3B] uppercase tracking-wider block leading-tight">
                     Deduct Shift
                   </span>
                 </div>
 
                 <div className="mt-1 relative z-10">
                   <strong
-                    className={`block text-[10.5px] sm:text-[12.5px] font-black tracking-tight leading-tight whitespace-nowrap ${
+                    className={`block text-[10px] sm:text-[12px] min-[410px]:text-[12.5px] font-black tracking-tight leading-tight whitespace-nowrap ${
                       dedDiff <= 0 ? 'text-[#008F5B]' : 'text-[#D83B3B]'
                     }`}
                   >
-                    {dedDiff >= 0 ? '+' : ''}
-                    {formatBDT(dedDiff)}
+                    <BDT
+                      amount={dedDiff}
+                      prefix={dedDiff >= 0 ? '+' : ''}
+                      decimals={2}
+                      symbolClassName="text-[1.15em] font-black mr-0.5"
+                    />
                   </strong>
 
-                  {/* Vs previous month with font-size 10px, font-weight 700 and large bold Taka symbol */}
-                  <div className="mt-1 text-[10px] font-bold text-[#8A1A1A] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
-                    <span className="text-[#D83B3B]/80 font-bold">Vs</span>
-                    <span className="text-[12px] font-extrabold text-[#D83B3B] leading-none">৳</span>
-                    <span className="font-bold text-[#D83B3B]">
-                      {Number(previousRecord.deduction || 0).toLocaleString('en-BD', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                  {/* Dynamic Month label for previous month with .00 cleanly fitted on 390dp */}
+                  <div className="mt-0.5 text-[8px] min-[370px]:text-[8.5px] min-[410px]:text-[9.5px] sm:text-[10px] font-bold text-[#8A1A1A] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                    <span className="text-[#D83B3B]/80 font-bold shrink-0">
+                      {(previousRecord?.monthLabel?.split(' ')[0]?.slice(0, 3) || 'Prev') + ':'}
                     </span>
+                    <BDT
+                      amount={previousRecord.deduction}
+                      decimals={2}
+                      symbolClassName="text-[1.12em] font-extrabold text-[#D83B3B] mr-0.5"
+                      className="font-bold text-[#D83B3B]"
+                    />
                   </div>
                 </div>
               </div>

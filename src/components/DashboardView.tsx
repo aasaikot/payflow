@@ -34,6 +34,7 @@ import {
 import { MonthSalaryRecord, UserProfileData, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
 import { PayFlowTopBar } from './PayFlowTopBar';
+import { BDT } from './BDT';
 
 const getMonthYearFull = (monthStr: string, monthLabel?: string): string => {
   if (monthLabel) {
@@ -259,7 +260,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 className="mt-0.5 text-right"
               >
                 <strong className="block text-[13px] sm:text-[15px] font-bold text-[#08281F] leading-none tracking-tight whitespace-nowrap">
-                  {hasRecords ? (isAmountMasked ? '••••••••' : formatBDT(net)) : '৳ 0.00'}
+                  {hasRecords ? (
+                    isAmountMasked ? (
+                      '••••••••'
+                    ) : (
+                      <BDT
+                        amount={net}
+                        symbolClassName="text-[1.22em] font-black text-[#08281F] mr-0.5"
+                      />
+                    )
+                  ) : (
+                    <BDT
+                      amount={0}
+                      symbolClassName="text-[1.22em] font-black text-[#08281F] mr-0.5"
+                    />
+                  )}
                 </strong>
               </motion.div>
             </div>
@@ -307,8 +322,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-[#008F5B] shrink-0" />
               <div className="flex flex-col">
                 <span className="text-[10px] text-[#6E7974] font-medium">Net Amount</span>
-                <strong className="text-[12px] font-bold text-[#008F5B]">
-                  {formatBDT(net)} ({incomePercentage}%)
+                <strong className="text-[12px] font-bold text-[#008F5B] flex items-center">
+                  <BDT amount={net} symbolClassName="text-[1.18em] font-black text-[#008F5B] mr-0.5" />
+                  <span className="ml-1">({incomePercentage}%)</span>
                 </strong>
               </div>
             </div>
@@ -316,8 +332,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="flex items-center gap-2 justify-end text-right">
               <div className="flex flex-col items-end">
                 <span className="text-[10px] text-[#6E7974] font-medium">Total Deductions</span>
-                <strong className="text-[12px] font-bold text-[#D83B3B]">
-                  {formatBDT(deduction)} ({deductionPercentage}%)
+                <strong className="text-[12px] font-bold text-[#D83B3B] flex items-center justify-end">
+                  <BDT amount={deduction} symbolClassName="text-[1.18em] font-black text-[#D83B3B] mr-0.5" />
+                  <span className="ml-1">({deductionPercentage}%)</span>
                 </strong>
               </div>
               <span className="w-2.5 h-2.5 rounded-full bg-[#D83B3B] shrink-0" />
@@ -348,7 +365,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="mt-1.5 relative z-10">
               <strong className="block text-[10px] sm:text-[12.5px] font-black text-[#17211D] tracking-tight whitespace-nowrap">
-                {formatBDT(gross)}
+                <BDT amount={gross} symbolClassName="text-[1.18em] font-black text-[#17211D] mr-0.5" />
               </strong>
               <span className="text-[8.5px] sm:text-[9.5px] text-[#008F5B] font-bold block mt-0.5 whitespace-nowrap">
                 Total Earnings
@@ -374,7 +391,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="mt-1.5 relative z-10">
               <strong className="block text-[10px] sm:text-[12.5px] font-black text-[#D83B3B] tracking-tight whitespace-nowrap">
-                {formatBDT(deduction)}
+                <BDT amount={deduction} symbolClassName="text-[1.18em] font-black text-[#D83B3B] mr-0.5" />
               </strong>
               <span className="text-[8.5px] sm:text-[9.5px] text-[#D83B3B]/80 font-bold block mt-0.5 whitespace-nowrap">
                 Tax, PF & Cuts
@@ -400,95 +417,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="mt-1.5 relative z-10">
               <strong className="block text-[10px] sm:text-[12.5px] font-black text-[#008F5B] tracking-tight whitespace-nowrap">
-                {formatBDT(net)}
+                <BDT amount={net} symbolClassName="text-[1.18em] font-black text-[#008F5B] mr-0.5" />
               </strong>
               <span className="text-[8.5px] sm:text-[9.5px] text-[#008F5B] font-extrabold block mt-0.5 whitespace-nowrap">
                 Net Payable
               </span>
             </div>
           </button>
-        </div>
-
-        {/* Income vs Deduction Interactive Donut & Visual Card */}
-        <div
-          id="income-vs-deduction-card"
-          className="w-full bg-white rounded-xl p-4.5 border border-[#E4ECE8] shadow-[0_4px_20px_rgba(23,33,29,0.03)]"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-1.5">
-              <PieIcon size={16} className="text-[#008F5B]" />
-              <h3 className="text-[14px] font-extrabold text-[#17211D]">
-                Income vs Deduction
-              </h3>
-            </div>
-            <button
-              type="button"
-              onClick={() => onNavigate('details')}
-              className="text-[11px] font-bold text-[#008F5B] hover:text-[#007A4D] cursor-pointer flex items-center gap-1 bg-[#E9F7F1] px-2.5 py-1 rounded-full hover:bg-[#D4EFE4] transition-colors"
-            >
-              <span>Full Details</span>
-              <ArrowRight size={12} />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between gap-3 sm:gap-4">
-            {/* Left Legend & Values */}
-            <div className="flex flex-col gap-2 flex-1 min-w-0">
-              {/* Income Row */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#F5FAF7] border border-[#E4ECE8]/60">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#008F5B] shadow-xs shadow-[#008F5B]/30 shrink-0" />
-                  <span className="text-[11.5px] font-semibold text-[#17211D] truncate">Income</span>
-                </div>
-                <strong className="text-[12.5px] font-extrabold text-[#17211D] whitespace-nowrap shrink-0">
-                  {formatBDT(gross)}
-                </strong>
-              </div>
-
-              {/* Deduction Row */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#FFF5F5] border border-[#FFECEC]">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#D83B3B] shadow-xs shadow-[#D83B3B]/30 shrink-0" />
-                  <span className="text-[11.5px] font-semibold text-[#17211D] truncate">Deduction</span>
-                </div>
-                <strong className="text-[12.5px] font-extrabold text-[#D83B3B] whitespace-nowrap shrink-0">
-                  {formatBDT(deduction)}
-                </strong>
-              </div>
-            </div>
-
-            {/* Right Glowing Donut Graphic */}
-            <div className="relative w-22 h-22 shrink-0 flex items-center justify-center">
-              <svg className="w-22 h-22 transform -rotate-90 drop-shadow-sm" viewBox="0 0 36 36">
-                {/* Background Ring */}
-                <path
-                  className="text-[#FFECEC]"
-                  strokeWidth="4"
-                  stroke="currentColor"
-                  fill="none"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                {/* Income Green Arc */}
-                <path
-                  className="text-[#008F5B] transition-all duration-700"
-                  strokeDasharray={`${incomePercentage}, 100`}
-                  strokeWidth="4.5"
-                  strokeLinecap="round"
-                  stroke="currentColor"
-                  fill="none"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center leading-none text-center">
-                <span className="text-[13px] font-black text-[#17211D]">
-                  {incomePercentage}%
-                </span>
-                <span className="text-[8px] text-[#6E7974] font-bold mt-0.5 uppercase">
-                  Net Ratio
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Month Comparison Card with Dynamic Sparklines & Growth Flags */}
@@ -554,7 +489,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
                         }`}
                       >
-                        {formatBDT(item.net)}
+                        <BDT
+                          amount={item.net}
+                          symbolClassName={`text-[1.18em] font-black mr-0.5 ${
+                            isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
+                          }`}
+                        />
                       </strong>
                       <span className="text-[8px] sm:text-[8.5px] text-[#8A9791] font-semibold block leading-tight mt-0.5">
                         Net Take-Home
@@ -770,7 +710,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
                         }`}
                       >
-                        {formatBDT(rec.net)}
+                        <BDT
+                          amount={rec.net}
+                          symbolClassName={`text-[1.18em] font-black mr-0.5 ${
+                            isSelected ? 'text-[#008F5B]' : 'text-[#17211D]'
+                          }`}
+                        />
                       </strong>
 
                       {/* Animated Multi-Color Dots Indicator */}

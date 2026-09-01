@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
+import { BDT } from './BDT';
 
 interface ComparisonViewProps {
   salaryRecords: MonthSalaryRecord[];
@@ -376,61 +377,48 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
                   Net Salary Growth & Summary
                 </h2>
                 <span className="text-[10px] text-[#6E7974] font-medium block">
-                  {recordA?.monthLabel?.split(' ')[0]} vs {recordB?.monthLabel?.split(' ')[0]} Comparative Overview
+                  {recordA?.monthLabel?.split(' ')[0]} x {recordB?.monthLabel?.split(' ')[0]} Comparative Overview
                 </span>
               </div>
-            </div>
-
-            <div
-              className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-black ${
-                netDiff >= 0
-                  ? 'bg-[#E9F7F1] text-[#008F5B] border border-[#008F5B]/30'
-                  : 'bg-[#FDF2F2] text-[#D83B3B] border border-[#D83B3B]/30'
-              }`}
-            >
-              {netDiff >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-              <span>
-                {netDiff >= 0 ? '+' : ''}
-                {netDiffPct}% Net
-              </span>
             </div>
           </div>
 
           {/* 3 Metrics Cards */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 relative z-10">
+          <div className="grid grid-cols-3 gap-1 sm:gap-2 relative z-10">
             {/* 1. NET PAYABLE CARD */}
-            <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F5FAF7] border border-[#008F5B]/30 shadow-[0_2px_8px_rgba(0,143,91,0.04)] flex flex-col justify-between relative overflow-hidden group">
+            <div className="p-1.5 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F5FAF7] border border-[#008F5B]/30 shadow-[0_2px_8px_rgba(0,143,91,0.04)] flex flex-col justify-between relative overflow-hidden group">
               {/* Theme Watermark Icon (Net / Wallet) - Top Right like KPI cards */}
-              <div className="absolute top-2 right-2 text-[#008F5B]/[0.08] group-hover:text-[#008F5B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
-                <Wallet size={36} strokeWidth={1.5} />
+              <div className="absolute top-1.5 right-1.5 text-[#008F5B]/[0.08] group-hover:text-[#008F5B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                <Wallet size={32} strokeWidth={1.5} />
               </div>
 
               <div className="relative z-10">
-                <span className="text-[9px] sm:text-[9.5px] font-black text-[#008F5B] uppercase tracking-wider block leading-tight">
+                <span className="text-[8.5px] sm:text-[9.5px] font-black text-[#008F5B] uppercase tracking-wider block leading-tight">
                   NET PAYABLE
                 </span>
               </div>
 
               <div className="mt-1 relative z-10">
-                <strong className="block text-[10.5px] sm:text-[12.5px] font-black text-[#008F5B] tracking-tight leading-tight whitespace-nowrap">
-                  {formatBDT(recordA?.net || 0)}
+                <strong className="block text-[10px] sm:text-[12px] min-[410px]:text-[12.5px] font-black text-[#008F5B] tracking-tight leading-tight whitespace-nowrap">
+                  <BDT amount={recordA?.net || 0} decimals={2} symbolClassName="text-[1.15em] font-black text-[#008F5B] mr-0.5" />
                 </strong>
 
-                {/* Vs recordB with font-size: 10px, font-weight: 700 and large bold Taka symbol */}
-                <div className="mt-1 text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
-                  <span className="text-[#6E7974] font-bold">Vs</span>
-                  <span className="text-[12px] font-extrabold text-[#17211D] leading-none">৳</span>
-                  <span className="font-bold text-[#17211D]">
-                    {Number(recordB?.net || 0).toLocaleString('en-BD', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                {/* Dynamic Month label (e.g. Jan:, Jun:) for recordB with .00 cleanly fitted on 390dp */}
+                <div className="mt-0.5 text-[8px] min-[370px]:text-[8.5px] min-[410px]:text-[9.5px] sm:text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                  <span className="text-[#6E7974] font-bold shrink-0">
+                    {(recordB?.monthLabel?.split(' ')[0]?.slice(0, 3) || 'Prev') + ':'}
                   </span>
+                  <BDT
+                    amount={recordB?.net || 0}
+                    decimals={2}
+                    symbolClassName="text-[1.12em] font-extrabold text-[#17211D] mr-0.5"
+                    className="font-bold text-[#17211D]"
+                  />
                 </div>
               </div>
 
               {/* Visual Micro Progress Comparison */}
-              <div className="mt-2 w-full h-1 bg-[#E2EBE6] rounded-full overflow-hidden relative z-10">
+              <div className="mt-1.5 w-full h-1 bg-[#E2EBE6] rounded-full overflow-hidden relative z-10">
                 <div
                   style={{
                     width: `${Math.min(
@@ -447,38 +435,39 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             </div>
 
             {/* 2. GROSS AMOUNT CARD */}
-            <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#D8E6DF] shadow-[0_2px_8px_rgba(23,33,29,0.03)] flex flex-col justify-between relative overflow-hidden group">
+            <div className="p-1.5 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#F6FAF8] border border-[#D8E6DF] shadow-[0_2px_8px_rgba(23,33,29,0.03)] flex flex-col justify-between relative overflow-hidden group">
               {/* Theme Watermark Icon (Gross / Landmark) - Top Right like KPI cards */}
-              <div className="absolute top-2 right-2 text-[#17211D]/[0.07] group-hover:text-[#008F5B]/[0.12] transition-all duration-300 pointer-events-none group-hover:scale-105">
-                <Landmark size={36} strokeWidth={1.5} />
+              <div className="absolute top-1.5 right-1.5 text-[#17211D]/[0.07] group-hover:text-[#008F5B]/[0.12] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                <Landmark size={32} strokeWidth={1.5} />
               </div>
 
               <div className="relative z-10">
-                <span className="text-[9px] sm:text-[9.5px] font-black text-[#5C6E66] uppercase tracking-wider block leading-tight">
+                <span className="text-[8.5px] sm:text-[9.5px] font-black text-[#5C6E66] uppercase tracking-wider block leading-tight">
                   GROSS AMOUNT
                 </span>
               </div>
 
               <div className="mt-1 relative z-10">
-                <strong className="block text-[10.5px] sm:text-[12.5px] font-black text-[#17211D] tracking-tight leading-tight whitespace-nowrap">
-                  {formatBDT(recordA?.gross || 0)}
+                <strong className="block text-[10px] sm:text-[12px] min-[410px]:text-[12.5px] font-black text-[#17211D] tracking-tight leading-tight whitespace-nowrap">
+                  <BDT amount={recordA?.gross || 0} decimals={2} symbolClassName="text-[1.15em] font-black text-[#17211D] mr-0.5" />
                 </strong>
 
-                {/* Vs recordB with font-size: 10px, font-weight: 700 and large bold Taka symbol */}
-                <div className="mt-1 text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
-                  <span className="text-[#6E7974] font-bold">Vs</span>
-                  <span className="text-[12px] font-extrabold text-[#17211D] leading-none">৳</span>
-                  <span className="font-bold text-[#17211D]">
-                    {Number(recordB?.gross || 0).toLocaleString('en-BD', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                {/* Dynamic Month label (e.g. Jan:, Jun:) for recordB with .00 cleanly fitted on 390dp */}
+                <div className="mt-0.5 text-[8px] min-[370px]:text-[8.5px] min-[410px]:text-[9.5px] sm:text-[10px] font-bold text-[#4A5550] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                  <span className="text-[#6E7974] font-bold shrink-0">
+                    {(recordB?.monthLabel?.split(' ')[0]?.slice(0, 3) || 'Prev') + ':'}
                   </span>
+                  <BDT
+                    amount={recordB?.gross || 0}
+                    decimals={2}
+                    symbolClassName="text-[1.12em] font-extrabold text-[#17211D] mr-0.5"
+                    className="font-bold text-[#17211D]"
+                  />
                 </div>
               </div>
 
               {/* Visual Micro Progress Comparison */}
-              <div className="mt-2 w-full h-1 bg-[#E2EBE6] rounded-full overflow-hidden relative z-10">
+              <div className="mt-1.5 w-full h-1 bg-[#E2EBE6] rounded-full overflow-hidden relative z-10">
                 <div
                   style={{
                     width: `${Math.min(
@@ -495,38 +484,39 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             </div>
 
             {/* 3. TOTAL DEDUCTION CARD */}
-            <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#FDCFD4] shadow-[0_2px_8px_rgba(216,59,59,0.03)] flex flex-col justify-between relative overflow-hidden group">
+            <div className="p-1.5 sm:p-2.5 rounded-xl bg-gradient-to-b from-white to-[#FFF6F6] border border-[#FDCFD4] shadow-[0_2px_8px_rgba(216,59,59,0.03)] flex flex-col justify-between relative overflow-hidden group">
               {/* Theme Watermark Icon (Deduction / ShieldAlert) - Top Right like KPI cards */}
-              <div className="absolute top-2 right-2 text-[#D83B3B]/[0.08] group-hover:text-[#D83B3B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
-                <ShieldAlert size={36} strokeWidth={1.5} />
+              <div className="absolute top-1.5 right-1.5 text-[#D83B3B]/[0.08] group-hover:text-[#D83B3B]/[0.15] transition-all duration-300 pointer-events-none group-hover:scale-105">
+                <ShieldAlert size={32} strokeWidth={1.5} />
               </div>
 
               <div className="relative z-10">
-                <span className="text-[9px] sm:text-[9.5px] font-black text-[#D83B3B] uppercase tracking-wider block leading-tight">
+                <span className="text-[8.5px] sm:text-[9.5px] font-black text-[#D83B3B] uppercase tracking-wider block leading-tight">
                   TOTAL DEDUCT
                 </span>
               </div>
 
               <div className="mt-1 relative z-10">
-                <strong className="block text-[10.5px] sm:text-[12.5px] font-black text-[#D83B3B] tracking-tight leading-tight whitespace-nowrap">
-                  {formatBDT(recordA?.deduction || 0)}
+                <strong className="block text-[10px] sm:text-[12px] min-[410px]:text-[12.5px] font-black text-[#D83B3B] tracking-tight leading-tight whitespace-nowrap">
+                  <BDT amount={recordA?.deduction || 0} decimals={2} symbolClassName="text-[1.15em] font-black text-[#D83B3B] mr-0.5" />
                 </strong>
 
-                {/* Vs recordB with font-size: 10px, font-weight: 700 and large bold Taka symbol */}
-                <div className="mt-1 text-[10px] font-bold text-[#8A1A1A] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
-                  <span className="text-[#D83B3B]/80 font-bold">Vs</span>
-                  <span className="text-[12px] font-extrabold text-[#D83B3B] leading-none">৳</span>
-                  <span className="font-bold text-[#D83B3B]">
-                    {Number(recordB?.deduction || 0).toLocaleString('en-BD', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                {/* Dynamic Month label (e.g. Jan:, Jun:) for recordB with .00 cleanly fitted on 390dp */}
+                <div className="mt-0.5 text-[8px] min-[370px]:text-[8.5px] min-[410px]:text-[9.5px] sm:text-[10px] font-bold text-[#8A1A1A] flex items-center gap-0.5 whitespace-nowrap tracking-tight leading-tight">
+                  <span className="text-[#D83B3B]/80 font-bold shrink-0">
+                    {(recordB?.monthLabel?.split(' ')[0]?.slice(0, 3) || 'Prev') + ':'}
                   </span>
+                  <BDT
+                    amount={recordB?.deduction || 0}
+                    decimals={2}
+                    symbolClassName="text-[1.12em] font-extrabold text-[#D83B3B] mr-0.5"
+                    className="font-bold text-[#D83B3B]"
+                  />
                 </div>
               </div>
 
               {/* Visual Micro Progress Comparison */}
-              <div className="mt-2 w-full h-1 bg-[#FEE2E2] rounded-full overflow-hidden relative z-10">
+              <div className="mt-1.5 w-full h-1 bg-[#FEE2E2] rounded-full overflow-hidden relative z-10">
                 <div
                   style={{
                     width: `${Math.min(

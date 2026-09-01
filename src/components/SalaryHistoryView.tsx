@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
+import { BDT } from './BDT';
 
 interface SalaryHistoryViewProps {
   salaryRecords: MonthSalaryRecord[];
@@ -139,16 +140,20 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
                         NET TAKE-HOME
                       </span>
                       <strong className="text-[18px] font-black text-[#008F5B] block leading-tight">
-                        {formatBDT(r.net)}
+                        <BDT amount={r.net} symbolClassName="text-[1.2em] font-black text-[#008F5B] mr-0.5" />
                       </strong>
                     </div>
 
-                    <div className="text-right">
-                      <span className="text-[10px] text-[#6E7974] block">
-                        Gross: <strong className="text-[#17211D]">{formatBDT(r.gross)}</strong>
+                    <div className="text-right flex flex-col items-end">
+                      <span className="text-[10px] text-[#6E7974] flex items-center gap-1">
+                        <span>Gross:</span>
+                        <strong className="text-[#17211D]">
+                          <BDT amount={r.gross} symbolClassName="text-[1.12em] font-black text-[#17211D] mr-0.5" />
+                        </strong>
                       </span>
-                      <span className="text-[10px] text-[#D83B3B] block">
-                        Deduct: -{formatBDT(r.deduction)}
+                      <span className="text-[10px] text-[#D83B3B] flex items-center gap-1">
+                        <span>Deduct: -</span>
+                        <BDT amount={r.deduction} symbolClassName="text-[1.12em] font-black text-[#D83B3B] mr-0.5" />
                       </span>
                     </div>
                   </div>
