@@ -297,8 +297,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Top Application Header */}
-      <header className="w-full bg-white border-b border-[#D7E0DC] px-4 py-3 sticky top-0 z-40">
+      {/* Top Application Header (Desktop Preview Only) */}
+      <header className="w-full bg-white dark:bg-[#14221C] border-b border-[#D7E0DC] dark:border-[#21352C] px-4 py-3 sticky top-0 z-40 hidden md:block">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
@@ -320,14 +320,14 @@ export default function App() {
             </div>
             <div>
               <div className="flex items-center gap-1.5 leading-none">
-                <span className="font-extrabold text-sm text-[#17211D]">Pay</span>
-                <span className="font-extrabold text-sm text-[#008F5B]">Flow</span>
-                <span className="text-[10px] bg-[#E9F7F1] text-[#008F5B] font-bold px-2 py-0.5 rounded-full ml-1 border border-[#008F5B]/20 flex items-center gap-1">
+                <span className="font-extrabold text-sm text-[#17211D] dark:text-[#F1F7F4]">Pay</span>
+                <span className="font-extrabold text-sm text-[#008F5B] dark:text-[#10E594]">Flow</span>
+                <span className="text-[10px] bg-[#E9F7F1] dark:bg-[#163024] text-[#008F5B] dark:text-[#10E594] font-bold px-2 py-0.5 rounded-full ml-1 border border-[#008F5B]/20 flex items-center gap-1">
                   <Cloud size={10} />
                   <span>Firebase Connected</span>
                 </span>
               </div>
-              <span className="text-[11px] text-[#6E7974] font-medium block mt-0.5">
+              <span className="text-[11px] text-[#6E7974] dark:text-[#9DB3A8] font-medium block mt-0.5">
                 Pixel-Accurate Flutter Android Application • Firestore Backend
               </span>
             </div>
@@ -335,14 +335,14 @@ export default function App() {
 
           {/* Mode Switcher */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center p-1 bg-[#F5FAF7] rounded-xl border border-[#D7E0DC]">
+            <div className="flex items-center p-1 bg-[#F5FAF7] dark:bg-[#101A16] rounded-xl border border-[#D7E0DC] dark:border-[#21352C]">
               <button
                 id="toggle-preview-mode-btn"
                 onClick={() => setViewMode('preview')}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'preview'
                     ? 'bg-[#008F5B] text-white shadow-xs'
-                    : 'text-[#6E7974] hover:text-[#17211D]'
+                    : 'text-[#6E7974] dark:text-[#9DB3A8] hover:text-[#17211D] dark:hover:text-white'
                 }`}
               >
                 <Smartphone size={14} />
@@ -354,7 +354,7 @@ export default function App() {
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'code'
                     ? 'bg-[#008F5B] text-white shadow-xs'
-                    : 'text-[#6E7974] hover:text-[#17211D]'
+                    : 'text-[#6E7974] dark:text-[#9DB3A8] hover:text-[#17211D] dark:hover:text-white'
                 }`}
               >
                 <Code size={14} />
@@ -366,7 +366,7 @@ export default function App() {
               <button
                 id="header-logout-btn"
                 onClick={handleLogout}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#D7E0DC] text-xs font-semibold text-[#D83B3B] hover:bg-[#D83B3B]/10 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#14221C] border border-[#D7E0DC] dark:border-[#21352C] text-xs font-semibold text-[#D83B3B] hover:bg-[#D83B3B]/10 transition-all cursor-pointer"
               >
                 <LogOut size={13} />
                 <span>Sign Out</span>
@@ -377,7 +377,7 @@ export default function App() {
       </header>
 
       {/* Main Content Area */}
-      <main className="w-full max-w-6xl mx-auto flex-1 p-1 sm:p-5 flex flex-col items-center justify-center">
+      <main className="w-full max-w-6xl mx-auto flex-1 p-0 md:p-5 flex flex-col items-center justify-center min-h-screen">
         {viewMode === 'preview' ? (
           <AndroidFrame
             activeScreen={currentScreen}
