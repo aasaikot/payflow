@@ -15,6 +15,7 @@ import {
 } from 'firebase/auth';
 import {
   getFirestore,
+  initializeFirestore,
   collection,
   doc,
   getDoc,
@@ -33,7 +34,17 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 // Authentication & Firestore instances
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+// Use robust initialization with auto-detect long polling for flaky / sandboxed network connections
+let firestoreInstance;
+try {
+  firestoreInstance = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+  }, firebaseConfig.firestoreDatabaseId);
+} catch {
+  firestoreInstance = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+}
+export const db = firestoreInstance;
 
 export enum OperationType {
   CREATE = 'create',

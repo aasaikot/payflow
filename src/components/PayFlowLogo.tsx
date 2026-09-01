@@ -30,9 +30,16 @@ export const PayFlowLogo: React.FC<PayFlowLogoProps> = ({
     >
       {!imgError ? (
         <img
-          src="/logo.png"
+          src="/payflow-logo.png"
           alt="PayFlow Logo"
-          onError={() => setImgError(true)}
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (target.src.includes('payflow-logo.png')) {
+              target.src = '/logo.png';
+            } else {
+              setImgError(true);
+            }
+          }}
           className="w-full h-full object-contain drop-shadow-md rounded-[22%]"
           referrerPolicy="no-referrer"
         />
