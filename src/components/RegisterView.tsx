@@ -171,22 +171,31 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
           <PayFlowLogo iconSize={48} fontSize={24} showSubtitle={true} />
         </div>
 
-        {/* Auth Mode Pill Selector */}
-        <div className="w-full max-w-[280px] bg-[#EAEFEA] p-1 rounded-xl flex items-center border border-[#D7E0DC] shadow-inner mb-4">
+        {/* Auth Mode Section Switcher (Comparison-Section-Tabs Style) */}
+        <div
+          id="auth-section-tabs"
+          className="w-full max-w-[280px] bg-white dark:bg-[#101A16] rounded-2xl border border-[#008F5B] dark:border-[#008F5B]/60 overflow-hidden flex items-stretch shadow-2xs mb-4"
+        >
+          {/* Tab 1: Sign In (Inactive) */}
           <button
             type="button"
             id="switch-mode-login-pill"
             onClick={onNavigateToLogin}
-            className="flex-1 py-2 rounded-lg text-xs font-bold text-[#6E7974] hover:text-[#17211D] hover:bg-white/50 transition-colors cursor-pointer text-center"
+            className="flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 bg-white dark:bg-[#101A16] text-[#17211D] dark:text-[#8FA298] font-bold hover:bg-[#F5FAF7] dark:hover:bg-[#14241D] hover:text-[#008F5B] dark:hover:text-[#F1F7F4] cursor-pointer transition-all"
           >
-            Sign In
+            <span className="text-[12.5px] sm:text-[13px] leading-tight">Sign In</span>
           </button>
+
+          {/* Vertical Divider */}
+          <div className="w-px bg-[#008F5B] dark:bg-[#008F5B]/60 self-stretch shrink-0" />
+
+          {/* Tab 2: Register (Active) */}
           <button
             type="button"
-            className="flex-1 py-2 rounded-lg text-xs font-black bg-white text-[#008F5B] shadow-xs cursor-default flex items-center justify-center gap-1"
+            className="flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 bg-[#E8F7F0] dark:bg-[#163024] text-[#008F5B] dark:text-[#10E594] font-bold cursor-default transition-all"
           >
-            <CheckCircle2 size={13} className="text-[#008F5B]" />
-            <span>Register</span>
+            <CheckCircle2 size={13} className="text-[#008F5B] dark:text-[#10E594]" />
+            <span className="text-[12.5px] sm:text-[13px] leading-tight font-black">Register</span>
           </button>
         </div>
 
@@ -214,13 +223,13 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
       {/* Main Registration Card */}
       <div
         id="register-card"
-        className="w-full max-w-[440px] bg-white rounded-xl p-6 sm:p-7 border border-[#E4ECE8] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
+        className="w-full max-w-[440px] bg-white dark:bg-[#14221C] rounded-xl p-6 sm:p-7 border border-[#E4ECE8] dark:border-[#21352C] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
           {/* Section Heading */}
-          <div className="pb-1 border-b border-[#F0F4F2]">
-            <span className="text-[11px] font-bold text-[#6E7974] uppercase tracking-wider">
-              Employment Details
+          <div className="pb-1 border-b border-[#F0F4F2] dark:border-[#20342A]">
+            <span className="text-[11px] font-extrabold text-[#6E7974] dark:text-[#9DB3A8] uppercase tracking-wider">
+              ACCOUNT DETAILS
             </span>
           </div>
 
@@ -228,12 +237,12 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
           <div>
             <label
               htmlFor="register-fullname-input"
-              className="block text-[12.5px] font-bold text-[#17211D] mb-1"
+              className="block text-[11.5px] font-extrabold uppercase tracking-wider text-[#17211D] dark:text-[#F1F7F4] mb-1"
             >
-              Full Legal Name (UPPERCASE)
+              FULL NAME
             </label>
             <div className="relative flex items-center">
-              <div className="absolute left-3.5 w-7 h-7 rounded-lg bg-[#F5FAF7] text-[#6E7974] flex items-center justify-center pointer-events-none">
+              <div className="absolute left-3.5 w-7 h-7 rounded-lg bg-[#F5FAF7] dark:bg-[#101A16] text-[#6E7974] dark:text-[#9DB3A8] flex items-center justify-center pointer-events-none">
                 <User size={16} />
               </div>
               <input
@@ -242,24 +251,24 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value.toUpperCase())}
                 placeholder="e.g. ASIF ARMAN SAIKOT"
-                className="w-full h-[46px] pl-12 pr-4 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all uppercase"
+                className="w-full h-[46px] pl-12 pr-4 rounded-xl border border-[#D7E0DC] dark:border-[#283D32] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] dark:text-[#F1F7F4] placeholder-[#9EABA5] bg-white dark:bg-[#0E1814] transition-all uppercase"
                 required
               />
             </div>
           </div>
 
-          {/* 2-Column: Email & Employee ID */}
+          {/* 2-Column: Email & User ID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Email */}
             <div>
               <label
                 htmlFor="register-email-input"
-                className="block text-[12.5px] font-bold text-[#17211D] mb-1"
+                className="block text-[11.5px] font-extrabold uppercase tracking-wider text-[#17211D] dark:text-[#F1F7F4] mb-1"
               >
-                Work Email
+                EMAIL
               </label>
               <div className="relative flex items-center">
-                <div className="absolute left-3 w-6 h-6 rounded-lg bg-[#F5FAF7] text-[#6E7974] flex items-center justify-center pointer-events-none">
+                <div className="absolute left-3 w-6 h-6 rounded-lg bg-[#F5FAF7] dark:bg-[#101A16] text-[#6E7974] dark:text-[#9DB3A8] flex items-center justify-center pointer-events-none">
                   <Mail size={14} />
                 </div>
                 <input
@@ -268,22 +277,22 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="asif@company.com"
-                  className="w-full h-[46px] pl-10 pr-3 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                  className="w-full h-[46px] pl-10 pr-3 rounded-xl border border-[#D7E0DC] dark:border-[#283D32] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13px] font-semibold text-[#17211D] dark:text-[#F1F7F4] placeholder-[#9EABA5] bg-white dark:bg-[#0E1814] transition-all"
                   required
                 />
               </div>
             </div>
 
-            {/* Employee ID */}
+            {/* User ID */}
             <div>
               <label
                 htmlFor="register-employee-id-input"
-                className="block text-[12.5px] font-bold text-[#17211D] mb-1"
+                className="block text-[11.5px] font-extrabold uppercase tracking-wider text-[#17211D] dark:text-[#F1F7F4] mb-1"
               >
-                Employee ID
+                USER ID
               </label>
               <div className="relative flex items-center">
-                <div className="absolute left-3 w-6 h-6 rounded-lg bg-[#F5FAF7] text-[#6E7974] flex items-center justify-center pointer-events-none">
+                <div className="absolute left-3 w-6 h-6 rounded-lg bg-[#F5FAF7] dark:bg-[#101A16] text-[#6E7974] dark:text-[#9DB3A8] flex items-center justify-center pointer-events-none">
                   <IdCard size={14} />
                 </div>
                 <input
@@ -292,7 +301,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                   value={employeeId}
                   onChange={(e) => setEmployeeId(e.target.value)}
                   placeholder="5556"
-                  className="w-full h-[46px] pl-10 pr-3 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                  className="w-full h-[46px] pl-10 pr-3 rounded-xl border border-[#D7E0DC] dark:border-[#283D32] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13px] font-semibold text-[#17211D] dark:text-[#F1F7F4] placeholder-[#9EABA5] bg-white dark:bg-[#0E1814] transition-all"
                   required
                 />
               </div>
@@ -304,9 +313,9 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             <div className="flex items-center justify-between mb-1">
               <label
                 htmlFor="register-password-input"
-                className="text-[12.5px] font-bold text-[#17211D]"
+                className="text-[11.5px] font-extrabold uppercase tracking-wider text-[#17211D] dark:text-[#F1F7F4]"
               >
-                Security Password
+                PASSWORD
               </label>
               {password.length > 0 && (
                 <span className={`text-[11px] font-extrabold ${strength.text}`}>
@@ -315,7 +324,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
               )}
             </div>
             <div className="relative flex items-center">
-              <div className="absolute left-3.5 w-7 h-7 rounded-lg bg-[#F5FAF7] text-[#6E7974] flex items-center justify-center pointer-events-none">
+              <div className="absolute left-3.5 w-7 h-7 rounded-lg bg-[#F5FAF7] dark:bg-[#101A16] text-[#6E7974] dark:text-[#9DB3A8] flex items-center justify-center pointer-events-none">
                 <Lock size={16} />
               </div>
               <input
@@ -324,14 +333,14 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Create a strong password"
-                className="w-full h-[46px] pl-12 pr-11 rounded-xl border border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all"
+                className="w-full h-[46px] pl-12 pr-11 rounded-xl border border-[#D7E0DC] dark:border-[#283D32] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 outline-none text-[13.5px] font-semibold text-[#17211D] dark:text-[#F1F7F4] placeholder-[#9EABA5] bg-white dark:bg-[#0E1814] transition-all"
                 required
               />
               <button
                 type="button"
                 id="toggle-register-password-btn"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 text-[#6E7974] hover:text-[#17211D] p-1.5 rounded-lg hover:bg-[#F5FAF7]"
+                className="absolute right-3 text-[#6E7974] dark:text-[#9DB3A8] hover:text-[#17211D] dark:hover:text-[#F1F7F4] p-1.5 rounded-lg hover:bg-[#F5FAF7] dark:hover:bg-[#14241D]"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -341,10 +350,10 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             {/* Password Strength Meter Bar */}
             {password.length > 0 && (
               <div className="grid grid-cols-4 gap-1.5 mt-2">
-                <div className={`h-1.5 rounded-full transition-all ${strengthScore >= 1 ? strength.color : 'bg-[#E4ECE8]'}`} />
-                <div className={`h-1.5 rounded-full transition-all ${strengthScore >= 2 ? strength.color : 'bg-[#E4ECE8]'}`} />
-                <div className={`h-1.5 rounded-full transition-all ${strengthScore >= 3 ? strength.color : 'bg-[#E4ECE8]'}`} />
-                <div className={`h-1.5 rounded-full transition-all ${strengthScore >= 4 ? strength.color : 'bg-[#E4ECE8]'}`} />
+                <div className={`h-1.5 rounded-full transition-all ${strengthScore >= 1 ? strength.color : 'bg-[#E4ECE8] dark:bg-[#20342A]'}`} />
+                <div className={`h-1.5 rounded-full transition-all ${strengthScore >= 2 ? strength.color : 'bg-[#E4ECE8] dark:bg-[#20342A]'}`} />
+                <div className={`h-1.5 rounded-full transition-all ${strengthScore >= 3 ? strength.color : 'bg-[#E4ECE8] dark:bg-[#20342A]'}`} />
+                <div className={`h-1.5 rounded-full transition-all ${strengthScore >= 4 ? strength.color : 'bg-[#E4ECE8] dark:bg-[#20342A]'}`} />
               </div>
             )}
           </div>
@@ -354,18 +363,18 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             <div className="flex items-center justify-between mb-1">
               <label
                 htmlFor="register-confirm-password-input"
-                className="text-[12.5px] font-bold text-[#17211D]"
+                className="text-[11.5px] font-extrabold uppercase tracking-wider text-[#17211D] dark:text-[#F1F7F4]"
               >
-                Confirm Password
+                CONFIRM PASSWORD
               </label>
               {confirmPassword.length > 0 && (
-                <span className={`text-[11px] font-bold ${passwordsMatch ? 'text-[#008F5B]' : 'text-[#D83B3B]'}`}>
+                <span className={`text-[11px] font-bold ${passwordsMatch ? 'text-[#008F5B] dark:text-[#10E594]' : 'text-[#D83B3B]'}`}>
                   {passwordsMatch ? 'Passwords match' : 'Mismatch'}
                 </span>
               )}
             </div>
             <div className="relative flex items-center">
-              <div className="absolute left-3.5 w-7 h-7 rounded-lg bg-[#F5FAF7] text-[#6E7974] flex items-center justify-center pointer-events-none">
+              <div className="absolute left-3.5 w-7 h-7 rounded-lg bg-[#F5FAF7] dark:bg-[#101A16] text-[#6E7974] dark:text-[#9DB3A8] flex items-center justify-center pointer-events-none">
                 <Lock size={16} />
               </div>
               <input
@@ -374,12 +383,12 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter password"
-                className={`w-full h-[46px] pl-12 pr-11 rounded-xl border outline-none text-[13.5px] font-semibold text-[#17211D] placeholder-[#9EABA5] bg-white transition-all ${
+                className={`w-full h-[46px] pl-12 pr-11 rounded-xl border outline-none text-[13.5px] font-semibold text-[#17211D] dark:text-[#F1F7F4] placeholder-[#9EABA5] bg-white dark:bg-[#0E1814] transition-all ${
                   confirmPassword.length > 0
                     ? passwordsMatch
-                      ? 'border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15'
-                      : 'border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15'
-                    : 'border-[#D7E0DC] focus:border-[#008F5B]'
+                      ? 'border-[#008F5B] dark:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15'
+                      : 'border-[#D83B3B] dark:border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15'
+                    : 'border-[#D7E0DC] dark:border-[#283D32] focus:border-[#008F5B]'
                 }`}
                 required
               />
@@ -387,7 +396,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                 type="button"
                 id="toggle-register-confirm-password-btn"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 text-[#6E7974] hover:text-[#17211D] p-1.5 rounded-lg hover:bg-[#F5FAF7]"
+                className="absolute right-3 text-[#6E7974] dark:text-[#9DB3A8] hover:text-[#17211D] dark:hover:text-[#F1F7F4] p-1.5 rounded-lg hover:bg-[#F5FAF7] dark:hover:bg-[#14241D]"
                 aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
               >
                 {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -398,35 +407,35 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
           {/* Interactive Password Criteria Mini-Chips */}
           <div
             id="password-requirements-card"
-            className="w-full bg-[#F5FAF7] rounded-xl p-3 border border-[#D7E0DC] flex flex-wrap gap-2"
+            className="w-full bg-[#F5FAF7] dark:bg-[#101A16] rounded-xl p-3 border border-[#D7E0DC] dark:border-[#21352C] flex flex-wrap gap-2"
           >
             <div className="flex items-center gap-1.5 text-[11px] font-semibold">
               {hasMinLength ? (
-                <CheckCircle2 size={13} className="text-[#008F5B]" />
+                <CheckCircle2 size={13} className="text-[#008F5B] dark:text-[#10E594]" />
               ) : (
-                <Circle size={13} className="text-[#8A9791]" />
+                <Circle size={13} className="text-[#8A9791] dark:text-[#50635B]" />
               )}
-              <span className={hasMinLength ? 'text-[#008F5B] font-bold' : 'text-[#6E7974]'}>
+              <span className={hasMinLength ? 'text-[#008F5B] dark:text-[#10E594] font-bold' : 'text-[#6E7974] dark:text-[#9DB3A8]'}>
                 8+ Characters
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px] font-semibold">
               {hasUppercase ? (
-                <CheckCircle2 size={13} className="text-[#008F5B]" />
+                <CheckCircle2 size={13} className="text-[#008F5B] dark:text-[#10E594]" />
               ) : (
-                <Circle size={13} className="text-[#8A9791]" />
+                <Circle size={13} className="text-[#8A9791] dark:text-[#50635B]" />
               )}
-              <span className={hasUppercase ? 'text-[#008F5B] font-bold' : 'text-[#6E7974]'}>
+              <span className={hasUppercase ? 'text-[#008F5B] dark:text-[#10E594] font-bold' : 'text-[#6E7974] dark:text-[#9DB3A8]'}>
                 Uppercase Letter
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px] font-semibold">
               {hasNumber ? (
-                <CheckCircle2 size={13} className="text-[#008F5B]" />
+                <CheckCircle2 size={13} className="text-[#008F5B] dark:text-[#10E594]" />
               ) : (
-                <Circle size={13} className="text-[#8A9791]" />
+                <Circle size={13} className="text-[#8A9791] dark:text-[#50635B]" />
               )}
-              <span className={hasNumber ? 'text-[#008F5B] font-bold' : 'text-[#6E7974]'}>
+              <span className={hasNumber ? 'text-[#008F5B] dark:text-[#10E594] font-bold' : 'text-[#6E7974] dark:text-[#9DB3A8]'}>
                 At least 1 Number
               </span>
             </div>
@@ -438,10 +447,10 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
               type="checkbox"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="mt-0.5 w-4 h-4 rounded text-[#008F5B] border-[#D7E0DC] focus:ring-[#008F5B] accent-[#008F5B]"
+              className="mt-0.5 w-4 h-4 rounded text-[#008F5B] border-[#D7E0DC] dark:border-[#283D32] focus:ring-[#008F5B] accent-[#008F5B]"
             />
-            <span className="text-[12px] text-[#6E7974] leading-tight">
-              I agree to the PayFlow Security Policies and Terms of Compensation Tracking.
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#6E7974] dark:text-[#9DB3A8] leading-tight">
+              I AGREE TO PAYFLOW TERMS & SECURITY POLICIES
             </span>
           </label>
 
@@ -464,8 +473,8 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
 
           {/* Divider */}
           <div className="relative flex items-center justify-center my-0.5">
-            <div className="border-t border-[#E4ECE8] w-full"></div>
-            <span className="bg-white px-3 text-[11px] text-[#6E7974] font-bold uppercase tracking-wider shrink-0">
+            <div className="border-t border-[#E4ECE8] dark:border-[#21352C] w-full"></div>
+            <span className="bg-white dark:bg-[#14221C] px-3 text-[11px] text-[#6E7974] dark:text-[#9DB3A8] font-bold uppercase tracking-wider shrink-0">
               or register with
             </span>
           </div>
@@ -476,7 +485,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             type="button"
             onClick={handleGoogleSignIn}
             disabled={isLoading || isGoogleLoading}
-            className="h-[46px] bg-white hover:bg-[#F5FAF7] active:scale-[0.99] disabled:opacity-75 border border-[#D7E0DC] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] transition-all cursor-pointer shadow-2xs"
+            className="h-[46px] bg-white dark:bg-[#101A16] hover:bg-[#F5FAF7] dark:hover:bg-[#16261E] active:scale-[0.99] disabled:opacity-75 border border-[#D7E0DC] dark:border-[#21352C] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] dark:text-[#F1F7F4] transition-all cursor-pointer shadow-2xs"
           >
             {isGoogleLoading ? (
               <Loader2 size={17} className="animate-spin text-[#008F5B]" />
@@ -506,15 +515,15 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
           </button>
 
           {/* Switch to Login */}
-          <div className="text-center pt-2 border-t border-[#F0F4F2] mt-0.5">
-            <span className="text-[13px] text-[#6E7974]">
+          <div className="text-center pt-2 border-t border-[#F0F4F2] dark:border-[#20342A] mt-0.5">
+            <span className="text-[13px] text-[#6E7974] dark:text-[#9DB3A8]">
               Already registered?{' '}
             </span>
             <button
               id="switch-to-login-btn"
               type="button"
               onClick={onNavigateToLogin}
-              className="text-[13px] font-black text-[#008F5B] hover:text-[#007A4D] hover:underline transition-colors cursor-pointer"
+              className="text-[13px] font-black text-[#008F5B] dark:text-[#10E594] hover:text-[#007A4D] dark:hover:underline transition-colors cursor-pointer"
             >
               Sign In Instead
             </button>

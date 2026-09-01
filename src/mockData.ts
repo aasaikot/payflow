@@ -286,8 +286,18 @@ export function convertFirebaseMonthsToRecords(
     const data = months[monthKey];
     if (!data) continue;
 
-    const incomes = data.income || {};
+    const rawIncomes = data.income || {};
     const deductions = data.deduction || {};
+
+    // Standardize 'Refreshment' -> 'Overtime'
+    const incomes: Record<string, number> = {};
+    for (const [k, v] of Object.entries(rawIncomes)) {
+      if (k === 'Refreshment') {
+        incomes['Overtime'] = Number(v) || 0;
+      } else {
+        incomes[k] = Number(v) || 0;
+      }
+    }
 
     const gross = Object.values(incomes).reduce((sum, v) => sum + (Number(v) || 0), 0);
     const deduction = Object.values(deductions).reduce((sum, v) => sum + (Number(v) || 0), 0);

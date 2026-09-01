@@ -1,6 +1,7 @@
 import React from 'react';
-import { ShieldCheck, Bell, MoreVertical } from 'lucide-react';
+import { ShieldCheck, Bell, MoreVertical, Moon, Sun } from 'lucide-react';
 import { UserProfileData } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 interface PayFlowTopBarProps {
   userProfile?: UserProfileData;
@@ -17,7 +18,7 @@ interface PayFlowTopBarProps {
  *
  * Features:
  * - Left: User Avatar + Dynamic Greeting ("Hey, Name 👋") + ID Badge only
- * - Right: Salary Status Badge ("● Active") + Notification Bell with Badge + Subtle Three-Dot Menu
+ * - Right: Dark Mode Toggle + Salary Status Badge ("● Active") + Notification Bell with Badge + Subtle Three-Dot Menu
  * - Modern clean frosted glass finish with sleek emerald accents
  */
 export const PayFlowTopBar: React.FC<PayFlowTopBarProps> = ({
@@ -29,6 +30,7 @@ export const PayFlowTopBar: React.FC<PayFlowTopBarProps> = ({
   unreadCount = 2,
   className = '',
 }) => {
+  const { isDark, toggleTheme } = useTheme();
   // Extract user first name for a warm, clean greeting
   const rawName = userProfile?.name || userProfile?.email?.split('@')[0] || 'Employee';
   const firstName = rawName.split(' ')[0] || rawName;
@@ -81,45 +83,51 @@ export const PayFlowTopBar: React.FC<PayFlowTopBarProps> = ({
         </div>
       </div>
 
-      {/* Right Side: Status Badge + Action Buttons */}
+      {/* Right Side: Action Buttons in strict order: 1. Dark Mode, 2. Notification Bell, 3. Three-Dot Menu */}
       <div id="payflow-top-actions-right" className="flex items-center gap-1.5 shrink-0">
-        {/* Active Month / Paid Status Badge */}
-        {activeMonthLabel && (
-          <div className="hidden min-[360px]:inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#E8F7F0] border border-[#C5EBDB] text-[9.5px] font-bold text-[#008F5B] shadow-2xs">
-            <ShieldCheck size={11} className="text-[#008F5B]" />
-            <span className="tracking-tight uppercase font-extrabold truncate max-w-[70px]">
-              {activeMonthLabel.split(' ')[0]}
-            </span>
-          </div>
-        )}
+        {/* 1. Dark Mode Toggle Button */}
+        <button
+          type="button"
+          id="payflow-quick-theme-toggle-btn"
+          onClick={toggleTheme}
+          className="w-8.5 h-8.5 rounded-full bg-white dark:bg-[#14241D] hover:bg-[#E8F7F0] dark:hover:bg-[#1F362B] active:scale-95 transition-all duration-150 flex items-center justify-center cursor-pointer border border-[#E2ECE7] dark:border-[#243B2E] text-[#4A5550] dark:text-[#A1B3AA] hover:text-[#008F5B] dark:hover:text-[#10E594] shadow-2xs"
+          title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+          aria-label="Toggle theme"
+        >
+          {isDark ? (
+            <Sun size={16} className="text-[#F59E0B] stroke-[2.2]" />
+          ) : (
+            <Moon size={16} className="stroke-[2.2]" />
+          )}
+        </button>
 
-        {/* Notification Bell with Badge */}
+        {/* 2. Notification Bell with Badge */}
         <button
           type="button"
           id="payflow-notification-btn"
           onClick={() => {
             if (onNotificationClick) onNotificationClick();
           }}
-          className="w-8.5 h-8.5 rounded-full bg-[#F5FAF7] hover:bg-[#E8F7F0] active:scale-95 transition-all duration-150 flex items-center justify-center cursor-pointer border border-[#E2ECE7] text-[#4A5550] hover:text-[#008F5B] shadow-2xs relative"
+          className="w-8.5 h-8.5 rounded-full bg-white dark:bg-[#14241D] hover:bg-[#E8F7F0] dark:hover:bg-[#1F362B] active:scale-95 transition-all duration-150 flex items-center justify-center cursor-pointer border border-[#E2ECE7] dark:border-[#243B2E] text-[#4A5550] dark:text-[#A1B3AA] hover:text-[#008F5B] dark:hover:text-[#10E594] shadow-2xs relative"
           aria-label="Notifications"
         >
           <Bell size={16} className="stroke-[2.2]" />
           {/* Unread count badge */}
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#D83B3B] text-white text-[9.5px] font-black flex items-center justify-center ring-2 ring-white shadow-2xs">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#D83B3B] text-white text-[9.5px] font-black flex items-center justify-center ring-2 ring-white dark:ring-[#17211D] shadow-2xs">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </button>
 
-        {/* Three-Dot Menu Button */}
+        {/* 3. Three-Dot Menu Button */}
         <button
           type="button"
           id="payflow-top-menu-btn"
           onClick={() => {
             if (onMenuPressed) onMenuPressed();
           }}
-          className="w-8.5 h-8.5 rounded-full bg-[#F5FAF7] hover:bg-[#E8F7F0] active:scale-95 transition-all duration-150 flex items-center justify-center cursor-pointer border border-[#E2ECE7] text-[#4A5550] hover:text-[#008F5B] shadow-2xs"
+          className="w-8.5 h-8.5 rounded-full bg-white dark:bg-[#14241D] hover:bg-[#E8F7F0] dark:hover:bg-[#1F362B] active:scale-95 transition-all duration-150 flex items-center justify-center cursor-pointer border border-[#E2ECE7] dark:border-[#243B2E] text-[#4A5550] dark:text-[#A1B3AA] hover:text-[#008F5B] dark:hover:text-[#10E594] shadow-2xs"
           aria-label="Menu options"
         >
           <MoreVertical size={16} className="stroke-[2.2]" />

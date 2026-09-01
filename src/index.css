@@ -5,10 +5,1023 @@
     font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: #F5FAF7;
     color: #17211D;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  html.dark body {
+    background-color: #0A110E;
+    color: #F1F7F4;
   }
 }
 
-/* Custom scrollbar */
+/* ========================================================
+   COMPREHENSIVE LUXURY DARK MODE STYLESHEET
+   Guarantees zero white backgrounds across all cards,
+   graphs, charts, modals, widgets & frames in dark mode.
+   Light mode remains completely pristine.
+   ======================================================== */
+html.dark {
+  color-scheme: dark;
+}
+
+/* Base Canvas & Outer Wrapper */
+html.dark,
+html.dark body,
+html.dark #root,
+html.dark .min-h-screen {
+  background-color: #0A110E !important;
+  color: #F1F7F4 !important;
+}
+
+/* Header & Main Outer Layout */
+html.dark header {
+  background-color: rgba(13, 20, 16, 0.95) !important;
+  border-color: #1C2D24 !important;
+}
+
+html.dark header .bg-white {
+  background-color: #131E19 !important;
+  border-color: #213329 !important;
+}
+
+/* Android Device Mockup Frame & Screen Wrapper */
+html.dark #android-phone-frame {
+  background-color: #101A16 !important;
+  border-color: #060A08 !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75) !important;
+}
+
+html.dark #android-status-bar {
+  background-color: #101A16 !important;
+  color: #F1F7F4 !important;
+  border-color: #1E3027 !important;
+}
+
+html.dark #android-status-bar svg,
+html.dark #android-status-bar span {
+  color: #F1F7F4 !important;
+}
+
+html.dark #android-phone-frame > div:nth-child(2) {
+  background-color: #0B1310 !important;
+}
+
+html.dark #android-phone-frame > div:last-child {
+  background-color: #101A16 !important;
+  border-color: #1E3027 !important;
+}
+
+html.dark #android-phone-frame > div:last-child > div {
+  background-color: rgba(241, 247, 244, 0.25) !important;
+}
+
+/* Fixed Top Bar & Headers */
+html.dark #payflow-top-bar-container,
+html.dark #salary-details-screen > div:first-child,
+html.dark #salary-comparison-screen > div:first-child,
+html.dark #salary-details-empty-screen > div:first-child,
+html.dark #salary-history-screen > div:first-child,
+html.dark #reports-view-screen > div:first-child,
+html.dark #profile-view-screen > div:first-child,
+html.dark #add-salary-screen > div:first-child {
+  background-color: rgba(16, 26, 22, 0.96) !important;
+  border-color: #21352C !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ========================================================
+   TOP NAVIGATION ACTION BUTTONS (LIGHT & DARK ACCURACY)
+   ======================================================== */
+#payflow-top-actions-right button,
+#payflow-quick-theme-toggle-btn,
+#payflow-notification-btn,
+#payflow-top-menu-btn {
+  background-color: #FFFFFF !important;
+  border-color: #E2ECE7 !important;
+  color: #4A5550 !important;
+}
+
+#payflow-top-actions-right button:hover,
+#payflow-quick-theme-toggle-btn:hover,
+#payflow-notification-btn:hover,
+#payflow-top-menu-btn:hover {
+  background-color: #E8F7F0 !important;
+  border-color: #C5EBDB !important;
+  color: #008F5B !important;
+}
+
+html.dark #payflow-top-actions-right button,
+html.dark #payflow-quick-theme-toggle-btn,
+html.dark #payflow-notification-btn,
+html.dark #payflow-top-menu-btn {
+  background-color: #14241D !important;
+  border-color: #243B2E !important;
+  color: #A1B3AA !important;
+}
+
+html.dark #payflow-top-actions-right button:hover,
+html.dark #payflow-quick-theme-toggle-btn:hover,
+html.dark #payflow-notification-btn:hover,
+html.dark #payflow-top-menu-btn:hover {
+  background-color: #1F362B !important;
+  border-color: #2E523F !important;
+  color: #10E594 !important;
+}
+
+/* Sub-screen header back & action buttons */
+#salary-details-back-btn,
+#share-slip-btn,
+#history-back-btn,
+#comparison-back-btn {
+  background-color: #FFFFFF !important;
+  border-color: #E2ECE7 !important;
+  color: #17211D !important;
+}
+
+#salary-details-back-btn:hover,
+#share-slip-btn:hover,
+#history-back-btn:hover,
+#comparison-back-btn:hover {
+  background-color: #E8F7F0 !important;
+  border-color: #C5EBDB !important;
+  color: #008F5B !important;
+}
+
+html.dark #salary-details-back-btn,
+html.dark #share-slip-btn,
+html.dark #history-back-btn,
+html.dark #comparison-back-btn {
+  background-color: #14241D !important;
+  border-color: #243B2E !important;
+  color: #F1F7F4 !important;
+}
+
+html.dark #salary-details-back-btn:hover,
+html.dark #share-slip-btn:hover,
+html.dark #history-back-btn:hover,
+html.dark #comparison-back-btn:hover {
+  background-color: #1F362B !important;
+  border-color: #2E523F !important;
+  color: #10E594 !important;
+}
+
+/* ========================================================
+   BOTTOM NAVIGATION BAR (DARK MODE REFINED)
+   ======================================================== */
+html.dark #bottom-navigation-bar,
+html.dark #bottom-nav-bar {
+  background-color: rgba(14, 23, 19, 0.97) !important;
+  border-color: #1E3027 !important;
+  box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark #bottom-navigation-bar .bg-\[\#EDF2F0\] {
+  background-color: #1E3027 !important;
+}
+
+html.dark #bottom-navigation-bar span {
+  color: #8FA298 !important;
+}
+
+html.dark #bottom-navigation-bar .text-\[\#475569\] {
+  color: #8FA298 !important;
+}
+
+html.dark #bottom-navigation-bar .text-\[\#1E293B\],
+html.dark #bottom-navigation-bar .font-bold {
+  color: #F1F7F4 !important;
+}
+
+html.dark #bottom-navigation-bar .text-\[\#00B377\] {
+  color: #10E594 !important;
+}
+
+html.dark #bottom-navigation-bar .bg-\[\#00B377\] {
+  background-color: #10E594 !important;
+  box-shadow: 0 1px 8px rgba(16, 229, 148, 0.45) !important;
+}
+
+/* Diamond Add Button in Dark Mode */
+html.dark #nav-item-add > div:first-child {
+  background-color: #101A16 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(16, 229, 148, 0.25) !important;
+}
+
+html.dark #nav-item-add span {
+  color: #10E594 !important;
+}
+
+/* Device Switcher & Screen Picker Tabs */
+html.dark .bg-white.rounded-xl.border,
+html.dark .bg-white.p-1.rounded-xl.border {
+  background-color: #121D18 !important;
+  border-color: #21352C !important;
+}
+
+/* ALL Generic White Background Surfaces & Cards in Dark Mode */
+html.dark .bg-white,
+html.dark [class*="bg-white/"] {
+  background-color: #14221C !important;
+}
+
+/* Light Grayish/Greenish Sub-surfaces in Dark Mode */
+html.dark .bg-\[\#F5FAF7\],
+html.dark .bg-\[\#FAFDFB\],
+html.dark .bg-\[\#F8FAF9\],
+html.dark .bg-\[\#F1F6F3\],
+html.dark .bg-\[\#F3F7F5\],
+html.dark .bg-\[\#F8FCFA\],
+html.dark .bg-\[\#F6FAF8\],
+html.dark .bg-\[\#F4FAF7\],
+html.dark .bg-\[\#F9FCFA\],
+html.dark .bg-\[\#FDFBFB\] {
+  background-color: #101A16 !important;
+}
+
+/* Hero Salary Card Dark Obsidian Gradient */
+html.dark #hero-salary-card {
+  background: linear-gradient(135deg, #0E2920 0%, #143A2D 50%, #091F17 100%) !important;
+  border-color: #1E4E3D !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+  color: #E8F7F1 !important;
+}
+
+html.dark #hero-salary-card svg path {
+  opacity: 0.15 !important;
+}
+
+html.dark #hero-salary-card .text-\[\#0E3B2E\],
+html.dark #hero-salary-card .text-\[\#08281F\],
+html.dark #hero-salary-card .text-\[\#1B5746\],
+html.dark #hero-salary-card .text-\[\#226352\] {
+  color: #E8F7F1 !important;
+}
+
+html.dark #hero-salary-card .bg-white\/25,
+html.dark #hero-salary-card .bg-white\/40 {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark #hero-salary-card .border-white\/70 {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html.dark #hero-salary-card > div:last-child {
+  background-color: rgba(10, 28, 22, 0.95) !important;
+  border-color: #1A4435 !important;
+}
+
+/* ========================================================
+   SALARY CASHFLOW & DISTRIBUTION (PROCESS FLOW BAR)
+   ======================================================== */
+html.dark #salary-process-flow-card {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Make the process flow track clearly defined and visible in dark mode */
+html.dark #salary-process-flow-card .bg-\[\#FFECEC\] {
+  background-color: #0D1612 !important;
+  border: 1px solid #20342A !important;
+}
+
+html.dark #salary-process-flow-card .border-\[\#F0F4F2\] {
+  border-color: #1E3027 !important;
+}
+
+/* Make process bar segments ultra-clear, vibrant & glowing in dark mode */
+html.dark #salary-process-flow-card .from-\[\#007A4D\].to-\[\#00A86B\] {
+  background: linear-gradient(90deg, #008F5B 0%, #10E594 100%) !important;
+  box-shadow: 0 0 10px rgba(16, 229, 148, 0.35) !important;
+}
+
+html.dark #salary-process-flow-card .from-\[\#E11D48\].to-\[\#D83B3B\] {
+  background: linear-gradient(90deg, #EF4444 0%, #F87171 100%) !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35) !important;
+}
+
+/* ========================================================
+   INCOME DETAILS VIEW (SALARY DETAILS SCREEN)
+   ======================================================== */
+html.dark #details-hero-card {
+  background: linear-gradient(135deg, #0E2A20 0%, #153F31 50%, #0A2219 100%) !important;
+  border-color: #1F4F3E !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.dark #details-hero-card.border-\[\#F87171\]\/40 {
+  background: linear-gradient(135deg, #2E1214 0%, #451A1D 50%, #200B0D 100%) !important;
+  border-color: #592025 !important;
+}
+
+html.dark #details-hero-card .text-\[\#0E3B2E\],
+html.dark #details-hero-card .text-\[\#08281F\],
+html.dark #details-hero-card .text-\[\#1B5746\],
+html.dark #details-hero-card .text-\[\#226352\],
+html.dark #details-hero-card .text-\[\#4A0E0E\],
+html.dark #details-hero-card .text-\[\#3E0909\],
+html.dark #details-hero-card .text-\[\#8A1A1A\],
+html.dark #details-hero-card .text-\[\#821818\] {
+  color: #F1F7F4 !important;
+}
+
+html.dark #details-hero-card .bg-white\/40 {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark #details-hero-card .border-white\/70 {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html.dark #details-hero-card > div:last-child {
+  background-color: rgba(10, 28, 22, 0.95) !important;
+  border-color: #1A4435 !important;
+}
+
+html.dark #details-hero-card.border-\[\#F87171\]\/40 > div:last-child {
+  background-color: rgba(46, 18, 20, 0.95) !important;
+  border-color: #4D1A1E !important;
+}
+
+/* Details Tab Switcher (Income vs Deduction Tab Buttons) */
+html.dark #details-tab-switcher {
+  background-color: #101A16 !important;
+  border-color: #21352C !important;
+}
+
+html.dark #details-tab-switcher button {
+  background-color: #101A16 !important;
+  color: #8FA298 !important;
+}
+
+html.dark #details-tab-switcher button.bg-\[\#E8F7F0\] {
+  background-color: #163024 !important;
+  color: #10E594 !important;
+}
+
+html.dark #details-tab-switcher .bg-\[\#008F5B\] {
+  background-color: #21352C !important;
+}
+
+/* Itemized Card */
+html.dark #details-itemized-card {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+}
+
+html.dark #details-itemized-card .divide-\[\#F0F4F2\] > * {
+  border-color: #1C2E25 !important;
+}
+
+/* Visual Component Graph Section & Distribution Cards */
+html.dark #graphical-breakdown-section {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+}
+
+/* Graph Tab Button Switcher (Earnings vs Deductions) */
+html.dark #graphical-breakdown-section .bg-\[\#F0F4F2\] {
+  background-color: #0E1814 !important;
+  border-color: #21352C !important;
+}
+
+html.dark #graphical-breakdown-section .bg-\[\#F0F4F2\] button {
+  background-color: transparent !important;
+  color: #8FA298 !important;
+}
+
+html.dark #graphical-breakdown-section .bg-\[\#F0F4F2\] button.bg-white {
+  background-color: #163024 !important;
+  color: #10E594 !important;
+}
+
+html.dark #graphical-breakdown-section .bg-\[\#F0F4F2\] button.bg-white.text-\[\#D83B3B\] {
+  background-color: #331518 !important;
+  color: #FB7185 !important;
+}
+
+/* Distribution Tracks */
+html.dark #graphical-breakdown-section .bg-\[\#EBF2EE\],
+html.dark #graphical-breakdown-section .bg-\[\#FBF0F0\] {
+  background-color: #1B2A22 !important;
+}
+
+/* Individual Item Cards inside Graphical Breakdown */
+html.dark #graphical-breakdown-section .bg-\[\#F9FCFA\],
+html.dark #graphical-breakdown-section .bg-\[\#FDFBFB\] {
+  background-color: #101A16 !important;
+  border-color: #1F3328 !important;
+}
+
+html.dark #graphical-breakdown-section .bg-\[\#F9FCFA\]:hover,
+html.dark #graphical-breakdown-section .bg-\[\#FDFBFB\]:hover {
+  background-color: #14221D !important;
+  border-color: #294435 !important;
+}
+
+html.dark #graphical-breakdown-section .bg-\[\#EAEFEA\],
+html.dark #graphical-breakdown-section .bg-\[\#FAECEC\] {
+  background-color: #1B2A22 !important;
+}
+
+/* Danger Zone / Delete Salary Record Card in Income Details (Dark Mode) */
+html.dark #salary-details-screen .from-\[\#FFF5F5\].to-\[\#FFEEED\],
+html.dark .from-\[\#FFF5F5\].to-\[\#FFEEED\] {
+  background: linear-gradient(135deg, #221214 0%, #1A0D0F 100%) !important;
+  border-color: #4D1A1E !important;
+}
+
+html.dark #salary-details-screen .from-\[\#FFF5F5\].to-\[\#FFEEED\] h4 {
+  color: #F1F7F4 !important;
+}
+
+html.dark #bottom-delete-record-btn {
+  background-color: #2D1417 !important;
+  background-image: none !important;
+  border-color: #5A2228 !important;
+  color: #FB7185 !important;
+}
+
+html.dark #bottom-delete-record-btn:hover {
+  background-color: #3D181D !important;
+  border-color: #722B32 !important;
+  color: #FDA4AF !important;
+}
+
+/* Short Comparison Section */
+html.dark #short-comparison-section {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+}
+
+html.dark #short-comparison-section > div.grid > div:nth-child(1) {
+  background: #101A16 !important;
+  background-image: none !important;
+  border-color: #203A2D !important;
+}
+
+html.dark #short-comparison-section > div.grid > div:nth-child(2) {
+  background: #101A16 !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+}
+
+html.dark #short-comparison-section > div.grid > div:nth-child(3) {
+  background: #201214 !important;
+  background-image: none !important;
+  border-color: #481F23 !important;
+}
+
+/* ========================================================
+   SALARY COMPARISON VIEW
+   ======================================================== */
+html.dark #month-selectors-card {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+}
+
+html.dark #month-selectors-card select {
+  background-color: #0E1814 !important;
+  border-color: #21352C !important;
+  color: #F1F7F4 !important;
+}
+
+html.dark #swap-months-center-btn {
+  background-color: #101A16 !important;
+  border-color: #203A2D !important;
+  color: #10E594 !important;
+}
+
+html.dark #executive-summary-card {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+}
+
+html.dark #executive-summary-card > div.grid > div:nth-child(1) {
+  background: #101A16 !important;
+  background-image: none !important;
+  border-color: #203A2D !important;
+}
+
+html.dark #executive-summary-card > div.grid > div:nth-child(2) {
+  background: #101A16 !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+}
+
+html.dark #executive-summary-card > div.grid > div:nth-child(3) {
+  background: #201214 !important;
+  background-image: none !important;
+  border-color: #481F23 !important;
+}
+
+html.dark #executive-summary-card .bg-\[\#E2EBE6\],
+html.dark #executive-summary-card .bg-\[\#FEE2E2\] {
+  background-color: #1B2A22 !important;
+}
+
+/* 0.0% (Equal) Pills & Neutral Difference Badges in Comparison View */
+html.dark #salary-comparison-screen .bg-\[\#F0F4F2\],
+html.dark #income-comparison-section .bg-\[\#F0F4F2\],
+html.dark #deduction-comparison-section .bg-\[\#F0F4F2\],
+html.dark .bg-\[\#F0F4F2\] {
+  background-color: #1B2B23 !important;
+  color: #9DB3A8 !important;
+  border: 1px solid #283F33 !important;
+}
+
+/* Comparison Section Tab Switcher (All / Income / Deduction) */
+html.dark #comparison-section-tabs {
+  background-color: #101A16 !important;
+  border-color: #21352C !important;
+}
+
+html.dark #comparison-section-tabs button {
+  background-color: #101A16 !important;
+  color: #8FA298 !important;
+}
+
+html.dark #comparison-section-tabs button.bg-\[\#E8F7F0\] {
+  background-color: #163024 !important;
+  color: #10E594 !important;
+}
+
+html.dark #comparison-section-tabs .bg-\[\#008F5B\] {
+  background-color: #21352C !important;
+}
+
+/* Income Comparison Section & Items */
+html.dark #income-comparison-section {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+}
+
+html.dark #income-comparison-section .bg-\[\#F9FCFA\] {
+  background-color: #101A16 !important;
+  background-image: none !important;
+  border-color: #1F3328 !important;
+}
+
+html.dark #income-comparison-section .bg-\[\#F9FCFA\]:hover {
+  background-color: #14241D !important;
+  border-color: #264234 !important;
+}
+
+html.dark #income-comparison-section .bg-\[\#E4ECE8\] {
+  background-color: #1C2E25 !important;
+}
+
+/* Deduction Comparison Section & Items */
+html.dark #deduction-comparison-section {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+}
+
+html.dark #deduction-comparison-section .bg-\[\#FDFBFB\] {
+  background-color: #101A16 !important;
+  background-image: none !important;
+  border-color: #1F3328 !important;
+}
+
+html.dark #deduction-comparison-section .bg-\[\#FDFBFB\]:hover {
+  background-color: #1B1516 !important;
+  border-color: #3D2225 !important;
+}
+
+html.dark #deduction-comparison-section .bg-\[\#E4ECE8\] {
+  background-color: #1C2E25 !important;
+}
+
+/* ========================================================
+   SALARY HISTORY VIEW CARDS (DARK MODE)
+   ======================================================== */
+html.dark [id^="history-card-"] {
+  background-color: #14221C !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark [id^="history-card-"]:hover {
+  border-color: #1F543C !important;
+  background-color: #182B22 !important;
+}
+
+/* Current / Active Month Card in History Screen */
+html.dark [id^="history-card-"].from-white,
+html.dark [id^="history-card-"].bg-gradient-to-br {
+  background: linear-gradient(135deg, #142E22 0%, #10221A 50%, #173628 100%) !important;
+  border-color: #1F543C !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* ========================================================
+   DASHBOARD: SALARY GROWTH & TREND CARD
+   ======================================================== */
+html.dark #month-comparison-preview-card {
+  background-color: #14221C !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark #month-comparison-preview-card .grid > button {
+  background: #101A16 !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+}
+
+html.dark #month-comparison-preview-card .grid > button:hover {
+  background: #15251E !important;
+  border-color: #294437 !important;
+}
+
+html.dark #month-comparison-preview-card .grid > button.scale-\[1\.01\],
+html.dark #month-comparison-preview-card .grid > button.ring-1 {
+  background: linear-gradient(135deg, #153124 0%, #10221A 100%) !important;
+  border-color: #1F543C !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ========================================================
+   DASHBOARD: LAST 3 SALARY HISTORY CARD
+   ======================================================== */
+html.dark #last-three-history-card {
+  background-color: #14221C !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark #last-three-history-card .grid > button {
+  background: #101A16 !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+}
+
+html.dark #last-three-history-card .grid > button:hover {
+  background: #15251E !important;
+  border-color: #294437 !important;
+}
+
+html.dark #last-three-history-card .grid > button.scale-\[1\.02\],
+html.dark #last-three-history-card .grid > button.ring-1 {
+  background: linear-gradient(135deg, #153124 0%, #10221A 100%) !important;
+  border-color: #1F543C !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ========================================================
+   REPORTS & ANALYTICS: MONTH COMPARISON CARD
+   ======================================================== */
+html.dark #reports-month-comparison-card {
+  background-color: #14221C !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark #reports-month-comparison-card > div.grid > div:nth-child(1) {
+  background: #101A16 !important;
+  background-image: none !important;
+  border-color: #203A2D !important;
+}
+
+html.dark #reports-month-comparison-card > div.grid > div:nth-child(2) {
+  background: #101A16 !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+}
+
+html.dark #reports-month-comparison-card > div.grid > div:nth-child(3) {
+  background: #201214 !important;
+  background-image: none !important;
+  border-color: #481F23 !important;
+}
+
+/* General Card Surfaces */
+html.dark #reports-monthly-calendar-card,
+html.dark #reports-yearly-calendar-card,
+html.dark #reports-aggregate-calendar-card,
+html.dark #reports-income-breakdown-card,
+html.dark #reports-deduction-breakdown-card,
+html.dark #income-tax-calculator-widget,
+html.dark [id^="comparison-card-"],
+html.dark #income-inputs-card,
+html.dark #deduction-inputs-card {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Add Custom Income & Deduction Field Buttons (Dark Mode) */
+html.dark #add-extra-income-btn {
+  background: linear-gradient(90deg, #11241B 0%, #163024 100%) !important;
+  border-color: rgba(0, 143, 91, 0.45) !important;
+  color: #10E594 !important;
+}
+html.dark #add-extra-income-btn:hover {
+  background: linear-gradient(90deg, #163024 0%, #1B3D2E 100%) !important;
+  border-color: #008F5B !important;
+  color: #10E594 !important;
+}
+
+html.dark #add-extra-deduction-btn {
+  background: linear-gradient(90deg, #241214 0%, #33181C 100%) !important;
+  border-color: rgba(216, 59, 59, 0.45) !important;
+  color: #FB7185 !important;
+}
+html.dark #add-extra-deduction-btn:hover {
+  background: linear-gradient(90deg, #33181C 0%, #441E24 100%) !important;
+  border-color: #D83B3B !important;
+  color: #FB7185 !important;
+}
+
+/* Annual Average Net & Historical Average Net Cards (Dark Mode) */
+html.dark #reports-annual-avg-net-card,
+html.dark #reports-historical-avg-net-card {
+  background: linear-gradient(135deg, #0E1B15 0%, #13241D 100%) !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+}
+
+/* Reports Monthly Calendar Card & Navigation */
+html.dark #reports-monthly-calendar-card button.bg-\[\#F3F7F5\],
+html.dark #reports-monthly-calendar-card .bg-\[\#F3F7F5\] {
+  background-color: #101A16 !important;
+  border-color: #21352C !important;
+  color: #F1F7F4 !important;
+}
+
+html.dark #reports-monthly-calendar-card button.bg-\[\#F3F7F5\]:hover,
+html.dark #reports-monthly-calendar-card .bg-\[\#F3F7F5\]:hover {
+  background-color: #192A22 !important;
+}
+
+html.dark #reports-month-picker-toggle-btn:hover,
+html.dark #reports-monthly-calendar-card .hover\:bg-\[\#F3F7F5\]:hover {
+  background-color: #192A22 !important;
+}
+
+html.dark #flutter-calendar-widget {
+  background: #101A16 !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+}
+
+html.dark #flutter-calendar-widget > div:first-child {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+}
+
+html.dark #flutter-calendar-widget button.bg-white {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+  color: #F1F7F4 !important;
+}
+
+html.dark #flutter-calendar-widget button.bg-white\/80 {
+  background-color: #0E1814 !important;
+  border-color: #1F3328 !important;
+  color: #9DB3A8 !important;
+}
+
+html.dark #flutter-calendar-widget .bg-white\/70 {
+  background-color: #14221C !important;
+  border-color: #1F3328 !important;
+  color: #F1F7F4 !important;
+}
+
+/* Auth Mode Section Tabs (Sign In / Register - Comparison-Section-Tabs Style) */
+html.dark #auth-section-tabs {
+  background-color: #101A16 !important;
+  border-color: #21352C !important;
+}
+
+html.dark #auth-section-tabs button {
+  background-color: #101A16 !important;
+  color: #8FA298 !important;
+}
+
+html.dark #auth-section-tabs button.bg-\[\#E8F7F0\] {
+  background-color: #163024 !important;
+  color: #10E594 !important;
+}
+
+html.dark #auth-section-tabs button:not(.bg-\[\#E8F7F0\]):hover {
+  background-color: #14241D !important;
+  color: #F1F7F4 !important;
+}
+
+html.dark #auth-section-tabs .bg-\[\#008F5B\] {
+  background-color: #21352C !important;
+}
+
+/* KPI 3-Cards in Dark Mode */
+html.dark #kpi-metrics-cards > button:nth-child(1),
+html.dark #reports-kpi-bar > div:nth-child(1) {
+  background: #13201A !important;
+  border-color: #20362C !important;
+}
+
+html.dark #kpi-metrics-cards > button:nth-child(2),
+html.dark #reports-kpi-bar > div:nth-child(2) {
+  background: #221316 !important;
+  border-color: #491F24 !important;
+}
+
+html.dark #kpi-metrics-cards > button:nth-child(3),
+html.dark #reports-kpi-bar > div:nth-child(3) {
+  background: #0E291E !important;
+  border-color: #19523B !important;
+}
+
+/* SVG Chart Donut tracks & Progress Bars */
+html.dark svg circle[fill="none"][stroke="#E9F7F1"],
+html.dark svg circle[fill="none"][stroke="#FFEEEE"],
+html.dark svg circle[fill="none"][stroke="#E2EBE6"] {
+  stroke: #1C2E25 !important;
+}
+
+html.dark .bg-\[\#FFECEC\],
+html.dark .bg-\[\#FEE2E2\],
+html.dark .bg-\[\#E2EBE6\],
+html.dark .bg-\[\#BBF7D0\] {
+  background-color: #1D2E26 !important;
+}
+
+html.dark svg line[stroke="#E6EFEA"],
+html.dark svg line[stroke="#E2EBE6"] {
+  stroke: #20342A !important;
+}
+
+/* Soft Emerald Accents in Dark Mode */
+html.dark .bg-\[\#E8F7F0\],
+html.dark .bg-\[\#E9F7F1\],
+html.dark .bg-\[\#F0FDF4\],
+html.dark .bg-\[\#E6F9EE\],
+html.dark .bg-\[\#DCF5E9\],
+html.dark .bg-\[\#D8F3E5\],
+html.dark .bg-\[\#DCFCE7\] {
+  background-color: rgba(0, 168, 107, 0.16) !important;
+}
+
+html.dark .border-\[\#C5EBDB\],
+html.dark .border-\[\#BEEADB\],
+html.dark .border-\[\#86EFAC\],
+html.dark .border-\[\#A4E4D2\] {
+  border-color: rgba(0, 168, 107, 0.3) !important;
+}
+
+/* Soft Red Accents in Dark Mode */
+html.dark .bg-\[\#FFF5F5\],
+html.dark .bg-\[\#FDF2F2\],
+html.dark .bg-\[\#FFF0F0\],
+html.dark .bg-\[\#FFF6F6\],
+html.dark .bg-\[\#FEECEE\] {
+  background-color: rgba(220, 38, 38, 0.15) !important;
+}
+
+html.dark .border-\[\#FACDCD\],
+html.dark .border-\[\#FED7D7\],
+html.dark .border-\[\#FDCFD4\],
+html.dark .border-\[\#F5D8D8\] {
+  border-color: rgba(220, 38, 38, 0.3) !important;
+}
+
+/* Soft Amber/Yellow Accents in Dark Mode */
+html.dark .bg-\[\#FEF9E7\],
+html.dark .bg-\[\#FFFBEB\] {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+html.dark .border-\[\#FBE4A0\],
+html.dark .border-\[\#FDE68A\] {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Primary Borders in Dark Mode */
+html.dark .border-\[\#E4ECE8\],
+html.dark .border-\[\#E3EAE6\],
+html.dark .border-\[\#E6EFEA\],
+html.dark .border-\[\#D7E0DC\],
+html.dark .border-\[\#E2ECE7\],
+html.dark .border-\[\#D1DDD7\],
+html.dark .border-\[\#D8E6DF\],
+html.dark .border-\[\#E3ECE7\],
+html.dark .border-\[\#E0ECE6\],
+html.dark .border-\[\#E2EBE6\] {
+  border-color: #21352C !important;
+}
+
+/* Typography & Contrast in Dark Mode */
+html.dark .text-\[\#17211D\],
+html.dark .text-\[\#08281F\],
+html.dark .text-\[\#0E3B2E\],
+html.dark .text-\[\#2C3B34\],
+html.dark .text-\[\#334155\],
+html.dark .text-\[\#5C6E66\] {
+  color: #F1F7F4 !important;
+}
+
+html.dark .text-\[\#4A5550\],
+html.dark .text-\[\#6E7974\],
+html.dark .text-\[\#8A9791\],
+html.dark .text-\[\#9AA8A1\] {
+  color: #9DB3A8 !important;
+}
+
+html.dark .text-\[\#008F5B\],
+html.dark .text-\[\#1B5746\] {
+  color: #10E594 !important;
+}
+
+html.dark .text-\[\#D83B3B\],
+html.dark .text-\[\#DC2626\] {
+  color: #FB7185 !important;
+}
+
+html.dark .text-\[\#D97706\],
+html.dark .text-\[\#B45309\] {
+  color: #FBBF24 !important;
+}
+
+/* Form Controls & Inputs in Dark Mode */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #0E1814 !important;
+  color: #F1F7F4 !important;
+  border-color: #283D32 !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #10E594 !important;
+  outline: none !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #647A70 !important;
+}
+
+/* Modals & Dialogs in Dark Mode */
+html.dark [role="dialog"],
+html.dark .modal-content,
+html.dark .fixed > div > div.bg-white {
+  background-color: #14221C !important;
+  border-color: #24392E !important;
+  color: #F1F7F4 !important;
+}
+
+/* Authentication Cards & Form Controls Dark Mode Specifics */
+html.dark #login-card,
+html.dark #register-card,
+html.dark #security-info-card {
+  background-color: #14221C !important;
+  border-color: #21352C !important;
+}
+
+html.dark #biometric-login-button {
+  background-color: #101A16 !important;
+  background-image: none !important;
+  border-color: #21352C !important;
+  color: #9DB3A8 !important;
+}
+
+html.dark #biometric-login-button:hover {
+  background-color: #16261E !important;
+  border-color: #2D483A !important;
+  color: #10E594 !important;
+}
+
+html.dark #google-login-button,
+html.dark #google-register-button {
+  background-color: #101A16 !important;
+  border-color: #21352C !important;
+  color: #F1F7F4 !important;
+}
+
+html.dark #google-login-button:hover,
+html.dark #google-register-button:hover {
+  background-color: #16261E !important;
+  border-color: #2D483A !important;
+}
+
+html.dark #password-requirements-card {
+  background-color: #101A16 !important;
+  border-color: #21352C !important;
+}
+
+/* Text white in buttons */
+html.dark .text-white {
+  color: #FFFFFF !important;
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -23,3 +1036,16 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #008F5B;
 }
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #24392E;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #10E594;
+}
+
+
+
+
+

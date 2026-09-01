@@ -9,14 +9,18 @@ import {
   ChevronRight,
   CheckCircle2,
   Trash2,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
-import { MonthSalaryRecord, ScreenType } from '../types';
+import { MonthSalaryRecord, ScreenType, UserProfileData } from '../types';
 import { formatBDT } from '../mockData';
 import { BDT } from './BDT';
 import { DeleteConfirmationModal } from './DeleteConfirmationModal';
+import { exportSalaryToCSV } from '../utils/csvExport';
 
 interface SalaryHistoryViewProps {
   salaryRecords: MonthSalaryRecord[];
+  userProfile?: UserProfileData;
   activeMonth: string;
   onSelectMonth: (month: string) => void;
   onNavigate: (screen: ScreenType) => void;
@@ -25,6 +29,7 @@ interface SalaryHistoryViewProps {
 
 export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
   salaryRecords,
+  userProfile,
   activeMonth,
   onSelectMonth,
   onNavigate,
@@ -33,6 +38,7 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [recordToDelete, setRecordToDelete] = useState<MonthSalaryRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   const filteredRecords = salaryRecords.filter((r) =>
     r.monthLabel.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,6 +56,12 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleExportCSV = () => {
+    exportSalaryToCSV(salaryRecords, userProfile);
+    setExportSuccess(true);
+    setTimeout(() => setExportSuccess(false), 3000);
   };
 
   return (
@@ -84,6 +96,33 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
             </span>
           </div>
         </div>
+
+        {/* Excel / CSV Export Button */}
+        {salaryRecords.length > 0 && (
+          <button
+            type="button"
+            id="export-salary-excel-btn"
+            onClick={handleExportCSV}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+              exportSuccess
+                ? 'bg-[#008F5B] text-white border-[#008F5B]'
+                : 'bg-[#E8F7F0] text-[#008F5B] border-[#C5EBDB] hover:bg-[#D5F2E4]'
+            }`}
+            title="Export all records to Excel / CSV spreadsheet"
+          >
+            {exportSuccess ? (
+              <>
+                <CheckCircle2 size={14} />
+                <span>Exported!</span>
+              </>
+            ) : (
+              <>
+                <FileSpreadsheet size={14} />
+                <span>Export Excel</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       <div className="px-4 pt-4 flex flex-col gap-4">
@@ -113,13 +152,21 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
               const isLatest = idx === 0;
 
               return (
-                <button
+                <div
                   key={r.month}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   id={`history-card-${r.month}`}
                   onClick={() => {
                     onSelectMonth(r.month);
                     onNavigate('details');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectMonth(r.month);
+                      onNavigate('details');
+                    }
                   }}
                   className={`w-full rounded-xl p-4 text-left border transition-all duration-200 cursor-pointer flex flex-col gap-2 group ${
                     r.month === activeMonth
@@ -199,7 +246,7 @@ export const SalaryHistoryView: React.FC<SalaryHistoryViewProps> = ({
                       </span>
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })
           ) : (

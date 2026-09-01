@@ -415,6 +415,7 @@ export default function App() {
               {currentScreen === 'history' && (
                 <SalaryHistoryView
                   salaryRecords={salaryRecords}
+                  userProfile={userProfile}
                   activeMonth={activeMonth}
                   onSelectMonth={(m) => setActiveMonth(m)}
                   onNavigate={handleNavigate}

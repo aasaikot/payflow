@@ -230,22 +230,31 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <PayFlowLogo iconSize={48} fontSize={24} showSubtitle={true} />
         </div>
 
-        {/* Auth Mode Pill Selector */}
-        <div className="w-full max-w-[280px] bg-[#EAEFEA] p-1 rounded-xl flex items-center border border-[#D7E0DC] shadow-inner mb-4">
+        {/* Auth Mode Section Switcher (Comparison-Section-Tabs Style) */}
+        <div
+          id="auth-section-tabs"
+          className="w-full max-w-[280px] bg-white dark:bg-[#101A16] rounded-2xl border border-[#008F5B] dark:border-[#008F5B]/60 overflow-hidden flex items-stretch shadow-2xs mb-4"
+        >
+          {/* Tab 1: Sign In (Active) */}
           <button
             type="button"
-            className="flex-1 py-2 rounded-lg text-xs font-black bg-white text-[#008F5B] shadow-xs cursor-default flex items-center justify-center gap-1"
+            className="flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 bg-[#E8F7F0] dark:bg-[#163024] text-[#008F5B] dark:text-[#10E594] font-bold cursor-default transition-all"
           >
-            <CheckCircle2 size={13} className="text-[#008F5B]" />
-            <span>Sign In</span>
+            <CheckCircle2 size={13} className="text-[#008F5B] dark:text-[#10E594]" />
+            <span className="text-[12.5px] sm:text-[13px] leading-tight font-black">Sign In</span>
           </button>
+
+          {/* Vertical Divider */}
+          <div className="w-px bg-[#008F5B] dark:bg-[#008F5B]/60 self-stretch shrink-0" />
+
+          {/* Tab 2: Register (Inactive) */}
           <button
             type="button"
             id="switch-mode-register-pill"
             onClick={onNavigateToRegister}
-            className="flex-1 py-2 rounded-lg text-xs font-bold text-[#6E7974] hover:text-[#17211D] hover:bg-white/50 transition-colors cursor-pointer text-center"
+            className="flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 bg-white dark:bg-[#101A16] text-[#17211D] dark:text-[#8FA298] font-bold hover:bg-[#F5FAF7] dark:hover:bg-[#14241D] hover:text-[#008F5B] dark:hover:text-[#F1F7F4] cursor-pointer transition-all"
           >
-            Register
+            <span className="text-[12.5px] sm:text-[13px] leading-tight">Register</span>
           </button>
         </div>
 
@@ -284,7 +293,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
       {/* Main Login White Rounded Card */}
       <div
         id="login-card"
-        className="w-full max-w-[420px] bg-white rounded-xl p-6 sm:p-7 border border-[#E4ECE8] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
+        className="w-full max-w-[420px] bg-white dark:bg-[#14221C] rounded-xl p-6 sm:p-7 border border-[#E4ECE8] dark:border-[#21352C] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Email Field */}
@@ -292,13 +301,13 @@ export const LoginView: React.FC<LoginViewProps> = ({
             <div className="mb-1.5">
               <label
                 htmlFor="login-email-input"
-                className="text-[13px] font-bold text-[#17211D]"
+                className="text-[12px] font-extrabold uppercase tracking-wider text-[#17211D] dark:text-[#F1F7F4]"
               >
-                Work Email Address
+                EMAIL
               </label>
             </div>
             <div className="relative flex items-center">
-              <div className={`absolute left-3.5 w-7 h-7 rounded-lg ${emailError ? 'bg-[#FEF2F2] text-[#D83B3B]' : 'bg-[#F5FAF7] text-[#6E7974]'} flex items-center justify-center pointer-events-none`}>
+              <div className={`absolute left-3.5 w-7 h-7 rounded-lg ${emailError ? 'bg-[#FEF2F2] dark:bg-[#331416] text-[#D83B3B]' : 'bg-[#F5FAF7] dark:bg-[#101A16] text-[#6E7974] dark:text-[#9DB3A8]'} flex items-center justify-center pointer-events-none`}>
                 <Mail size={16} />
               </div>
               <input
@@ -309,11 +318,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   setEmail(e.target.value);
                   if (emailError) setEmailError(null);
                 }}
-                placeholder="e.g. employee@company.com"
+                placeholder="e.g. asif@company.com"
                 className={`w-full h-[48px] pl-12 pr-4 rounded-xl border ${
                   emailError
-                    ? 'border-[#D83B3B] bg-[#FFFBFB] focus:border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15 text-[#D83B3B]'
-                    : 'border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 bg-white text-[#17211D]'
+                    ? 'border-[#D83B3B] bg-[#FFFBFB] dark:bg-[#201012] focus:border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15 text-[#D83B3B]'
+                    : 'border-[#D7E0DC] dark:border-[#283D32] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 bg-white dark:bg-[#0E1814] text-[#17211D] dark:text-[#F1F7F4]'
                 } outline-none text-[13.5px] font-semibold placeholder-[#9EABA5] transition-all`}
                 required
               />
@@ -331,21 +340,21 @@ export const LoginView: React.FC<LoginViewProps> = ({
             <div className="flex items-center justify-between mb-1.5">
               <label
                 htmlFor="login-password-input"
-                className="text-[13px] font-bold text-[#17211D]"
+                className="text-[12px] font-extrabold uppercase tracking-wider text-[#17211D] dark:text-[#F1F7F4]"
               >
-                Account Password
+                PASSWORD
               </label>
               <button
                 id="forgot-password-link"
                 type="button"
                 onClick={onForgotPassword}
-                className="text-[11px] font-bold text-[#008F5B] hover:text-[#007A4D] transition-colors cursor-pointer"
+                className="text-[11px] font-bold text-[#008F5B] dark:text-[#10E594] hover:text-[#007A4D] dark:hover:underline transition-colors cursor-pointer"
               >
                 Forgot Password?
               </button>
             </div>
             <div className="relative flex items-center">
-              <div className={`absolute left-3.5 w-7 h-7 rounded-lg ${passwordError ? 'bg-[#FEF2F2] text-[#D83B3B]' : 'bg-[#F5FAF7] text-[#6E7974]'} flex items-center justify-center pointer-events-none`}>
+              <div className={`absolute left-3.5 w-7 h-7 rounded-lg ${passwordError ? 'bg-[#FEF2F2] dark:bg-[#331416] text-[#D83B3B]' : 'bg-[#F5FAF7] dark:bg-[#101A16] text-[#6E7974] dark:text-[#9DB3A8]'} flex items-center justify-center pointer-events-none`}>
                 <Lock size={16} />
               </div>
               <input
@@ -356,11 +365,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   setPassword(e.target.value);
                   if (passwordError) setPasswordError(null);
                 }}
-                placeholder="Enter your security password"
+                placeholder="Enter your password"
                 className={`w-full h-[48px] pl-12 pr-11 rounded-xl border ${
                   passwordError
-                    ? 'border-[#D83B3B] bg-[#FFFBFB] focus:border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15 text-[#D83B3B]'
-                    : 'border-[#D7E0DC] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 bg-white text-[#17211D]'
+                    ? 'border-[#D83B3B] bg-[#FFFBFB] dark:bg-[#201012] focus:border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15 text-[#D83B3B]'
+                    : 'border-[#D7E0DC] dark:border-[#283D32] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 bg-white dark:bg-[#0E1814] text-[#17211D] dark:text-[#F1F7F4]'
                 } outline-none text-[13.5px] font-semibold placeholder-[#9EABA5] transition-all`}
                 required
               />
@@ -368,7 +377,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 type="button"
                 id="toggle-password-visibility-btn"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 text-[#6E7974] hover:text-[#17211D] p-1.5 rounded-lg hover:bg-[#F5FAF7] transition-colors"
+                className="absolute right-3.5 text-[#6E7974] dark:text-[#9DB3A8] hover:text-[#17211D] dark:hover:text-[#F1F7F4] p-1.5 rounded-lg hover:bg-[#F5FAF7] dark:hover:bg-[#14241D] transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -393,9 +402,9 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded text-[#008F5B] border-[#D7E0DC] focus:ring-[#008F5B] accent-[#008F5B]"
+                className="w-4 h-4 rounded text-[#008F5B] border-[#D7E0DC] dark:border-[#283D32] focus:ring-[#008F5B] accent-[#008F5B]"
               />
-              <span className="text-[12.5px] text-[#6E7974] font-semibold">
+              <span className="text-[12.5px] text-[#6E7974] dark:text-[#9DB3A8] font-semibold">
                 Keep me signed in on this device
               </span>
             </label>
@@ -420,8 +429,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
           {/* Divider */}
           <div className="relative flex items-center justify-center my-1">
-            <div className="border-t border-[#E4ECE8] w-full"></div>
-            <span className="bg-white px-3 text-[11px] text-[#6E7974] font-bold uppercase tracking-wider shrink-0">
+            <div className="border-t border-[#E4ECE8] dark:border-[#21352C] w-full"></div>
+            <span className="bg-white dark:bg-[#14221C] px-3 text-[11px] text-[#6E7974] dark:text-[#9DB3A8] font-bold uppercase tracking-wider shrink-0">
               or quick access
             </span>
           </div>
@@ -434,7 +443,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isLoading || isGoogleLoading || isBiometricLoading}
-              className="h-[46px] bg-white hover:bg-[#F5FAF7] active:scale-[0.99] disabled:opacity-75 border border-[#D7E0DC] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] transition-all cursor-pointer shadow-2xs"
+              className="h-[46px] bg-white dark:bg-[#101A16] hover:bg-[#F5FAF7] dark:hover:bg-[#16261E] active:scale-[0.99] disabled:opacity-75 border border-[#D7E0DC] dark:border-[#21352C] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] dark:text-[#F1F7F4] transition-all cursor-pointer shadow-2xs"
             >
               {isGoogleLoading ? (
                 <Loader2 size={17} className="animate-spin text-[#008F5B]" />
@@ -471,8 +480,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
               disabled={isLoading || isGoogleLoading || isBiometricLoading}
               className={`h-[46px] relative ${
                 hasBiometricEnrolled
-                  ? 'bg-gradient-to-r from-[#E9F7F1] to-[#DCF5E9] border-[#008F5B]/50 hover:border-[#008F5B] text-[#008F5B] shadow-xs'
-                  : 'bg-[#F5FAF7] hover:bg-[#E9F7F1] border-[#D7E0DC] text-[#4A5568]'
+                  ? 'bg-gradient-to-r from-[#E9F7F1] to-[#DCF5E9] dark:from-[#11241B] dark:to-[#163024] border-[#008F5B]/50 dark:border-[#008F5B]/60 hover:border-[#008F5B] text-[#008F5B] dark:text-[#10E594] shadow-xs'
+                  : 'bg-[#F5FAF7] dark:bg-[#101A16] hover:bg-[#E9F7F1] dark:hover:bg-[#16261E] border-[#D7E0DC] dark:border-[#21352C] text-[#4A5568] dark:text-[#9DB3A8]'
               } active:scale-[0.99] disabled:opacity-75 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer`}
               title={
                 hasBiometricEnrolled
@@ -487,11 +496,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   <Fingerprint
                     size={17}
                     strokeWidth={2.2}
-                    className={hasBiometricEnrolled ? 'text-[#008F5B]' : 'text-[#6E7974]'}
+                    className={hasBiometricEnrolled ? 'text-[#008F5B] dark:text-[#10E594]' : 'text-[#6E7974] dark:text-[#9DB3A8]'}
                   />
                   <span>Fingerprint</span>
                   {hasBiometricEnrolled && (
-                    <span className="w-2 h-2 rounded-full bg-[#008F5B] animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-[#008F5B] dark:bg-[#10E594] animate-pulse" />
                   )}
                 </>
               )}
@@ -499,15 +508,15 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </div>
 
           {/* Bottom Switch to Register */}
-          <div className="text-center pt-2 border-t border-[#F0F4F2] mt-1">
-            <span className="text-[13px] text-[#6E7974]">
-              New employee on PayFlow?{' '}
+          <div className="text-center pt-2 border-t border-[#F0F4F2] dark:border-[#20342A] mt-1">
+            <span className="text-[13px] text-[#6E7974] dark:text-[#9DB3A8]">
+              Don't have an account?{' '}
             </span>
             <button
               id="switch-to-register-btn"
               type="button"
               onClick={onNavigateToRegister}
-              className="text-[13px] font-black text-[#008F5B] hover:text-[#007A4D] hover:underline transition-colors cursor-pointer"
+              className="text-[13px] font-black text-[#008F5B] dark:text-[#10E594] hover:text-[#007A4D] dark:hover:underline transition-colors cursor-pointer"
             >
               Create Account
             </button>
@@ -518,16 +527,16 @@ export const LoginView: React.FC<LoginViewProps> = ({
       {/* Security Trust Badge */}
       <div
         id="security-info-card"
-        className="w-full max-w-[420px] mt-4 bg-white rounded-xl p-3.5 border border-[#E4ECE8] flex items-center gap-3 shadow-2xs"
+        className="w-full max-w-[420px] mt-4 bg-white dark:bg-[#14221C] rounded-xl p-3.5 border border-[#E4ECE8] dark:border-[#21352C] flex items-center gap-3 shadow-2xs"
       >
-        <div className="w-9 h-9 rounded-xl bg-[#E9F7F1] flex items-center justify-center shrink-0 text-[#008F5B]">
+        <div className="w-9 h-9 rounded-xl bg-[#E9F7F1] dark:bg-[#163024] flex items-center justify-center shrink-0 text-[#008F5B] dark:text-[#10E594]">
           <ShieldCheck size={20} />
         </div>
         <div className="flex flex-col text-left">
-          <span className="text-[12px] font-bold text-[#17211D]">
+          <span className="text-[12px] font-bold text-[#17211D] dark:text-[#F1F7F4]">
             256-bit Encrypted Payroll Vault
           </span>
-          <span className="text-[10.5px] text-[#6E7974]">
+          <span className="text-[10.5px] text-[#6E7974] dark:text-[#9DB3A8]">
             Fully compliant with Bangladesh tax & compensation regulations
           </span>
         </div>

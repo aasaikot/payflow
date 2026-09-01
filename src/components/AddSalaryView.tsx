@@ -42,7 +42,7 @@ const DEFAULT_INCOME_FIELDS = [
   'Conveyance',
   'Special',
   'Dearness',
-  'Refreshment',
+  'Overtime',
   'Utility',
 ];
 
@@ -601,12 +601,12 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
           </div>
 
           {/* Add Extra Income Button */}
-          <div className="mt-3.5 pt-3 border-t border-[#F0F4F2]">
+          <div className="mt-3.5 pt-3 border-t border-[#F0F4F2] dark:border-[#20342A]">
             <button
               type="button"
               id="add-extra-income-btn"
               onClick={() => setNewFieldType('income')}
-              className="w-full py-2.5 px-3.5 bg-gradient-to-r from-[#F0FDF4] to-[#E9F7F1] hover:from-[#E9F7F1] hover:to-[#D9F4E7] border border-[#008F5B]/30 rounded-xl text-xs font-black text-[#008F5B] flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer group"
+              className="w-full py-2.5 px-3.5 bg-gradient-to-r from-[#F0FDF4] to-[#E9F7F1] dark:from-[#11241B] dark:to-[#163024] hover:from-[#E9F7F1] hover:to-[#D9F4E7] dark:hover:from-[#163024] dark:hover:to-[#1B3D2E] border border-[#008F5B]/30 dark:border-[#008F5B]/50 rounded-xl text-xs font-black text-[#008F5B] dark:text-[#10E594] flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer group"
             >
               <div className="w-5 h-5 rounded-full bg-[#008F5B] text-white flex items-center justify-center group-hover:rotate-90 transition-transform">
                 <Plus size={13} strokeWidth={3} />
@@ -619,13 +619,13 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
         {/* 2. DEDUCTION SECTION */}
         <div
           id="deduction-inputs-card"
-          className="w-full bg-white rounded-xl p-4 border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)]"
+          className="w-full bg-white dark:bg-[#14221C] rounded-xl p-4 border border-[#E4ECE8] dark:border-[#21352C] shadow-[0_4px_16px_rgba(23,33,29,0.02)]"
         >
-          <div className="flex items-center justify-between pb-3 border-b border-[#F0F4F2] mb-3">
-            <span className="text-[12px] font-extrabold text-[#D83B3B] uppercase tracking-wider">
+          <div className="flex items-center justify-between pb-3 border-b border-[#F0F4F2] dark:border-[#20342A] mb-3">
+            <span className="text-[12px] font-extrabold text-[#D83B3B] dark:text-[#FB7185] uppercase tracking-wider">
               DEDUCTION
             </span>
-            <span className="text-[12px] font-extrabold text-[#D83B3B]">
+            <span className="text-[12px] font-extrabold text-[#D83B3B] dark:text-[#FB7185]">
               {formatBDT(totalDeduction)}
             </span>
           </div>
@@ -647,18 +647,18 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
                 <div
                   key={field}
                   className={`flex flex-col gap-1.5 p-2 rounded-xl transition-all ${
-                    isPF && hasVal ? 'bg-[#FDFBFB] border border-[#D83B3B]/15 shadow-2xs' : ''
+                    isPF && hasVal ? 'bg-[#FDFBFB] dark:bg-[#221214] border border-[#D83B3B]/15 dark:border-[#D83B3B]/30 shadow-2xs' : ''
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[13px] font-semibold text-[#17211D]">
+                      <span className="text-[13px] font-semibold text-[#17211D] dark:text-[#F1F7F4]">
                         {field}
                       </span>
                     </div>
 
                     <div className="relative w-36">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#6E7974]">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#6E7974] dark:text-[#9DB3A8]">
                         ৳
                       </span>
                       <input
@@ -668,15 +668,15 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
                         onChange={(e) => handleDeductionChange(field, e.target.value)}
                         onBlur={() => handleInputBlur(field, false)}
                         placeholder="0.00"
-                        className="w-full h-9 pl-6 pr-2.5 rounded-xl border border-[#D7E0DC] text-right text-xs font-bold text-[#D83B3B] focus:border-[#D83B3B] focus:ring-1 focus:ring-[#D83B3B] outline-none transition-all"
+                        className="w-full h-9 pl-6 pr-2.5 rounded-xl border border-[#D7E0DC] dark:border-[#283D32] dark:bg-[#0E1814] text-right text-xs font-bold text-[#D83B3B] dark:text-[#FB7185] focus:border-[#D83B3B] focus:ring-1 focus:ring-[#D83B3B] outline-none transition-all"
                       />
                     </div>
                   </div>
 
                   {/* Bengali Info for PF */}
                   {isPF && hasVal && (
-                    <div className="mt-0.5 pt-1.5 border-t border-[#D83B3B]/10 flex items-center gap-1 text-[10.5px] text-[#D83B3B] font-medium leading-tight">
-                      <Sparkles size={11} className="shrink-0 text-[#D83B3B]" />
+                    <div className="mt-0.5 pt-1.5 border-t border-[#D83B3B]/10 dark:border-[#D83B3B]/20 flex items-center gap-1 text-[10.5px] text-[#D83B3B] dark:text-[#FB7185] font-medium leading-tight">
+                      <Sparkles size={11} className="shrink-0 text-[#D83B3B] dark:text-[#FB7185]" />
                       <span>
                         আপনার পিএফের পার্সেন্টেজ লিখুন, বা সরাসরি টাকার পরিমাণ লিখুন। উদাহরণঃ <strong>10%</strong>
                       </span>
@@ -688,12 +688,12 @@ export const AddSalaryView: React.FC<AddSalaryViewProps> = ({
           </div>
 
           {/* Add Extra Deduction Button */}
-          <div className="mt-3.5 pt-3 border-t border-[#F0F4F2]">
+          <div className="mt-3.5 pt-3 border-t border-[#F0F4F2] dark:border-[#20342A]">
             <button
               type="button"
               id="add-extra-deduction-btn"
               onClick={() => setNewFieldType('deduction')}
-              className="w-full py-2.5 px-3.5 bg-gradient-to-r from-[#FEF2F2] to-[#FEE2E2] hover:from-[#FEE2E2] hover:to-[#FED7D7] border border-[#D83B3B]/30 rounded-xl text-xs font-black text-[#D83B3B] flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer group"
+              className="w-full py-2.5 px-3.5 bg-gradient-to-r from-[#FEF2F2] to-[#FEE2E2] dark:from-[#241214] dark:to-[#33181C] hover:from-[#FEE2E2] hover:to-[#FED7D7] dark:hover:from-[#33181C] dark:hover:to-[#441E24] border border-[#D83B3B]/30 dark:border-[#D83B3B]/50 rounded-xl text-xs font-black text-[#D83B3B] dark:text-[#FB7185] flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer group"
             >
               <div className="w-5 h-5 rounded-full bg-[#D83B3B] text-white flex items-center justify-center group-hover:rotate-90 transition-transform">
                 <Plus size={13} strokeWidth={3} />

@@ -17,6 +17,8 @@ import {
   Fingerprint,
   Loader2,
   Info,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { UserProfileData, MonthSalaryRecord, ScreenType } from '../types';
 import {
@@ -28,6 +30,7 @@ import {
 } from '../services/biometricService';
 import { setUserLocalCache } from '../services/firebaseService';
 import { FingerprintPromptModal } from './FingerprintPromptModal';
+import { useTheme } from '../context/ThemeContext';
 
 interface ProfileViewProps {
   userProfile: UserProfileData;
@@ -44,6 +47,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onLogout,
   onNavigate,
 }) => {
+  const { theme, isDark, toggleTheme } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [isPhotoPickerOpen, setIsPhotoPickerOpen] = useState(false);
   const [editForm, setEditForm] = useState<UserProfileData>({ ...userProfile });
@@ -392,6 +396,64 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <span>{biometricFeedback.message}</span>
             </div>
           )}
+        </div>
+
+        {/* Theme Mode Toggle Card */}
+        <div
+          id="profile-theme-card"
+          className="w-full bg-white rounded-xl p-4 sm:p-5 border border-[#E4ECE8] shadow-[0_4px_16px_rgba(23,33,29,0.02)] flex items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+              isDark
+                ? 'bg-[#1E2923] border border-[#2D4539] text-[#00C980]'
+                : 'bg-[#F5FAF7] border border-[#E4ECE8] text-[#8A9791]'
+            }`}>
+              {isDark ? <Moon size={22} strokeWidth={2.2} /> : <Sun size={22} strokeWidth={2.2} />}
+            </div>
+            <div>
+              <h3 className="text-[13.5px] font-extrabold text-[#17211D] flex items-center gap-2">
+                <span>Dark Mode</span>
+                <span
+                  className={`text-[9px] px-2 py-0.2 rounded-full font-bold tracking-wider uppercase transition-colors ${
+                    isDark
+                      ? 'bg-[#008F5B] text-white shadow-2xs'
+                      : 'bg-[#E4ECE8] text-[#6E7974]'
+                  }`}
+                >
+                  {isDark ? 'ON' : 'OFF'}
+                </span>
+              </h3>
+              <p className="text-[11px] text-[#6E7974]">
+                {isDark ? 'Dark theme enabled' : 'Clean light theme'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="theme-toggle-switch"
+            role="switch"
+            aria-checked={isDark}
+            onClick={toggleTheme}
+            className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+              isDark ? 'bg-[#008F5B]' : 'bg-[#D1DDD7]'
+            }`}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            <span className="sr-only">Toggle Dark Mode</span>
+            <span
+              className={`pointer-events-none flex items-center justify-center h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                isDark ? 'translate-x-5' : 'translate-x-0.5'
+              }`}
+            >
+              {isDark ? (
+                <Moon size={11} className="text-[#008F5B]" />
+              ) : (
+                <Sun size={11} className="text-[#F59E0B]" />
+              )}
+            </span>
+          </button>
         </div>
 
         {/* Action Buttons: Edit Profile & Logout */}

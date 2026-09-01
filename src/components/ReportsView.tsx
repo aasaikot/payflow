@@ -20,9 +20,11 @@ import {
   ArrowUpDown,
   ArrowRight,
   ShieldAlert,
+  Calculator,
 } from 'lucide-react';
 import { MonthSalaryRecord, ScreenType } from '../types';
 import { formatBDT } from '../mockData';
+import { IncomeTaxCalculatorWidget } from './IncomeTaxCalculatorWidget';
 
 interface ReportsViewProps {
   salaryRecords: MonthSalaryRecord[];
@@ -348,14 +350,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         {filterMode === 'monthly' && (
           <div
             id="reports-monthly-calendar-card"
-            className="w-full bg-white rounded-2xl p-4 border border-[#E3ECE7] shadow-[0_4px_22px_rgba(23,33,29,0.04)] flex flex-col gap-3"
+            className="w-full bg-white dark:bg-[#14221C] rounded-2xl p-4 border border-[#E3ECE7] dark:border-[#21352C] shadow-[0_4px_22px_rgba(23,33,29,0.04)] flex flex-col gap-3"
           >
             {/* Header: Previous / Title / Next Navigation + Calendar Mode Toggle */}
             <div className="flex items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="w-9 h-9 rounded-xl bg-[#F3F7F5] hover:bg-[#E7EFEA] text-[#17211D] flex items-center justify-center transition-all cursor-pointer border border-[#E2EBE6] shrink-0"
+                className="w-9 h-9 rounded-xl bg-[#F3F7F5] dark:bg-[#101A16] hover:bg-[#E7EFEA] dark:hover:bg-[#192A22] text-[#17211D] dark:text-[#F1F7F4] flex items-center justify-center transition-all cursor-pointer border border-[#E2EBE6] dark:border-[#21352C] shrink-0"
                 title="Previous Month"
                 aria-label="Previous Month"
               >
@@ -364,31 +366,32 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
               <button
                 type="button"
+                id="reports-month-picker-toggle-btn"
                 onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                className="flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl hover:bg-[#F3F7F5] transition-colors cursor-pointer group"
+                className="flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl hover:bg-[#F3F7F5] dark:hover:bg-[#192A22] transition-colors cursor-pointer group"
                 title="Click to open full Calendar & Year/Month Picker"
               >
                 <div className="flex items-center gap-1.5">
                   <div
                     className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
-                      isCalendarOpen ? 'bg-[#008F5B] text-white shadow-2xs' : 'bg-[#E9F7F1] text-[#008F5B]'
+                      isCalendarOpen ? 'bg-[#008F5B] text-white shadow-2xs' : 'bg-[#E9F7F1] dark:bg-[#163024] text-[#008F5B] dark:text-[#10E594]'
                     }`}
                   >
                     <Calendar size={13} strokeWidth={2.5} />
                   </div>
-                  <span className="text-[15px] font-black text-[#17211D] tracking-tight group-hover:text-[#008F5B] transition-colors">
+                  <span className="text-[15px] font-black text-[#17211D] dark:text-[#F1F7F4] tracking-tight group-hover:text-[#008F5B] dark:group-hover:text-[#10E594] transition-colors">
                     {activeRecord.monthLabel}
                   </span>
                   <ChevronDown
                     size={14}
-                    className={`text-[#6E7974] transition-transform duration-200 ${
-                      isCalendarOpen ? 'rotate-180 text-[#008F5B]' : 'group-hover:text-[#17211D]'
+                    className={`text-[#6E7974] dark:text-[#9DB3A8] transition-transform duration-200 ${
+                      isCalendarOpen ? 'rotate-180 text-[#008F5B] dark:text-[#10E594]' : 'group-hover:text-[#17211D] dark:group-hover:text-[#F1F7F4]'
                     }`}
                   />
                 </div>
-                <span className="text-[10.5px] text-[#6E7974] font-medium mt-0.5 flex items-center gap-1">
+                <span className="text-[10.5px] text-[#6E7974] dark:text-[#9DB3A8] font-medium mt-0.5 flex items-center gap-1">
                   <span>Period:</span>
-                  <span className="font-bold text-[#334155]">
+                  <span className="font-bold text-[#334155] dark:text-[#E2ECE7]">
                     {(() => {
                       const lastDay = new Date(parsedActiveYear, parsedActiveMonth, 0).getDate();
                       const shortM = ALL_MONTHS[parsedActiveMonth - 1]?.short || 'M';
@@ -401,7 +404,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               <button
                 type="button"
                 onClick={handleNextMonth}
-                className="w-9 h-9 rounded-xl bg-[#F3F7F5] hover:bg-[#E7EFEA] text-[#17211D] flex items-center justify-center transition-all cursor-pointer border border-[#E2EBE6] shrink-0"
+                className="w-9 h-9 rounded-xl bg-[#F3F7F5] dark:bg-[#101A16] hover:bg-[#E7EFEA] dark:hover:bg-[#192A22] text-[#17211D] dark:text-[#F1F7F4] flex items-center justify-center transition-all cursor-pointer border border-[#E2EBE6] dark:border-[#21352C] shrink-0"
                 title="Next Month"
                 aria-label="Next Month"
               >
@@ -633,15 +636,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </button>
             </div>
 
-            <div className="flex flex-col items-center justify-center text-center py-2 px-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] border border-[#E3ECE7] gap-0.5 shadow-2xs">
-              <span className="text-[10px] font-bold text-[#6E7974] uppercase tracking-wider">
+            <div
+              id="reports-annual-avg-net-card"
+              className="flex flex-col items-center justify-center text-center py-2 px-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] dark:from-[#0E1B15] dark:to-[#13241D] border border-[#E3ECE7] dark:border-[#21352C] gap-0.5 shadow-2xs"
+            >
+              <span className="text-[10px] font-bold text-[#6E7974] dark:text-[#9DB3A8] uppercase tracking-wider">
                 ANNUAL AVERAGE NET AMOUNT
               </span>
               <div className="flex items-center justify-center gap-1">
-                <span className="text-[10px] font-black text-[#008F5B] tracking-tight">
+                <span className="text-[10px] font-black text-[#008F5B] dark:text-[#10E594] tracking-tight">
                   {formatBDT(avgNet)}
                 </span>
-                <span className="text-[10px] font-semibold text-[#6E7974] uppercase tracking-wide">
+                <span className="text-[10px] font-semibold text-[#6E7974] dark:text-[#9DB3A8] uppercase tracking-wide">
                   Per Month
                 </span>
               </div>
@@ -671,15 +677,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center text-center py-2 px-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] border border-[#E3ECE7] gap-0.5 shadow-2xs">
-              <span className="text-[10px] font-bold text-[#6E7974] uppercase tracking-wider">
+            <div
+              id="reports-historical-avg-net-card"
+              className="flex flex-col items-center justify-center text-center py-2 px-3 rounded-xl bg-gradient-to-br from-[#F8FAF9] to-[#F1F6F3] dark:from-[#0E1B15] dark:to-[#13241D] border border-[#E3ECE7] dark:border-[#21352C] gap-0.5 shadow-2xs"
+            >
+              <span className="text-[10px] font-bold text-[#6E7974] dark:text-[#9DB3A8] uppercase tracking-wider">
                 HISTORICAL AVERAGE NET AMOUNT
               </span>
               <div className="flex items-center justify-center gap-1">
-                <span className="text-[10px] font-black text-[#008F5B] tracking-tight">
+                <span className="text-[10px] font-black text-[#008F5B] dark:text-[#10E594] tracking-tight">
                   {formatBDT(avgNet)}
                 </span>
-                <span className="text-[10px] font-semibold text-[#6E7974] uppercase tracking-wide">
+                <span className="text-[10px] font-semibold text-[#6E7974] dark:text-[#9DB3A8] uppercase tracking-wide">
                   Per Month
                 </span>
               </div>
@@ -1195,6 +1204,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             </div>
           </button>
         </div>
+
+        {/* NBR BANGLADESH INCOME TAX ESTIMATOR & ASSESSMENT */}
+        <IncomeTaxCalculatorWidget
+          salaryRecords={salaryRecords}
+          selectedYear={selectedYear}
+        />
       </div>
       )}
     </div>
