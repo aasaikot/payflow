@@ -11,6 +11,8 @@ import {
   Fingerprint,
   CheckCircle2,
   Info,
+  Sparkles,
+  KeyRound,
 } from 'lucide-react';
 import { PayFlowLogo } from './PayFlowLogo';
 import { auth, signInWithEmailAndPassword, fetchSignInMethodsForEmail } from '../firebase';
@@ -41,12 +43,31 @@ export const LoginView: React.FC<LoginViewProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
-  
-  // Specific field-level error states
+
+  // Field error states
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+
+  // Biometric states
+  const [hasBiometricEnrolled, setHasBiometricEnrolled] = useState(false);
+  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+  const [pendingBiometricUser, setPendingBiometricUser] = useState<{ email: string; uid?: string } | null>(null);
+
+  useEffect(() => {
+    const creds = getSavedBiometricCredentials();
+    if (creds.length > 0) {
+      setHasBiometricEnrolled(true);
+      const last = getLastBiometricUser();
+      if (last?.email) {
+        if (!email) setEmail(last.email);
+        setPendingBiometricUser(last);
+      } else {
+        setPendingBiometricUser({ email: creds[0].email, uid: creds[0].uid });
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +83,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
       setEmailError('ইমেইল অ্যাড্রেস প্রদান করুন (Email is required).');
       hasValidationError = true;
     } else {
-      // Basic email regex pattern validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(cleanEmail)) {
         setEmailError('সঠিক ফরম্যাটের ইমেইল দিন (Invalid email format).');
@@ -82,7 +102,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
     setIsLoading(true);
 
     try {
-      // Strict Firebase Authentication for Registered Users
       const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
       setIsLoading(false);
       onLoginSuccess(userCredential.user.email || cleanEmail, userCredential.user.uid);
@@ -97,8 +116,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
       } else if (errorCode === 'auth/wrong-password') {
         setPasswordError('ভুল পাসওয়ার্ড দিয়েছেন। দয়া করে সঠিক পাসওয়ার্ড দিন অথবা Forgot Password করুন।');
       } else if (errorCode === 'auth/invalid-credential') {
-        // In Firebase v9/v10 with email enumeration protection, 'auth/invalid-credential' is returned
-        // Let's verify whether the email exists via fetchSignInMethodsForEmail
         try {
           const methods = await fetchSignInMethodsForEmail(auth, cleanEmail);
           if (methods.length === 0) {
@@ -107,7 +124,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
             setPasswordError('ভুল পাসওয়ার্ড দিয়েছেন (Incorrect password).');
           }
         } catch {
-          // If enumeration is completely blocked or network issue
           setPasswordError('ইমেইল অথবা পাসওয়ার্ড সঠিক নয়। দয়া করে যাচাই করে আবার চেষ্টা করুন।');
         }
       } else if (errorCode === 'auth/invalid-email') {
@@ -137,7 +153,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
       setIsGoogleLoading(false);
       console.warn('Google sign in error:', err?.code, err?.message);
       if (err?.code === 'auth/popup-closed-by-user') {
-        // User closed popup without signing in
         return;
       } else if (err?.code === 'auth/popup-blocked') {
         setGeneralError('Sign-in popup was blocked by browser. Please allow popups for PayFlow.');
@@ -146,25 +161,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
       }
     }
   };
-
-  // Check if biometric credential exists on this device
-  const [hasBiometricEnrolled, setHasBiometricEnrolled] = useState(false);
-  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
-  const [pendingBiometricUser, setPendingBiometricUser] = useState<{ email: string; uid?: string } | null>(null);
-
-  useEffect(() => {
-    const creds = getSavedBiometricCredentials();
-    if (creds.length > 0) {
-      setHasBiometricEnrolled(true);
-      const last = getLastBiometricUser();
-      if (last?.email) {
-        if (!email) setEmail(last.email);
-        setPendingBiometricUser(last);
-      } else {
-        setPendingBiometricUser({ email: creds[0].email, uid: creds[0].uid });
-      }
-    }
-  }, []);
 
   const handleBiometricAuth = async () => {
     setGeneralError(null);
@@ -179,7 +175,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
       return;
     }
 
-    // Determine target user
     let targetEmail = email || lastUser?.email || (creds[0] ? creds[0].email : '');
     let targetUid: string | undefined = lastUser?.uid || (creds[0] ? creds[0].uid : undefined);
 
@@ -191,7 +186,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
     setPendingBiometricUser({ email: targetEmail || 'user@payflow.com', uid: targetUid });
 
-    // In iframe or preview container, open interactive touch modal
     if (isInIFrame()) {
       setIsPromptModalOpen(true);
       return;
@@ -206,10 +200,9 @@ export const LoginView: React.FC<LoginViewProps> = ({
         setInfoMessage('ফিঙ্গারপ্রিন্ট ভেরিফিকেশন সফল হয়েছে! লগইন করা হচ্ছে...');
         onLoginSuccess(res.email, res.uid);
       } else {
-        // Fallback to modal if browser blocked dialog
         setIsPromptModalOpen(true);
       }
-    } catch (err: any) {
+    } catch {
       setIsBiometricLoading(false);
       setIsPromptModalOpen(true);
     }
@@ -223,47 +216,47 @@ export const LoginView: React.FC<LoginViewProps> = ({
   };
 
   return (
-    <div id="login-screen-container" className="w-full flex flex-col items-center py-5 px-4">
-      {/* Top PayFlow Brand Header */}
-      <div className="w-full max-w-[420px] flex flex-col items-center mb-5">
+    <div id="login-screen-container" className="w-full flex flex-col items-center py-5 px-3.5 sm:px-4 relative overflow-hidden">
+      {/* Ambient Halo Glow */}
+      <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-72 h-36 bg-[#008F5B]/15 dark:bg-[#008F5B]/20 blur-3xl rounded-full pointer-events-none" />
+
+      {/* Top PayFlow Brand Identity */}
+      <div className="w-full max-w-[420px] flex flex-col items-center mb-5 relative z-10">
         <div className="mb-4">
           <PayFlowLogo iconSize={48} fontSize={24} showSubtitle={true} />
         </div>
 
-        {/* Auth Mode Section Switcher (Comparison-Section-Tabs Style) */}
+        {/* Floating Modern Pill Switcher */}
         <div
           id="auth-section-tabs"
-          className="w-full max-w-[280px] bg-white dark:bg-[#101A16] rounded-2xl border border-[#008F5B] dark:border-[#008F5B]/60 overflow-hidden flex items-stretch shadow-2xs mb-4"
+          className="w-full max-w-[300px] p-1 bg-[#E8F2EC] dark:bg-[#121F19] rounded-2xl border border-[#D0E2D8] dark:border-[#1E3328] flex items-center shadow-inner mb-4"
         >
-          {/* Tab 1: Sign In (Active) */}
+          {/* Active Tab: Sign In */}
           <button
             type="button"
-            className="flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 bg-[#E8F7F0] dark:bg-[#163024] text-[#008F5B] dark:text-[#10E594] font-bold cursor-default transition-all"
+            className="flex-1 py-2 px-3 rounded-xl bg-white dark:bg-[#1A2C23] text-[#008F5B] dark:text-[#10E594] font-extrabold text-[13px] flex items-center justify-center gap-1.5 shadow-xs border border-[#008F5B]/20 cursor-default transition-all"
           >
-            <CheckCircle2 size={13} className="text-[#008F5B] dark:text-[#10E594]" />
-            <span className="text-[12.5px] sm:text-[13px] leading-tight font-black">Sign In</span>
+            <CheckCircle2 size={14} className="text-[#008F5B] dark:text-[#10E594]" />
+            <span>Sign In</span>
           </button>
 
-          {/* Vertical Divider */}
-          <div className="w-px bg-[#008F5B] dark:bg-[#008F5B]/60 self-stretch shrink-0" />
-
-          {/* Tab 2: Register (Inactive) */}
+          {/* Inactive Tab: Register */}
           <button
             type="button"
             id="switch-mode-register-pill"
             onClick={onNavigateToRegister}
-            className="flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 bg-white dark:bg-[#101A16] text-[#17211D] dark:text-[#8FA298] font-bold hover:bg-[#F5FAF7] dark:hover:bg-[#14241D] hover:text-[#008F5B] dark:hover:text-[#F1F7F4] cursor-pointer transition-all"
+            className="flex-1 py-2 px-3 rounded-xl text-[#5C6E66] dark:text-[#8EA298] font-bold text-[13px] hover:text-[#17211D] dark:hover:text-[#F1F7F4] flex items-center justify-center transition-all cursor-pointer"
           >
-            <span className="text-[12.5px] sm:text-[13px] leading-tight">Register</span>
+            <span>Register</span>
           </button>
         </div>
 
         <div className="text-center">
-          <h1 className="text-[22px] font-black text-[#17211D] tracking-tight">
-            Welcome to PayFlow
+          <h1 className="text-[22px] sm:text-[24px] font-black text-[#17211D] dark:text-[#F1F7F4] tracking-tight">
+            Welcome Back
           </h1>
-          <p className="text-[13px] text-[#6E7974] mt-0.5">
-            Log in to manage payroll, tax slips & annual records
+          <p className="text-[13px] text-[#6E7974] dark:text-[#8EA298] mt-1 font-medium">
+            Sign in to access your secure salary vault & payslips
           </p>
         </div>
       </div>
@@ -272,7 +265,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
       {generalError && (
         <div
           id="login-error-banner"
-          className="w-full max-w-[420px] mb-4 p-3.5 bg-[#FEF2F2] border border-[#D83B3B]/30 rounded-xl text-[#D83B3B] text-xs font-bold flex items-center gap-2.5 shadow-2xs animate-in fade-in"
+          className="w-full max-w-[420px] mb-4 p-3.5 bg-[#FEF2F2] dark:bg-[#2A1215] border border-[#D83B3B]/30 rounded-2xl text-[#D83B3B] dark:text-[#FF7575] text-xs font-bold flex items-center gap-2.5 shadow-sm animate-in fade-in"
         >
           <AlertCircle size={18} className="shrink-0" />
           <span>{generalError}</span>
@@ -283,31 +276,31 @@ export const LoginView: React.FC<LoginViewProps> = ({
       {infoMessage && (
         <div
           id="login-info-banner"
-          className="w-full max-w-[420px] mb-4 p-3.5 bg-[#E9F7F1] border border-[#008F5B]/30 rounded-xl text-[#008F5B] text-xs font-bold flex items-center gap-2.5 shadow-2xs animate-in fade-in"
+          className="w-full max-w-[420px] mb-4 p-3.5 bg-[#E9F7F1] dark:bg-[#122A1E] border border-[#008F5B]/30 rounded-2xl text-[#008F5B] dark:text-[#10E594] text-xs font-bold flex items-center gap-2.5 shadow-sm animate-in fade-in"
         >
-          <Info size={18} className="shrink-0 text-[#008F5B]" />
+          <Info size={18} className="shrink-0 text-[#008F5B] dark:text-[#10E594]" />
           <span>{infoMessage}</span>
         </div>
       )}
 
-      {/* Main Login White Rounded Card */}
+      {/* Premium Login Card */}
       <div
         id="login-card"
-        className="w-full max-w-[420px] bg-white dark:bg-[#14221C] rounded-xl p-6 sm:p-7 border border-[#E4ECE8] dark:border-[#21352C] shadow-[0_10px_32px_rgba(23,33,29,0.05)]"
+        className="w-full max-w-[420px] bg-white dark:bg-[#14221C] rounded-2xl p-6 sm:p-7 border border-[#E2EBE6] dark:border-[#21352C] shadow-[0_12px_36px_rgba(23,33,29,0.06)] relative z-10 transition-all"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Email Field */}
           <div>
-            <div className="mb-1.5">
+            <div className="flex items-center justify-between mb-1.5">
               <label
                 htmlFor="login-email-input"
-                className="text-[12px] font-extrabold uppercase tracking-wider text-[#17211D] dark:text-[#F1F7F4]"
+                className="text-[11.5px] font-extrabold uppercase tracking-wider text-[#47544E] dark:text-[#B2C4BB]"
               >
-                EMAIL
+                Work Email Address
               </label>
             </div>
-            <div className="relative flex items-center">
-              <div className={`absolute left-3.5 w-7 h-7 rounded-lg ${emailError ? 'bg-[#FEF2F2] dark:bg-[#331416] text-[#D83B3B]' : 'bg-[#F5FAF7] dark:bg-[#101A16] text-[#6E7974] dark:text-[#9DB3A8]'} flex items-center justify-center pointer-events-none`}>
+            <div className="relative flex items-center group">
+              <div className={`absolute left-3.5 w-8 h-8 rounded-xl ${emailError ? 'bg-[#FEF2F2] dark:bg-[#331416] text-[#D83B3B]' : 'bg-[#F2F7F4] dark:bg-[#1A2C23] text-[#5C6E66] dark:text-[#8EA298] group-focus-within:text-[#008F5B] group-focus-within:bg-[#E9F7F1] dark:group-focus-within:text-[#10E594]'} flex items-center justify-center pointer-events-none transition-colors`}>
                 <Mail size={16} />
               </div>
               <input
@@ -318,12 +311,12 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   setEmail(e.target.value);
                   if (emailError) setEmailError(null);
                 }}
-                placeholder="e.g. asif@company.com"
-                className={`w-full h-[48px] pl-12 pr-4 rounded-xl border ${
+                placeholder="e.g. employee@company.com"
+                className={`w-full h-[50px] pl-13 pr-4 rounded-xl border ${
                   emailError
-                    ? 'border-[#D83B3B] bg-[#FFFBFB] dark:bg-[#201012] focus:border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15 text-[#D83B3B]'
-                    : 'border-[#D7E0DC] dark:border-[#283D32] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 bg-white dark:bg-[#0E1814] text-[#17211D] dark:text-[#F1F7F4]'
-                } outline-none text-[13.5px] font-semibold placeholder-[#9EABA5] transition-all`}
+                    ? 'border-[#D83B3B] bg-[#FFFBFB] dark:bg-[#201012] focus:border-[#D83B3B] focus:ring-4 focus:ring-[#D83B3B]/10 text-[#D83B3B]'
+                    : 'border-[#D5DFD9] dark:border-[#283E33] focus:border-[#008F5B] focus:ring-4 focus:ring-[#008F5B]/10 bg-[#FAFCFB] dark:bg-[#0E1814] text-[#17211D] dark:text-[#F1F7F4]'
+                } outline-none text-[14px] font-semibold placeholder-[#9BAAA2] transition-all`}
                 required
               />
             </div>
@@ -340,21 +333,22 @@ export const LoginView: React.FC<LoginViewProps> = ({
             <div className="flex items-center justify-between mb-1.5">
               <label
                 htmlFor="login-password-input"
-                className="text-[12px] font-extrabold uppercase tracking-wider text-[#17211D] dark:text-[#F1F7F4]"
+                className="text-[11.5px] font-extrabold uppercase tracking-wider text-[#47544E] dark:text-[#B2C4BB]"
               >
-                PASSWORD
+                Password
               </label>
               <button
                 id="forgot-password-link"
                 type="button"
                 onClick={onForgotPassword}
-                className="text-[11px] font-bold text-[#008F5B] dark:text-[#10E594] hover:text-[#007A4D] dark:hover:underline transition-colors cursor-pointer"
+                className="text-[11.5px] font-bold text-[#008F5B] dark:text-[#10E594] hover:underline transition-all cursor-pointer flex items-center gap-1"
               >
-                Forgot Password?
+                <KeyRound size={12} />
+                <span>Forgot?</span>
               </button>
             </div>
-            <div className="relative flex items-center">
-              <div className={`absolute left-3.5 w-7 h-7 rounded-lg ${passwordError ? 'bg-[#FEF2F2] dark:bg-[#331416] text-[#D83B3B]' : 'bg-[#F5FAF7] dark:bg-[#101A16] text-[#6E7974] dark:text-[#9DB3A8]'} flex items-center justify-center pointer-events-none`}>
+            <div className="relative flex items-center group">
+              <div className={`absolute left-3.5 w-8 h-8 rounded-xl ${passwordError ? 'bg-[#FEF2F2] dark:bg-[#331416] text-[#D83B3B]' : 'bg-[#F2F7F4] dark:bg-[#1A2C23] text-[#5C6E66] dark:text-[#8EA298] group-focus-within:text-[#008F5B] group-focus-within:bg-[#E9F7F1] dark:group-focus-within:text-[#10E594]'} flex items-center justify-center pointer-events-none transition-colors`}>
                 <Lock size={16} />
               </div>
               <input
@@ -365,19 +359,19 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   setPassword(e.target.value);
                   if (passwordError) setPasswordError(null);
                 }}
-                placeholder="Enter your password"
-                className={`w-full h-[48px] pl-12 pr-11 rounded-xl border ${
+                placeholder="Enter your security password"
+                className={`w-full h-[50px] pl-13 pr-11 rounded-xl border ${
                   passwordError
-                    ? 'border-[#D83B3B] bg-[#FFFBFB] dark:bg-[#201012] focus:border-[#D83B3B] focus:ring-2 focus:ring-[#D83B3B]/15 text-[#D83B3B]'
-                    : 'border-[#D7E0DC] dark:border-[#283D32] focus:border-[#008F5B] focus:ring-2 focus:ring-[#008F5B]/15 bg-white dark:bg-[#0E1814] text-[#17211D] dark:text-[#F1F7F4]'
-                } outline-none text-[13.5px] font-semibold placeholder-[#9EABA5] transition-all`}
+                    ? 'border-[#D83B3B] bg-[#FFFBFB] dark:bg-[#201012] focus:border-[#D83B3B] focus:ring-4 focus:ring-[#D83B3B]/10 text-[#D83B3B]'
+                    : 'border-[#D5DFD9] dark:border-[#283E33] focus:border-[#008F5B] focus:ring-4 focus:ring-[#008F5B]/10 bg-[#FAFCFB] dark:bg-[#0E1814] text-[#17211D] dark:text-[#F1F7F4]'
+                } outline-none text-[14px] font-semibold placeholder-[#9BAAA2] transition-all`}
                 required
               />
               <button
                 type="button"
                 id="toggle-password-visibility-btn"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 text-[#6E7974] dark:text-[#9DB3A8] hover:text-[#17211D] dark:hover:text-[#F1F7F4] p-1.5 rounded-lg hover:bg-[#F5FAF7] dark:hover:bg-[#14241D] transition-colors"
+                className="absolute right-3.5 text-[#6E7974] dark:text-[#9DB3A8] hover:text-[#17211D] dark:hover:text-[#F1F7F4] p-1.5 rounded-lg hover:bg-[#F0F5F2] dark:hover:bg-[#1A2C23] transition-colors cursor-pointer"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -402,40 +396,40 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded text-[#008F5B] border-[#D7E0DC] dark:border-[#283D32] focus:ring-[#008F5B] accent-[#008F5B]"
+                className="w-4 h-4 rounded text-[#008F5B] border-[#D5DFD9] dark:border-[#283E33] focus:ring-[#008F5B] accent-[#008F5B]"
               />
-              <span className="text-[12.5px] text-[#6E7974] dark:text-[#9DB3A8] font-semibold">
-                Keep me signed in on this device
+              <span className="text-[12.5px] text-[#5C6E66] dark:text-[#9DB3A8] font-medium">
+                Keep session logged in
               </span>
             </label>
           </div>
 
-          {/* Primary Green Action Button */}
+          {/* Primary High-Grade Emerald Action Button */}
           <button
             id="login-submit-button"
             type="submit"
             disabled={isLoading || isGoogleLoading || isBiometricLoading}
-            className="w-full h-[50px] mt-1 bg-gradient-to-r from-[#008F5B] to-[#007A4D] hover:from-[#007A4D] hover:to-[#006640] active:scale-[0.99] disabled:opacity-75 text-white font-extrabold text-[15px] rounded-xl flex items-center justify-center gap-2 shadow-md shadow-[#008F5B]/25 transition-all cursor-pointer"
+            className="w-full h-[52px] mt-1 bg-gradient-to-r from-[#008F5B] via-[#009E65] to-[#007A4D] hover:from-[#007A4D] hover:to-[#006640] active:scale-[0.98] disabled:opacity-75 text-white font-black text-[15px] rounded-xl flex items-center justify-center gap-2.5 shadow-lg shadow-[#008F5B]/25 transition-all cursor-pointer"
           >
             {isLoading ? (
               <Loader2 size={20} className="animate-spin text-white" />
             ) : (
               <>
                 <span>Sign In to Dashboard</span>
-                <ArrowRight size={17} strokeWidth={2.5} />
+                <ArrowRight size={18} strokeWidth={2.5} />
               </>
             )}
           </button>
 
           {/* Divider */}
-          <div className="relative flex items-center justify-center my-1">
-            <div className="border-t border-[#E4ECE8] dark:border-[#21352C] w-full"></div>
-            <span className="bg-white dark:bg-[#14221C] px-3 text-[11px] text-[#6E7974] dark:text-[#9DB3A8] font-bold uppercase tracking-wider shrink-0">
-              or quick access
+          <div className="relative flex items-center justify-center my-0.5">
+            <div className="border-t border-[#E8F0EC] dark:border-[#21352C] w-full"></div>
+            <span className="bg-white dark:bg-[#14221C] px-3 text-[11px] text-[#7C8E86] dark:text-[#8EA298] font-bold uppercase tracking-wider shrink-0">
+              or quick access with
             </span>
           </div>
 
-          {/* Alternative Auth Buttons Grid */}
+          {/* Alternative Auth Grid */}
           <div className="grid grid-cols-2 gap-2.5">
             {/* Google Sign In */}
             <button
@@ -443,13 +437,13 @@ export const LoginView: React.FC<LoginViewProps> = ({
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isLoading || isGoogleLoading || isBiometricLoading}
-              className="h-[46px] bg-white dark:bg-[#101A16] hover:bg-[#F5FAF7] dark:hover:bg-[#16261E] active:scale-[0.99] disabled:opacity-75 border border-[#D7E0DC] dark:border-[#21352C] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] dark:text-[#F1F7F4] transition-all cursor-pointer shadow-2xs"
+              className="h-[46px] bg-[#FAFCFB] dark:bg-[#101A16] hover:bg-[#F0F6F2] dark:hover:bg-[#182820] active:scale-[0.98] disabled:opacity-75 border border-[#D5DFD9] dark:border-[#21352C] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#17211D] dark:text-[#F1F7F4] transition-all cursor-pointer shadow-xs"
             >
               {isGoogleLoading ? (
-                <Loader2 size={17} className="animate-spin text-[#008F5B]" />
+                <Loader2 size={16} className="animate-spin text-[#008F5B]" />
               ) : (
                 <>
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
                       d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
@@ -480,23 +474,23 @@ export const LoginView: React.FC<LoginViewProps> = ({
               disabled={isLoading || isGoogleLoading || isBiometricLoading}
               className={`h-[46px] relative ${
                 hasBiometricEnrolled
-                  ? 'bg-gradient-to-r from-[#E9F7F1] to-[#DCF5E9] dark:from-[#11241B] dark:to-[#163024] border-[#008F5B]/50 dark:border-[#008F5B]/60 hover:border-[#008F5B] text-[#008F5B] dark:text-[#10E594] shadow-xs'
-                  : 'bg-[#F5FAF7] dark:bg-[#101A16] hover:bg-[#E9F7F1] dark:hover:bg-[#16261E] border-[#D7E0DC] dark:border-[#21352C] text-[#4A5568] dark:text-[#9DB3A8]'
-              } active:scale-[0.99] disabled:opacity-75 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer`}
+                  ? 'bg-gradient-to-r from-[#EAF8F2] to-[#DCF5E9] dark:from-[#11241B] dark:to-[#163024] border-[#008F5B]/50 dark:border-[#008F5B]/60 hover:border-[#008F5B] text-[#008F5B] dark:text-[#10E594] shadow-xs'
+                  : 'bg-[#FAFCFB] dark:bg-[#101A16] hover:bg-[#F0F6F2] dark:hover:bg-[#182820] border-[#D5DFD9] dark:border-[#21352C] text-[#47544E] dark:text-[#9DB3A8]'
+              } active:scale-[0.98] disabled:opacity-75 border rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs`}
               title={
                 hasBiometricEnrolled
-                  ? 'Sign in with enrolled fingerprint'
+                  ? 'Sign in with saved fingerprint'
                   : 'Fingerprint Biometric Sign In'
               }
             >
               {isBiometricLoading ? (
-                <Loader2 size={17} className="animate-spin text-[#008F5B]" />
+                <Loader2 size={16} className="animate-spin text-[#008F5B]" />
               ) : (
                 <>
                   <Fingerprint
                     size={17}
                     strokeWidth={2.2}
-                    className={hasBiometricEnrolled ? 'text-[#008F5B] dark:text-[#10E594]' : 'text-[#6E7974] dark:text-[#9DB3A8]'}
+                    className={hasBiometricEnrolled ? 'text-[#008F5B] dark:text-[#10E594]' : 'text-[#6E7974] dark:text-[#8EA298]'}
                   />
                   <span>Fingerprint</span>
                   {hasBiometricEnrolled && (
@@ -508,15 +502,15 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </div>
 
           {/* Bottom Switch to Register */}
-          <div className="text-center pt-2 border-t border-[#F0F4F2] dark:border-[#20342A] mt-1">
-            <span className="text-[13px] text-[#6E7974] dark:text-[#9DB3A8]">
-              Don't have an account?{' '}
+          <div className="text-center pt-2.5 border-t border-[#F0F6F2] dark:border-[#1E3027] mt-1 flex items-center justify-center gap-1.5">
+            <span className="text-[13px] text-[#6E7974] dark:text-[#8EA298]">
+              New employee to PayFlow?
             </span>
             <button
               id="switch-to-register-btn"
               type="button"
               onClick={onNavigateToRegister}
-              className="text-[13px] font-black text-[#008F5B] dark:text-[#10E594] hover:text-[#007A4D] dark:hover:underline transition-colors cursor-pointer"
+              className="text-[13px] font-black text-[#008F5B] dark:text-[#10E594] hover:underline transition-colors cursor-pointer"
             >
               Create Account
             </button>
@@ -527,22 +521,23 @@ export const LoginView: React.FC<LoginViewProps> = ({
       {/* Security Trust Badge */}
       <div
         id="security-info-card"
-        className="w-full max-w-[420px] mt-4 bg-white dark:bg-[#14221C] rounded-xl p-3.5 border border-[#E4ECE8] dark:border-[#21352C] flex items-center gap-3 shadow-2xs"
+        className="w-full max-w-[420px] mt-4 bg-white dark:bg-[#14221C] rounded-2xl p-3.5 border border-[#E2EBE6] dark:border-[#21352C] flex items-center gap-3 shadow-xs"
       >
         <div className="w-9 h-9 rounded-xl bg-[#E9F7F1] dark:bg-[#163024] flex items-center justify-center shrink-0 text-[#008F5B] dark:text-[#10E594]">
           <ShieldCheck size={20} />
         </div>
         <div className="flex flex-col text-left">
-          <span className="text-[12px] font-bold text-[#17211D] dark:text-[#F1F7F4]">
-            256-bit Encrypted Payroll Vault
+          <span className="text-[12px] font-bold text-[#17211D] dark:text-[#F1F7F4] flex items-center gap-1">
+            <span>256-bit Encrypted Vault</span>
+            <Sparkles size={11} className="text-[#008F5B] dark:text-[#10E594]" />
           </span>
-          <span className="text-[10.5px] text-[#6E7974] dark:text-[#9DB3A8]">
-            Fully compliant with Bangladesh tax & compensation regulations
+          <span className="text-[10.5px] text-[#6E7974] dark:text-[#8EA298] font-medium">
+            Biometric protected & compliant with Bangladesh tax policies
           </span>
         </div>
       </div>
 
-      {/* Fingerprint Biometric Prompt Modal */}
+      {/* Fingerprint Modal */}
       <FingerprintPromptModal
         isOpen={isPromptModalOpen}
         mode="verify"
@@ -553,4 +548,3 @@ export const LoginView: React.FC<LoginViewProps> = ({
     </div>
   );
 };
-
